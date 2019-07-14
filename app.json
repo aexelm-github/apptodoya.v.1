@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "TodoYa!",
+    "slug": "apptodoya",
+    "privacy": "public",
+    "sdkVersion": "33.0.0",
+    "android": {
+      "package": "com.aexelm.todoya"
+    },    
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/TodoYa-ico.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}
