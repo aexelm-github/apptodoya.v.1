@@ -4,6 +4,9 @@ import { createStackNavigator, createSwitchNavigator, createAppContainer }  from
 import logoScreen from './src/screens/logoScreen'
 import loginScreen from './src/screens/loginScreen'
 import registerScreen from './src/screens/registerScreen'  
+import categoriasScreen from './src/screens/categoriasScreen'  
+import cartaScreen from './src/screens/cartaScreen'  
+import pedidoScreen from './src/screens/pedidoScreen'  
 
   class App extends React.Component {
     render() {
@@ -38,13 +41,37 @@ import registerScreen from './src/screens/registerScreen'
       }
     });
 
+  const AppStackPpal = createStackNavigator(
+    { 
+      Categorias: categoriasScreen, 
+      Carta: cartaScreen ,
+      Pedido: pedidoScreen
+    },
+    {
+      initialRoutName:'Categorias',
+      defaultNavigationOptions: {
+        title: '', 
+        headerStyle: {
+          backgroundColor: '#f345',
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTintColor: 'transparent',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }
+    });
+
   const AppNavigator = createSwitchNavigator(
     {
       AppStackLogin: AppStackLogin,
-      LogoScreen: logoScreen
+      LogoScreen: logoScreen,
+      AppStackPpal: AppStackPpal
     },
     {
       initialRouteName: 'LogoScreen',
-    } );
+    } 
+  );
 
   export default createAppContainer(AppNavigator);

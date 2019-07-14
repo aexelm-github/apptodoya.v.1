@@ -46,7 +46,7 @@ export default class loginScreen extends React.Component {
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
                   }else{
-                    
+                    this.props.navigation.navigate('AppStackPpal', {})
                   }
               });                
         }
