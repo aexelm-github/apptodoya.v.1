@@ -5,6 +5,7 @@ import {AsyncStorage} from 'react-native';
 import * as Font from 'expo-font'
 import { Divider, Card } from 'react-native-elements';
 import CacheImage from '../components/CacheImage';
+import { FlatGrid } from 'react-native-super-grid';
 
 
 
@@ -32,7 +33,15 @@ const categorias = [
     name: 'Auto Partes',
     foto: 'http://todoya2.aexelm.com/images/autopartes.jpg'
   },  
-];
+  {
+    name: 'Medicamentos',
+    foto: 'http://todoya2.aexelm.com/images/medicamentos.jpg'
+  },   
+  {
+    name: 'Bebidas',
+    foto: 'http://todoya2.aexelm.com/images/bebidas.jpg'
+  },   
+];  
 
 export default class categoriasScreen extends React.Component {
     constructor(props) {
@@ -76,27 +85,25 @@ export default class categoriasScreen extends React.Component {
           <Text style={localStyles.quePuedo}>¿Qué puedo hacer por ti?</Text>
           <Divider style={{ backgroundColor: 'blue' }} />
             
-              {
-                categorias.map((u, i) => {
-                  let Image_Http_URL = { uri : u.foto };
-                  console.log(u.foto);
-                  return (
-                    <View style={{flexDirection: 'row'}}>
-                    <TouchableOpacity 
-                          style={{width: screenWidth/2,height: screenWidth/2}}
-                    >
-                      <View key={i} style={localStyles.categoria}>
-                        <CacheImage
-                          style={localStyles.image}
-                          uri= {u.foto}
-                        />                    
-                        <Text style={localStyles.name}>({i}){u.name}</Text>
-                      </View>
-                    </TouchableOpacity>
-                    </View>
-                  );
-                })
-              }
+          <FlatGrid
+            itemDimension={150}
+            items={categorias}
+            style={localStyles.gridView}
+            // staticDimension={300}
+            // fixed
+             spacing={5}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity>
+                <View style={localStyles.categoria}>
+                  <CacheImage
+                    style={localStyles.image}
+                    uri= {item.foto}
+                  />                    
+                  <Text style={localStyles.name}>{item.name}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
             
         </ScrollView>  
       </View>
@@ -113,27 +120,38 @@ const localStyles = StyleSheet.create({
       fontFamily: 'RussoOne-Regular'
   },
   quePuedo : {
-    fontSize: 15,
+    fontSize: 16,
     color: "#2196F3",
     paddingLeft: 18,
     paddingBottom : 15,
   },
   image : {
-    height: 150,
+    height: 130,
     width: "100%",
     resizeMode: "stretch",
     borderRadius: 10,
+    margin: 1,
   },
   categoria : {
-    padding: 10,
+    padding: 5,
     width: '100%',
+    borderColor: "#aaaaaaaa",
+    borderWidth: 0,
+    borderRadius: 8,
+    backgroundColor: "#eeeeeeee"
   },
   name : {
-    fontSize: 18,
-    color: 'orange',
+    fontSize: 16,
+    color: '#2980b9',
     fontWeight: "400",
     paddingTop: 5,
-    textAlign: "center"
-  }
+    textAlign: "left",
+    paddingLeft: 6,
+  },
+  gridView: {
+    marginTop: 20,
+    flex: 1,
+    paddingBottom: 30,
+  },
 
 })
