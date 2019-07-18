@@ -13,6 +13,10 @@ export default StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  containerCategoria: {
+    flex: 2,
+    backgroundColor: '#fff',
+  },
   containerLogin: {
     flex: 1,
     justifyContent: 'center',

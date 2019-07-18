@@ -9,6 +9,9 @@ import styles from '../styles/stylesOne';
 import { TextInput } from 'react-native-gesture-handler';
 import CustomButton from '../components/customButton';
 import CustomInput from '../components/customInput';
+import {AsyncStorage} from 'react-native';
+
+const retrieveStorage = {"value":''};
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
@@ -23,9 +26,31 @@ export default class loginScreen extends React.Component {
         await  Font.loadAsync({
           'Changa-Regular': require('../../assets/fonts/Changa-Regular.ttf'),
         });
-        console.log("CARGO FONT");
+        
         this.setState({ fontLoaded: true });
       }
+
+      _storeData = async (key, value) => {
+        try {
+          await AsyncStorage.setItem(key, JSON.stringify(value));
+          console.log(key + " " + value);
+        } catch (error) {
+          console.log("Error al salvar datos locales!!");
+        }
+      }
+      
+      _retrieveData = async (props) => {
+        try {
+          const value = await AsyncStorage.getItem('value');
+          if (value !== null) {
+            console.log(value);
+            retrieveStorage.value =  value;
+            console.log(retrieveStorage.value);
+          }
+        } catch (error) {
+          // Error retrieving data
+        }
+      };
       
     btnLogin = async (params) => {
         if ((this.state.email.trim().length =0) || (this.state.pass.trim().length == 0) ){
@@ -41,12 +66,15 @@ export default class loginScreen extends React.Component {
               })
               .then( (response) => response.json() )
               .then( (responseJson) => {
-                  console.log(responseJson);
-                  console.log(responseJson.length);
+                  //console.log(responseJson);
+                  //console.log(responseJson.length);
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
                   }else{
-                    this.props.navigation.navigate('AppStackPpal', {})
+                    this._storeData("keyLogin",responseJson);                   
+                    this.props.navigation.navigate('Categorias', { 
+                        data : JSON.stringify(responseJson)
+                    });
                   }
               });                
         }

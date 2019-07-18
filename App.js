@@ -52,7 +52,7 @@ import pedidoScreen from './src/screens/pedidoScreen'
       defaultNavigationOptions: {
         title: '', 
         headerStyle: {
-          backgroundColor: '#f345',
+          backgroundColor: '#fff',
           elevation: 0,
           shadowOpacity: 0,
         },
