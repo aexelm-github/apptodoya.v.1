@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet, Button, Text, View, Image, TouchableOpacity, ProgressBarAndroid ,ImageBackground} from 'react-native';
+import { StyleSheet, 
+         Text, 
+         View, 
+         Image, 
+         TouchableOpacity, 
+         ImageBackground
+       } from 'react-native';
 import { Dimensions } from "react-native";
 import { Icon ,Input} from 'react-native-elements'
 import { Ionicons, FontAwesome } from '@expo/vector-icons';

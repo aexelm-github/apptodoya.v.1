@@ -1,11 +1,19 @@
 import React, { Component } from 'react';
-import { Dimensions, Button, Text, View, Image, TouchableOpacity, ProgressBarAndroid, ScrollView, StyleSheet } from 'react-native';
+import { Dimensions, 
+         Text, 
+         View, 
+         TouchableOpacity, 
+         ScrollView, 
+         StyleSheet,
+         Image, 
+        } from 'react-native';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
 import * as Font from 'expo-font'
-import { Divider, Card } from 'react-native-elements';
+import { Divider } from 'react-native-elements';
 import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 
 
@@ -15,31 +23,38 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 const categorias = [
   {
      name: 'Comidas',
-     foto: 'http://todoya2.aexelm.com/images/comidas.png'
+     foto: 'http://todoya2.aexelm.com/images/comidas.png',
+     detalle: 'Todos los restaurantes y locales de comidas rápidas',
   },
   {
     name: 'Envíos',
-    foto: 'http://todoya2.aexelm.com/images/envios.jpg'
+    foto: 'http://todoya2.aexelm.com/images/envios.jpg',
+    detalle: 'Mandados y envíos a todos los rincones de la ciudad',
   },  
   {
     name: 'Giros',
-    foto: 'http://todoya2.aexelm.com/images/giros2.jpg'
+    foto: 'http://todoya2.aexelm.com/images/giros2.jpg',
+    detalle : 'Giros, Retiros y Consignaciones',
   },  
   {
     name: 'Entretenimiento',
-    foto: 'http://todoya2.aexelm.com/images/entrenimiento.jpg'
+    foto: 'http://todoya2.aexelm.com/images/entrenimiento.jpg',
+    detalle : 'Compramos los tickets para cines y eventos de la ciudad',
   },  
   {
     name: 'Auto Partes',
-    foto: 'http://todoya2.aexelm.com/images/autopartes.jpg'
+    foto: 'http://todoya2.aexelm.com/images/autopartes.jpg',
+    detalle : 'Hacemos por ti las cotizaciones de repuestos y partes de automotores',
   },  
   {
     name: 'Medicamentos',
-    foto: 'http://todoya2.aexelm.com/images/medicamentos.jpg'
+    foto: 'http://todoya2.aexelm.com/images/medicamentos.jpg',
+    detalle : 'Todas las droguerías de la ciudad al alcance de tu mano',
   },   
   {
     name: 'Bebidas',
-    foto: 'http://todoya2.aexelm.com/images/bebidas.jpg'
+    foto: 'http://todoya2.aexelm.com/images/bebidas.jpg',
+    detalle : 'Los mejores expendios de bebidas de la ciudad a tu alcance'
   },   
 ];  
 
@@ -49,6 +64,23 @@ export default class categoriasScreen extends React.Component {
         this.state = {fontLoaded: false};
     }
 
+    static navigationOptions = ({ navigation }) => {
+      return {
+        headerTitle: "TodoYa!",
+        headerLeft: (
+          <Image 
+            source={require('../images/TodoYa-03.png')} 
+            style={{marginLeft: 8,marginTop: 5, width:50,height: 50, resizeMode:'stretch'}}
+          />
+        ),
+        headerRight: (
+          <View style={{marginRight: 12, flexDirection:'row'}}>
+            <Ionicons name='md-menu' color='#2980b9' size={36} />
+          </View>
+        ),
+      };
+    };
+    
     async componentDidMount() { 
       await  Font.loadAsync({
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
@@ -66,6 +98,12 @@ export default class categoriasScreen extends React.Component {
       }
     };
 
+    _goScreen = (categoriaSeleccionada) => {
+      this.props.navigation.navigate('Comercios', { 
+        data : categoriaSeleccionada
+      });
+    }
+
   render() {
     const dataJson = JSON.parse(this.props.navigation.getParam('data',''));
     const nombre1 = dataJson[0].nombre1;
@@ -73,18 +111,25 @@ export default class categoriasScreen extends React.Component {
 
     return (
       <View style={styles.containerCategoria}>
-        <ScrollView>
+        
           {
             this.state.fontLoaded ? (
               <Text style={localStyles.simpleName} 
                     onPress = {() => {this._removeData("keyLogin");}} >
-                    Hola, {nombre1}.
+                    Hola, {nombre1}
               </Text>
             ) : null
           }
-          <Text style={localStyles.quePuedo}>¿Qué puedo hacer por ti?</Text>
-          <Divider style={{ backgroundColor: 'blue' }} />
-            
+          <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
+          <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#2196F355', height: 8 }} />
+          <ScrollView>  
+          {
+            this.state.fontLoaded ? (
+              <Text style={localStyles.simpleTitle} >
+                    Categorías
+              </Text>
+            ) : null
+          }            
           <FlatGrid
             itemDimension={150}
             items={categorias}
@@ -93,13 +138,14 @@ export default class categoriasScreen extends React.Component {
             // fixed
              spacing={5}
             renderItem={({ item, index }) => (
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => {this._goScreen(item.name)}}>
                 <View style={localStyles.categoria}>
                   <CacheImage
                     style={localStyles.image}
                     uri= {item.foto}
                   />                    
                   <Text style={localStyles.name}>{item.name}</Text>
+                  <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -118,6 +164,19 @@ const localStyles = StyleSheet.create({
       paddingTop: 10,
       paddingLeft : 20,
       fontFamily: 'RussoOne-Regular'
+  },
+  simpleTitle : {
+    color: "#e74c3c",
+    fontSize: 18,
+    paddingTop: 10,
+    paddingLeft : 20,
+    marginBottom: 4,
+    fontFamily: 'RussoOne-Regular'
+  },  
+  simpleDetalle : {
+    color : '#000',
+    fontSize: 11,
+    paddingLeft: 6,
   },
   quePuedo : {
     fontSize: 16,
@@ -149,9 +208,9 @@ const localStyles = StyleSheet.create({
     paddingLeft: 6,
   },
   gridView: {
-    marginTop: 20,
+    marginTop: 3,
     flex: 1,
-    paddingBottom: 30,
+    paddingBottom: 130,
   },
 
 })

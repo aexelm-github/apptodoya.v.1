@@ -7,6 +7,7 @@ import registerScreen from './src/screens/registerScreen'
 import categoriasScreen from './src/screens/categoriasScreen'  
 import cartaScreen from './src/screens/cartaScreen'  
 import pedidoScreen from './src/screens/pedidoScreen'  
+import comerciosScreen from './src/screens/comerciosScreen'  
 
   class App extends React.Component {
     render() {
@@ -44,6 +45,7 @@ import pedidoScreen from './src/screens/pedidoScreen'
   const AppStackPpal = createStackNavigator(
     { 
       Categorias: categoriasScreen, 
+      Comercios: comerciosScreen, 
       Carta: cartaScreen ,
       Pedido: pedidoScreen
     },
@@ -56,10 +58,11 @@ import pedidoScreen from './src/screens/pedidoScreen'
           elevation: 0,
           shadowOpacity: 0,
         },
-        headerTintColor: 'transparent',
+        headerTintColor: '#2980b9',
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerTitle: "",
       }
     });
 
