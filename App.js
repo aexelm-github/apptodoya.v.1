@@ -63,6 +63,7 @@ import comerciosScreen from './src/screens/comerciosScreen'
           fontWeight: 'bold',
         },
         headerTitle: "",
+        barStyle: 'dark-content'
       }
     });
 
