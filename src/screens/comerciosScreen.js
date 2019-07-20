@@ -6,19 +6,22 @@ import { Dimensions,
          ProgressBarAndroid,
          StyleSheet,
          ScrollView,
+         Divi
         } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import styles from '../styles/stylesOne';
 import * as Font from 'expo-font'
 import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
+import { Divider } from 'react-native-elements';
+
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
 let categorias ;
 
-export default class cartaScreen extends React.Component {
+export default class comerciosScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -40,17 +43,22 @@ export default class cartaScreen extends React.Component {
 
     static navigationOptions = ({ navigation }) => {
         return {
-          headerTitle: props => {return <Text style={{color:'#e74c3c',fontWeight: "500", fontSize: 18}}>
-                                            {navigation.getParam('params','').categoria}
+          headerTitle: props => {return <Text style={{color:'#fff',fontWeight: "500", fontSize: 18}}>
+                                           TodoYa
                                 </Text>},
           headerStyle: {
-            backgroundColor: '#fff',
+            backgroundColor: '#2980b9',
+            textAlign: 'center',
+            elevation: 0,
           },
           headerRight: (
             <View style={{marginRight: 12, flexDirection:'row'}}>
-              <Ionicons name='md-menu' color='#2980b9' size={36} />
+              <Ionicons name='md-menu' color='#fff' size={36} />
             </View>
           ),
+          headerBackTitleStyle: {
+            color: 'white',
+          },
         };
     };
     
@@ -89,6 +97,15 @@ export default class cartaScreen extends React.Component {
         <View style={[styles.container,{backgroundColor: '#2980b9'}]}>
           { this.state.categoriasLoaded ? (
           <View >
+              {
+                this.state.fontLoaded ? (
+                  <Text style={localStyles.simpleName}  >
+                        {params.categoria}
+                  </Text>
+                ) : null
+              }                  
+              <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
+              <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#ffffffee', height: 8 }} />
               <ScrollView>  
               <FlatGrid
                 itemDimension={130}
@@ -96,7 +113,7 @@ export default class cartaScreen extends React.Component {
                 style={localStyles.gridView}
                 // staticDimension={300}
                 // fixed
-                spacing={25}
+                spacing={15}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity onPress={() => {this._goScreen(item.name)}}>
                     <View style={localStyles.categoria} elevation={15}>
@@ -126,7 +143,7 @@ export default class cartaScreen extends React.Component {
 
 const localStyles = StyleSheet.create({
   simpleName : {
-      color: "rgba(0,0,0,0.5)",
+      color: "#fff",
       fontSize: 26,
       paddingTop: 10,
       paddingLeft : 20,
@@ -142,13 +159,13 @@ const localStyles = StyleSheet.create({
   },  
   simpleDetalle : {
     color : '#34495e',
-    fontSize: 16,
+    fontSize: 14,
     padding: 3,
     padding: 10,
   },
   quePuedo : {
     fontSize: 16,
-    color: "#2196F3",
+    color: "#ffffffee",
     paddingLeft: 18,
     paddingBottom : 15,
   },
@@ -168,9 +185,9 @@ const localStyles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 0,
     backgroundColor: "#fff",
-  },
+},
   name : {
-    fontSize: 20,
+    fontSize: 18,
     color: '#2980b9',
     fontWeight: "600",
     paddingTop: 5,
