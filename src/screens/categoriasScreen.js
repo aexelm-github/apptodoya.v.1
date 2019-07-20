@@ -5,7 +5,10 @@ import { Dimensions,
          TouchableOpacity, 
          ScrollView, 
          StyleSheet,
-         Image, 
+         Image,
+         ProgressBarAndroid,
+         Animated,
+         Easing,
         } from 'react-native';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
@@ -20,48 +23,21 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
-const categorias = [
+let categorias ;/*= [
   {
-     name: 'Comidas',
+     name: 'Comidasxx',
      foto: 'http://todoya2.aexelm.com/images/comidas.png',
      detalle: 'Todos los restaurantes y locales de comidas rápidas',
-  },
-  {
-    name: 'Envíos',
-    foto: 'http://todoya2.aexelm.com/images/envios.jpg',
-    detalle: 'Mandados y envíos a todos los rincones de la ciudad',
-  },  
-  {
-    name: 'Giros',
-    foto: 'http://todoya2.aexelm.com/images/giros2.jpg',
-    detalle : 'Giros, Retiros y Consignaciones',
-  },  
-  {
-    name: 'Entretenimiento',
-    foto: 'http://todoya2.aexelm.com/images/entrenimiento.jpg',
-    detalle : 'Compramos los tickets para cines y eventos de la ciudad',
-  },  
-  {
-    name: 'Auto Partes',
-    foto: 'http://todoya2.aexelm.com/images/autopartes.jpg',
-    detalle : 'Hacemos por ti las cotizaciones de repuestos y partes de automotores',
-  },  
-  {
-    name: 'Medicamentos',
-    foto: 'http://todoya2.aexelm.com/images/medicamentos.jpg',
-    detalle : 'Todas las droguerías de la ciudad al alcance de tu mano',
-  },   
-  {
-    name: 'Bebidas',
-    foto: 'http://todoya2.aexelm.com/images/bebidas.jpg',
-    detalle : 'Los mejores expendios de bebidas de la ciudad a tu alcance'
-  },   
-];  
+  } 
+];  */
 
 export default class categoriasScreen extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {fontLoaded: false};
+        this.state = {
+            fontLoaded: false, 
+            categoriasLoaded: false,
+        };
     }
 
     static navigationOptions = ({ navigation }) => {
@@ -85,8 +61,28 @@ export default class categoriasScreen extends React.Component {
       await  Font.loadAsync({
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
-      
-      this.setState({ fontLoaded: true });       
+      this.setState({ fontLoaded: true });  
+
+      // Buscar en servidor de BBDD 
+      let formdata = new FormData();
+      formdata.append('parent',0);
+
+      await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+          method: "POST",
+          body: formdata,
+        })
+        .then( (response) => response.json() )
+        .then( (responseJson) => {
+            console.log("entro por aca");
+            if (responseJson.length == 0){
+              alert("¡¡Oops!!. El email o el password son incorrectos.");
+            }else{
+              categorias = responseJson;
+              this.setState({ categoriasLoaded: true });  
+            }
+      });                
+
+          
     }
 
     _removeData = async (key) => {
@@ -98,9 +94,9 @@ export default class categoriasScreen extends React.Component {
       }
     };
 
-    _goScreen = (categoriaSeleccionada) => {
+    _goScreen = (params) => {
       this.props.navigation.navigate('Comercios', { 
-        data : categoriaSeleccionada
+        params : params
       });
     }
 
@@ -110,49 +106,61 @@ export default class categoriasScreen extends React.Component {
     let Image_Http_URL ={ uri: 'http://todoya2.aexelm.com/images/Indra_000x000.jpg'};
 
     return (
-      <View style={styles.containerCategoria}>
-        
-          {
+        <View style={styles.container}>
+          { this.state.categoriasLoaded ? (
+          <View >
+              {
+                this.state.fontLoaded ? (
+                  <Text style={localStyles.simpleName} 
+                        onPress = {() => {this._removeData("keyLogin");}} >
+                        Hola, {nombre1}
+                  </Text>
+                ) : null
+              }
+              <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
+              <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#2196F355', height: 8 }} />
+              <ScrollView>  
+              {
+                this.state.fontLoaded ? (
+                  <Text style={localStyles.simpleTitle} >
+                        Categorías
+                  </Text>
+                ) : null
+              }            
+              <FlatGrid
+                itemDimension={150}
+                items={categorias}
+                style={localStyles.gridView}
+                // staticDimension={300}
+                // fixed
+                spacing={5}
+                renderItem={({ item, index }) => (
+                  <TouchableOpacity onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}>
+                    <View style={localStyles.categoria}>
+                      <CacheImage
+                        style={localStyles.image}
+                        uri= {'http://todoya2.aexelm.com/images/'+item.foto}
+                      />                    
+                      <Text style={localStyles.name}>{item.name}</Text>
+                      <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+                
+            </ScrollView>  
+          </View>
+        ) : (
             this.state.fontLoaded ? (
-              <Text style={localStyles.simpleName} 
-                    onPress = {() => {this._removeData("keyLogin");}} >
-                    Hola, {nombre1}
-              </Text>
+              <View style={localStyles.welcome}>
+                <Text style={[localStyles.simpleName]} 
+                      onPress = {() => {this._removeData("keyLogin");}} >
+                      Hola, {nombre1}
+                </Text>
+              </View>
             ) : null
-          }
-          <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
-          <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#2196F355', height: 8 }} />
-          <ScrollView>  
-          {
-            this.state.fontLoaded ? (
-              <Text style={localStyles.simpleTitle} >
-                    Categorías
-              </Text>
-            ) : null
-          }            
-          <FlatGrid
-            itemDimension={150}
-            items={categorias}
-            style={localStyles.gridView}
-            // staticDimension={300}
-            // fixed
-             spacing={5}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity onPress={() => {this._goScreen(item.name)}}>
-                <View style={localStyles.categoria}>
-                  <CacheImage
-                    style={localStyles.image}
-                    uri= {item.foto}
-                  />                    
-                  <Text style={localStyles.name}>{item.name}</Text>
-                  <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-            
-        </ScrollView>  
-      </View>
+        )}
+        </View>
     );
   }
 }
@@ -212,5 +220,10 @@ const localStyles = StyleSheet.create({
     flex: 1,
     paddingBottom: 130,
   },
+  welcome : {
+    flex: 1,
+    textAlign: 'center',
+    justifyContent: 'center',
+  }
 
 })

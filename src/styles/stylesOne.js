@@ -16,6 +16,7 @@ export default StyleSheet.create({
   containerCategoria: {
     flex: 2,
     backgroundColor: '#fff',
+    justifyContent: 'center',
   },
   containerLogin: {
     flex: 1,

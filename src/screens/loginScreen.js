@@ -66,7 +66,7 @@ export default class loginScreen extends React.Component {
             formdata.append('email',this.state.email);
             formdata.append('password',this.state.pass);
 
-            fetch('http://todoya2.aexelm.com/', {   
+            fetch('http://todoya2.aexelm.com/index.php/maincontrol/validausuario', {   
                 method: "POST",
                 body: formdata,
               })
