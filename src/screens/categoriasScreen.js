@@ -51,7 +51,7 @@ export default class categoriasScreen extends React.Component {
         ),
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
-            <Ionicons name='md-menu' color='#2980b9' size={36} />
+            <Ionicons name='md-menu' color='#3498db' size={36} />
           </View>
         ),
       };
@@ -118,7 +118,7 @@ export default class categoriasScreen extends React.Component {
                 ) : null
               }
               <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
-              <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#2196F355', height: 8 }} />
+              <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
               <ScrollView>  
               {
                 this.state.fontLoaded ? (
@@ -209,7 +209,7 @@ const localStyles = StyleSheet.create({
   },
   name : {
     fontSize: 16,
-    color: '#2980b9',
+    color: '#3498db',
     fontWeight: "400",
     paddingTop: 5,
     textAlign: "left",

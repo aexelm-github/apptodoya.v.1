@@ -43,17 +43,17 @@ export default class comerciosScreen extends React.Component {
 
     static navigationOptions = ({ navigation }) => {
         return {
-          headerTitle: props => {return <Text style={{color:'#fff',fontWeight: "500", fontSize: 18}}>
+          headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
                                            TodoYa
                                 </Text>},
           headerStyle: {
-            backgroundColor: '#2980b9',
+            backgroundColor: '#fff',
             textAlign: 'center',
             elevation: 0,
           },
           headerRight: (
             <View style={{marginRight: 12, flexDirection:'row'}}>
-              <Ionicons name='md-menu' color='#fff' size={36} />
+              <Ionicons name='md-menu' color='#3498db' size={36} />
             </View>
           ),
           headerBackTitleStyle: {
@@ -94,21 +94,23 @@ export default class comerciosScreen extends React.Component {
     console.log(params.id);
     const nombreCategoria = 'Default';//this.props.navigation.getParam('data','');
     return (
-        <View style={[styles.container,{backgroundColor: '#2980b9'}]}>
+        <View style={[styles.container,{backgroundColor: '#fff'}]}>
           { this.state.categoriasLoaded ? (
           <View >
-              {
-                this.state.fontLoaded ? (
-                  <Text style={localStyles.simpleName}  >
-                        {params.categoria}
-                  </Text>
-                ) : null
-              }                  
-              <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
-              <Divider style={{ marginLeft: 10,marginRight: 10, backgroundColor: '#ffffffee', height: 8 }} />
+              <View style={{backgroundColor: "#fff"}}> 
+                {
+                    this.state.fontLoaded ? (
+                    <Text style={localStyles.simpleName}  >
+                            {params.categoria}
+                    </Text>
+                    ) : null
+                }    
+                <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
+                <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
+              </View>              
               <ScrollView>  
               <FlatGrid
-                itemDimension={130}
+                itemDimension={200}
                 items={categorias}
                 style={localStyles.gridView}
                 // staticDimension={300}
@@ -116,13 +118,17 @@ export default class comerciosScreen extends React.Component {
                 spacing={15}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity onPress={() => {this._goScreen(item.name)}}>
-                    <View style={localStyles.categoria} elevation={15}>
+                    <View style={localStyles.categoria} elevation={0}>
+                    <Text style={localStyles.name}>{item.name}</Text>
+                      <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
                       <CacheImage
                         style={localStyles.image}
                         uri= {'http://todoya2.aexelm.com/images/'+item.foto}
-                      />                    
-                      <Text style={localStyles.name}>{item.name}</Text>
-                      <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
+                      /> 
+                      <CacheImage
+                        style={localStyles.imageBrand}
+                        uri= {'http://todoya2.aexelm.com/images/'+item.foto}
+                      />                                          
                     </View>
                   </TouchableOpacity>
                 )}
@@ -143,9 +149,9 @@ export default class comerciosScreen extends React.Component {
 
 const localStyles = StyleSheet.create({
   simpleName : {
-      color: "#fff",
-      fontSize: 26,
-      paddingTop: 10,
+      color: "rgba(0,0,0,0.5)",
+      fontSize: 18,
+      paddingTop: 0,
       paddingLeft : 20,
       fontFamily: 'RussoOne-Regular'
   },
@@ -153,29 +159,42 @@ const localStyles = StyleSheet.create({
     color: "#e74c3c",
     fontSize: 18,
     paddingTop: 10,
-    paddingLeft : 20,
-    marginBottom: 4,
+    paddingLeft : 0,
+    marginBottom: 0,
     fontFamily: 'RussoOne-Regular'
   },  
   simpleDetalle : {
     color : '#34495e',
     fontSize: 14,
-    padding: 3,
-    padding: 10,
+    paddingLeft: 0,
+    paddingRight: 100,
+    paddingTop: 0,
   },
   quePuedo : {
     fontSize: 16,
-    color: "#ffffffee",
+    color: "#3498db",
     paddingLeft: 18,
     paddingBottom : 15,
+  },
+  imageBrand : {
+    position:  'absolute',
+    width: 60, 
+    height: 60,
+    borderRadius: 30,
+    top: 0,
+    right: 0,
+    borderWidth: 2,
+    borderColor: "#fff"
   },
   image : {
     height: 130,
     width: "100%",
     resizeMode: "stretch",
-    borderRadius: 0,
+    borderRadius:2,
     margin: 0,
     height: screenWidth/2,
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   categoria : {
     padding: 0,
@@ -188,16 +207,19 @@ const localStyles = StyleSheet.create({
 },
   name : {
     fontSize: 18,
-    color: '#2980b9',
+    color: '#3498db',
     fontWeight: "600",
     paddingTop: 5,
     textAlign: "left",
-    paddingLeft: 10,
+    paddingLeft: 0,
+    paddingRight: 100,
   },
   gridView: {
-    marginTop: 3,
+    marginTop: 10,
     flex: 1,
+    margin: 0,
     paddingBottom: 130,
+    
   },
   welcome : {
     flex: 1,

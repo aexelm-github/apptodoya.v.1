@@ -58,7 +58,7 @@ import comerciosScreen from './src/screens/comerciosScreen'
           elevation: 0,
           shadowOpacity: 0,
         },
-        headerTintColor: '#2980b9',
+        headerTintColor: '#3498db',
         headerTitleStyle: {
           fontWeight: 'bold',
         },
