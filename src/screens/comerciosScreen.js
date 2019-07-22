@@ -6,7 +6,6 @@ import { Dimensions,
          ProgressBarAndroid,
          StyleSheet,
          ScrollView,
-         Divi
         } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import styles from '../styles/stylesOne';
@@ -14,6 +13,7 @@ import * as Font from 'expo-font'
 import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
 import { Divider } from 'react-native-elements';
+import ActionMenu from '../components/ActionMenu';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -27,6 +27,8 @@ export default class comerciosScreen extends React.Component {
         this.state = {
             fontLoaded: false, 
             categoriasLoaded: false,
+            itemChecked: null,
+            estosBotonesActivos: {"add": true,"delete":false, "edit": false},
         };        
     }
     
@@ -35,11 +37,30 @@ export default class comerciosScreen extends React.Component {
     }
 
     _goScreen = (params) => {
-        this.props.navigation.navigate('carta', { 
-          params : params
-        });
+        if (this.state.itemChecked == null )
+            this.props.navigation.navigate('Carta', { 
+            params : params
+            });
       }
 
+      _seleccionaItem = (params) => {
+        this.state.itemChecked == params.index ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.index}) ;
+        if (this.state.itemChecked == null ){
+          this.setState((previousState) => ({
+            estosBotonesActivos: {
+              ...previousState.estosBotonesActivos,
+              add: true, edit: false, delete: false
+            }
+          }))
+        }else{
+          this.setState((previousState) => ({
+            estosBotonesActivos: {
+              ...previousState.estosBotonesActivos,
+              add: false, edit: true, delete: true
+            }
+          }))
+        }
+      }
 
     static navigationOptions = ({ navigation }) => {
         return {
@@ -117,19 +138,33 @@ export default class comerciosScreen extends React.Component {
                 // fixed
                 spacing={15}
                 renderItem={({ item, index }) => (
-                  <TouchableOpacity onPress={() => {this._goScreen(item.name)}}>
+                  <TouchableOpacity 
+                    onPress={() => {this._goScreen(item.name)}}
+                    delayLongPress={1300}
+                    onLongPress={() => { this._seleccionaItem({index: index}) }}
+                  >
                     <View style={localStyles.categoria} elevation={0}>
                     <Text style={localStyles.name}>{item.name}</Text>
                       <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
-                      <CacheImage
-                        style={localStyles.image}
-                        uri= {'http://todoya2.aexelm.com/images/'+item.foto}
-                      /> 
+                      <View>
+                        <CacheImage
+                            style={localStyles.image}
+                            uri= {'http://todoya2.aexelm.com/images/'+item.foto}
+                        /> 
+                        
+                      </View>
                       <CacheImage
                         style={localStyles.imageBrand}
                         uri= {'http://todoya2.aexelm.com/images/'+item.foto}
                       />                                          
                     </View>
+                    {
+                        this.state.itemChecked == index ? (
+                            <View style={localStyles.checked}>
+                                <Ionicons name='ios-checkmark-circle-outline' color='#fff' size={36} />
+                            </View>
+                            ) : null
+                    }
                   </TouchableOpacity>
                 )}
               />
@@ -142,6 +177,9 @@ export default class comerciosScreen extends React.Component {
               </View>
             ) : null
         )}
+        <ActionMenu 
+          estosBotonesActivos={this.state.estosBotonesActivos}
+        />
         </View>
     );
   }
@@ -190,7 +228,7 @@ const localStyles = StyleSheet.create({
     height: 130,
     width: "100%",
     resizeMode: "stretch",
-    borderRadius:2,
+    borderRadius:0,
     margin: 0,
     height: screenWidth/2,
     borderWidth: 1,
@@ -225,6 +263,15 @@ const localStyles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     justifyContent: 'center',
+  },    
+  checked: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      top: 0,
+      left: 0,
+      backgroundColor: '#00000077',
+      alignItems: 'center',
+      justifyContent: 'center'
   }
-
 })
