@@ -16,7 +16,7 @@ import { Divider } from 'react-native-elements';
 import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import ActionMenu from '../components/ActionMenu';
+import ActionMenu2 from '../components/ActionMenu2';
 
 
 
@@ -99,7 +99,7 @@ export default class categoriasScreen extends React.Component {
     _goScreen = (params) => {
       if (this.state.itemChecked == null )
             this.props.navigation.navigate('Comercios', { 
-            params : params
+              params : params
             });
     }
 
@@ -122,8 +122,11 @@ export default class categoriasScreen extends React.Component {
       }
     }
 
-    _accionMenuPress = () => {
-      alert('Pressed!!')
+    _accionMenuPress = (data) => {
+      this.props.navigation.navigate('HandleBoard', {
+        action: data,
+        id: this.state.itemChecked,
+      }); 
     }
 
   render() {
@@ -162,7 +165,8 @@ export default class categoriasScreen extends React.Component {
                 // fixed
                 spacing={5}
                 renderItem={({ item, index }) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
+                      activeOpacity={0.7}
                       onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
                       delayLongPress={1300}
                       onLongPress={() => { this._seleccionaItem({index: index}) }}
@@ -199,8 +203,8 @@ export default class categoriasScreen extends React.Component {
               </View>
             ) : null
         )}
-        <ActionMenu 
-          onPress={this._accionMenuPress}
+        <ActionMenu2 
+          callbackFromParent={this._accionMenuPress}
           estosBotonesActivos={this.state.estosBotonesActivos}
         />
         </View>

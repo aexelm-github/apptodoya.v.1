@@ -23,7 +23,7 @@ export default class ActionMenu extends React.Component {
                 {
                     boton.add ? (
                         <TouchableOpacity activeOpacity={0.7}
-                            onPress={this.props.onPress}
+                            onPress={() => {this.props.callbackFromParent('add') }}
                         >
                             <View style={[styles.actionIcon,{backgroundColor: '#f39c12'}]} elevation={15}>
                                 <Ionicons name='ios-add' size={25} color="#ffffff" />
@@ -34,7 +34,8 @@ export default class ActionMenu extends React.Component {
                 {
                     boton.delete ? (
                         <TouchableOpacity activeOpacity={0.7}
-                            onPress={this.onPress}>
+                            onPress={() => {this.props.callbackFromParent('delete') }}
+                        >
                         <View style={[styles.actionIcon,{backgroundColor: '#e74c3c'}]} elevation={15}>
                             <Ionicons name='ios-trash' size={25} color="#ffffff" />
                         </View>
@@ -43,7 +44,9 @@ export default class ActionMenu extends React.Component {
                 }
                 {
                     boton.edit ? (
-                        <TouchableOpacity activeOpacity={0.7}>
+                        <TouchableOpacity activeOpacity={0.7}
+                            onPress={() => {this.props.callbackFromParent('edit') }}   
+                        >
                             <View style={[styles.actionIcon,{backgroundColor: '#27ae60'}]} elevation={15}>
                                 <Entypo name='edit' size={25} color="#ffffff" />
                             </View>

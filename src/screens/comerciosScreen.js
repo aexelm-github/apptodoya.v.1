@@ -13,7 +13,7 @@ import * as Font from 'expo-font'
 import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
 import { Divider } from 'react-native-elements';
-import ActionMenu from '../components/ActionMenu';
+import ActionMenu2 from '../components/ActionMenu2';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -110,6 +110,10 @@ export default class comerciosScreen extends React.Component {
 
     }
 
+    _accionMenuPress = (data) => {
+        alert('Pressed!! '+ data)
+      }
+
   render() {
     const params = this.props.navigation.getParam('params','');
     console.log(params.id);
@@ -142,6 +146,7 @@ export default class comerciosScreen extends React.Component {
                     onPress={() => {this._goScreen(item.name)}}
                     delayLongPress={1300}
                     onLongPress={() => { this._seleccionaItem({index: index}) }}
+                    activeOpacity={0.7}
                   >
                     <View style={localStyles.categoria} elevation={0}>
                     <Text style={localStyles.name}>{item.name}</Text>
@@ -177,7 +182,8 @@ export default class comerciosScreen extends React.Component {
               </View>
             ) : null
         )}
-        <ActionMenu 
+        <ActionMenu2
+          callbackFromParent={this._accionMenuPress}
           estosBotonesActivos={this.state.estosBotonesActivos}
         />
         </View>

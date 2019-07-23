@@ -21,7 +21,7 @@ export default class handleBoardScreen extends React.Component {
       <View style={styles.container}>
         <View>
             <View  style={styles.logoContainer}>
-                <Text>Screen handle Boards</Text>               
+                <Text>Screen handle Boards {this.props.navigation.getParam('action')}  {this.props.navigation.getParam('id')}</Text>               
             </View>
             <ProgressBarAndroid styleAttr="Horizontal" color="#2196F3" />
         </View>
