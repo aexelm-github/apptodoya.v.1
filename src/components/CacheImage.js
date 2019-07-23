@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image } from 'react-native';
 import shorthash from 'shorthash';
-import { FileSystem } from 'expo';
+import * as FileSystem from 'expo-file-system'
 
 export default class CacheImage extends React.Component {
   state = {
