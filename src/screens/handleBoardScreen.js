@@ -1,26 +1,79 @@
 import * as React from 'react';
-import { Button, Image, View, StyleSheet,TouchableOpacity } from 'react-native';
+import { Button, Image, View, TextInput, StyleSheet,TouchableOpacity, TouchableHighlight} from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import CacheImage from '../components/CacheImage';
+
 
 export default class ImagePickerExample extends React.Component {
-  state = {
-    image: null,
+  constructor(props) {
+    super(props);
+    this.state = {
+      image: null,
+      name: null,
+      detalle: null
+    };
+  }
+
+  static navigationOptions = ({ navigation }) => {
+    return {
+      headerTitle: navigation.getParam('params').action,
+      headerRight: (
+        <View style={{marginRight: 8, flexDirection:'row'}}>
+          <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
+            onPress={() => {alert('ok')}}
+            style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
+          >
+              <Ionicons name='ios-checkmark' color='#3498db' size={36} />
+          </TouchableHighlight>
+        </View>
+      ),
+    };
   };
+
+  async componentWillMount(){
+    const params = this.props.navigation.getParam('params');
+    if (params.action !== 'Nuevo')
+      this.setState({'name':params.data.name, 'detalle':params.data.detalle});
+  }
 
   render() {
     let { image } = this.state;
-
+    const params = this.props.navigation.getParam('params');
     return (
       <View style={localStyles.container}>
         <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
         >
+            {
+              params.action!='Nuevo' ? (
+              <CacheImage
+                style={localStyles.image}
+                uri= {'http://todoya2.aexelm.com/images/'+params.data.foto}
+              />
+              ) : null
+            }           
             {image &&
               <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
-            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={40} color='#fff' />
+            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
         </TouchableOpacity>
+        <TextInput 
+          style={localStyles.inputText}
+          placeholder='Nombre'
+          onChangeText={(name) => this.setState({name})}
+          value={this.state.name}
+          maxLength={20}
+        />
+        <TextInput 
+          style={localStyles.inputText}
+          placeholder='Detalle'
+          multiline={true}
+          numberOfLines={2}
+          onChangeText={(detalle) => this.setState({detalle})}
+          value={this.state.detalle}
+          maxLength={50}
+        />
       </View>
     );
   }
@@ -97,5 +150,16 @@ const localStyles = StyleSheet.create({
   },
   iconCamera : {
     
+  },
+  image: { position: 'absolute', top:0, left:0, width: '100%', height: '100%' },
+  inputText : {
+    width:'100%', 
+    padding: 10,
+    paddingLeft: 20, 
+    color:'#3498db',
+    fontSize: 16, 
+    backgroundColor:'#eee',
+    marginTop: 4,
+
   }
 })

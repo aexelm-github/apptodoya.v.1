@@ -81,10 +81,9 @@ export default class categoriasScreen extends React.Component {
             }else{
               categorias = responseJson;
               this.setState({ categoriasLoaded: true });  
+              console.log(categorias);
             }
       });                
-
-          
     }
 
     _removeData = async (key) => {
@@ -119,13 +118,22 @@ export default class categoriasScreen extends React.Component {
             add: false, edit: true, delete: true
           }
         }))
+        console.log(categorias[this.state.itemChecked].foto);
       }
     }
 
     _accionMenuPress = (data) => {
+      switch(data){
+        case 'add': data='Nuevo';break;
+        case 'edit': data='Editar';break;
+        case 'delete': data='borrar';break;
+      }
       this.props.navigation.navigate('HandleBoard', {
-        action: data,
-        id: this.state.itemChecked,
+        params : {
+          action: data,
+          id: this.state.itemChecked,
+          data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
+        }
       }); 
     }
 
