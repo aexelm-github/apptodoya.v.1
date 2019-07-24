@@ -7,23 +7,25 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 
 
-export default class ImagePickerExample extends React.Component {
+export default class ImagePickerX extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       image: null,
       name: null,
-      detalle: null
+      detalle: null,
+      fileName: null,
+      URImanipulatedFile: null,
     };
   }
 
-  static navigationOptions = ({ navigation }) => {
+  navigationOptions = ({ navigation }) => {
     return {
       headerTitle: navigation.getParam('params').action,
       headerRight: (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-            onPress={() => {alert('ok')}}
+            onPress={() => {ImagePickerX._saveDatos()}}
             style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
           >
               <Ionicons name='ios-checkmark' color='#3498db' size={36} />
@@ -37,6 +39,10 @@ export default class ImagePickerExample extends React.Component {
     const params = this.props.navigation.getParam('params');
     if (params.action !== 'Nuevo')
       this.setState({'name':params.data.name, 'detalle':params.data.detalle});
+  }
+
+  _saveDatos =  () => {
+    alert('ok'+ ImagePickerX.state);
   }
 
   render() {
@@ -107,8 +113,9 @@ export default class ImagePickerExample extends React.Component {
         [ { resize : { widht: 480, height: 270 } } ],
         [ {compress : 1 }] 
       );
-      console.log(manipResult);
-      await this.upLoadImage(manipResult.uri);
+      this.setState({'URImanipulatedFile': manipResult.uri});
+      //console.log(manipResult);
+      //await this.upLoadImage(manipResult.uri);
     }
   };
 
@@ -126,17 +133,17 @@ export default class ImagePickerExample extends React.Component {
       }).then(response => response.json())
         .then(response => { 
           if (response.status) {
-            console.log('imagen cargada!!')
+            //console.log(response.fileName + ' imagen cargada!!');
+            this.setState({'fileName' : response.fileName})
           }else{
-            console.log(response);
+            //console.log(response);
             alert( response.message);
           }
         }).catch((error) => {
-            console.error('paso algo' + error);
+            console.error('Ojo!! Ocurrió un error al subir la imagen. ' + error);
         });
     }
-
-  
+ 
 }
 
 const localStyles = StyleSheet.create({
