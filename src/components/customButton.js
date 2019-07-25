@@ -7,7 +7,10 @@ const customButton = (props) => {
     const {title = 'Enter', style={}, textStyle={}, onPress } = props;
 
     return (
-        <TouchableOpacity onPress={onPress} style={[styles.button, style]}>
+        <TouchableOpacity 
+                onPress={onPress} style={[styles.button, style]}
+                activeOpacity={0.7}
+        >
                 <AntDesign name='check' style={{fontSize: 40, color: '#fff'}}></AntDesign>
                 <Text style={[styles.text, textStyle]}>{props.title}</Text>
         </TouchableOpacity>

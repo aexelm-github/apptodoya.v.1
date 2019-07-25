@@ -69,14 +69,14 @@ export default StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0,0.3)"
    },
    buttonViewLogin: {
-    height: 70,
+    height: 50,
     borderRadius: 0, 
     borderColor: 'white', 
     borderWidth: 0, 
     minWidth: screenWidth, /* - (screenWidth*0.2),*/
     padding: 20,
     marginBottom: 5,
-    fontSize: 18,
+    fontSize: 16,
     textAlign: "center",
     backgroundColor: "#2ecc71",
     color: "#fff"

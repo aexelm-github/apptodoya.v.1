@@ -6,6 +6,7 @@ import { Dimensions,
          ProgressBarAndroid,
          StyleSheet,
          ScrollView,
+         TouchableHighlight
         } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import styles from '../styles/stylesOne';
@@ -74,7 +75,12 @@ export default class comerciosScreen extends React.Component {
           },
           headerRight: (
             <View style={{marginRight: 12, flexDirection:'row'}}>
-              <Ionicons name='md-menu' color='#3498db' size={36} />
+              <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
+                onPress={() => {}}
+                style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
+              >
+                  <Ionicons name='ios-menu' color='#3498db' size={36} />
+              </TouchableHighlight>
             </View>
           ),
           headerBackTitleStyle: {
@@ -144,7 +150,7 @@ export default class comerciosScreen extends React.Component {
                 renderItem={({ item, index }) => (
                   <TouchableOpacity 
                     onPress={() => {this._goScreen(item.name)}}
-                    delayLongPress={1300}
+                    delayLongPress={1000}
                     onLongPress={() => { this._seleccionaItem({index: index}) }}
                     activeOpacity={0.7}
                   >

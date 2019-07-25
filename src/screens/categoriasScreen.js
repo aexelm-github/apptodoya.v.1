@@ -7,6 +7,7 @@ import { Dimensions,
          StyleSheet,
          Image,
          ProgressBarAndroid,
+         TouchableHighlight,
          StatusBar,
         } from 'react-native';
 import styles from '../styles/stylesOne';
@@ -53,7 +54,12 @@ export default class categoriasScreen extends React.Component {
         ),
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
-            <Ionicons name='md-menu' color='#3498db' size={36} />
+              <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
+                onPress={() => {}}
+                style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
+              >
+                  <Ionicons name='ios-menu' color='#3498db' size={36} />
+              </TouchableHighlight>
           </View>
         ),
       };
@@ -75,9 +81,8 @@ export default class categoriasScreen extends React.Component {
         })
         .then( (response) => response.json() )
         .then( (responseJson) => {
-            console.log("entro por aca");
             if (responseJson.length == 0){
-              alert("¡¡Oops!!. El email o el password son incorrectos.");
+              alert("¡¡Oops!!. No se pudo traer l información.");
             }else{
               categorias = responseJson;
               this.setState({ categoriasLoaded: true });  
@@ -176,7 +181,7 @@ export default class categoriasScreen extends React.Component {
                   <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
-                      delayLongPress={1300}
+                      delayLongPress={1000}
                       onLongPress={() => { this._seleccionaItem({index: index}) }}
                   >
                     <View style={localStyles.categoria}>

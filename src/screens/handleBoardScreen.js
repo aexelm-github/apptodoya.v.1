@@ -1,11 +1,23 @@
 import * as React from 'react';
-import { Button, Image, View, TextInput, StyleSheet,TouchableOpacity, TouchableHighlight} from 'react-native';
+import { 
+        Image, 
+        View, 
+        TextInput,
+        StyleSheet,
+        TouchableOpacity, 
+        TouchableHighlight,
+        ScrollView,
+        KeyboardAvoidingView ,
+      } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
+import CustomButton from '../components/customButton';
+import styles from '../styles/stylesOne';
 
+let params = null;
 
 export default class ImagePickerX extends React.Component {
   constructor(props) {
@@ -16,19 +28,20 @@ export default class ImagePickerX extends React.Component {
       detalle: null,
       fileName: null,
       URImanipulatedFile: null,
+      id: null,
     };
   }
 
-  navigationOptions = ({ navigation }) => {
+  static navigationOptions = ({ navigation }) => {
     return {
       headerTitle: navigation.getParam('params').action,
       headerRight: (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-            onPress={() => {ImagePickerX._saveDatos()}}
+            onPress={() => {}}
             style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
           >
-              <Ionicons name='ios-checkmark' color='#3498db' size={36} />
+              <Ionicons name='ios-menu' color='#3498db' size={36} />
           </TouchableHighlight>
         </View>
       ),
@@ -36,56 +49,19 @@ export default class ImagePickerX extends React.Component {
   };
 
   async componentWillMount(){
-    const params = this.props.navigation.getParam('params');
-    if (params.action !== 'Nuevo')
-      this.setState({'name':params.data.name, 'detalle':params.data.detalle});
   }
 
-  _saveDatos =  () => {
-    alert('ok'+ ImagePickerX.state);
-  }
-
-  render() {
-    let { image } = this.state;
-    const params = this.props.navigation.getParam('params');
-    return (
-      <View style={localStyles.container}>
-        <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
-        >
-            {
-              params.action!='Nuevo' ? (
-              <CacheImage
-                style={localStyles.image}
-                uri= {'http://todoya2.aexelm.com/images/'+params.data.foto}
-              />
-              ) : null
-            }           
-            {image &&
-              <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
-            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
-        </TouchableOpacity>
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='Nombre'
-          onChangeText={(name) => this.setState({name})}
-          value={this.state.name}
-          maxLength={20}
-        />
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='Detalle'
-          multiline={true}
-          numberOfLines={2}
-          onChangeText={(detalle) => this.setState({detalle})}
-          value={this.state.detalle}
-          maxLength={50}
-        />
-      </View>
-    );
-  }
-
-  componentDidMount() {
+  async componentDidMount() {
     this.getPermissionAsync();
+    params = this.props.navigation.getParam('params');
+    if (params.action != 'Nuevo') {
+      //this.setState({'name':params.data.name, 'detalle':params.data.detalle,  'action':params.action});
+      this.setState((previousState) => (
+         {...previousState,  'name':params.data.name, 'detalle':params.data.detalle }
+      ))      
+    }
+    
+      console.log("ZXXXXZZ>>>>>>>>>>"+params.action );
   }
 
   getPermissionAsync = async () => {
@@ -119,8 +95,6 @@ export default class ImagePickerX extends React.Component {
     }
   };
 
-
-
   upLoadImage = async (image_uri) => {
     let base_url = 'http://todoya2.aexelm.com/index.php/Upload_img';
     let uploadData = new FormData();
@@ -143,6 +117,99 @@ export default class ImagePickerX extends React.Component {
             console.error('Ojo!! Ocurrió un error al subir la imagen. ' + error);
         });
     }
+
+  _saveDatos = async () => {
+    if ((this.state.name == null)&&(this.state.detalle == null)) {
+      alert('Todos lo campo deben ser dilgenciados.','');
+    }else{
+      if (this.state.image != null) {
+        await this.upLoadImage(this.state.URImanipulatedFile);
+        console.log(this.state)
+        if (this.state.fileName != null) {
+          // Buscar en servidor de BBDD 
+          let formdata = new FormData();
+          formdata.append('id',params.id);
+          formdata.append('name',this.state.name);
+          formdata.append('detalle',this.state.detalle);
+          formdata.append('filename',this.state.fileName);
+          formdata.append('action',params.action);
+
+          await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
+              method: "POST",
+              body: formdata,
+            })
+            .then( (response) => response.json() )
+            .then( (responseJson) => {
+                if (responseJson.length == 0){
+                  alert("¡¡Oops!!. Problemas para guardar la información.");
+                }else{
+                  alert(responseJson.message);
+                  console.log(responseJson);
+                  //categorias = responseJson;
+                  //this.setState({ categoriasLoaded: true });  
+                }
+          });                
+        }
+      }else{
+        alert('Es necesario escoger una imagen para cargar!!');
+      }
+      console.log(this.state.image);
+    }
+
+  }
+
+  render() {
+    let { image } = this.state;
+    const params = this.props.navigation.getParam('params');
+    return (
+      <KeyboardAvoidingView
+        style={{flex: 1, height: '100%'}}
+        behavior='padding'
+      >
+      <View style={localStyles.container}>
+      <ScrollView style={{flex:1, width:'100%', marginBottom: 70}}> 
+        <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
+        >
+            {
+              params.action!='Nuevo' ? (
+              <CacheImage
+                style={localStyles.image}
+                uri= {'http://todoya2.aexelm.com/images/'+params.data.foto}
+              />
+              ) : null
+            }           
+            {image &&
+              <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
+            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
+        </TouchableOpacity>
+        <TextInput 
+          style={[localStyles.inputText,{fontWeight: '600'}]}
+          placeholder='Nombre'
+          onChangeText={(name) => this.setState({name})}
+          value={this.state.name}
+          maxLength={20}
+        />
+        <TextInput 
+          style={localStyles.inputText}
+          placeholder='Detalle'
+          multiline={true}
+          numberOfLines={2}
+          onChangeText={(detalle) => this.setState({detalle})}
+          value={this.state.detalle}
+          maxLength={50}
+        />
+      </ScrollView>
+      <CustomButton 
+                    title={"Grabar"}
+                    style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0}]}
+                    onPress={this._saveDatos}
+                />
+      </View>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  
  
 }
 
