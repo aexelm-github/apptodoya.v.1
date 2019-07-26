@@ -9,6 +9,7 @@ import { Dimensions,
          ProgressBarAndroid,
          TouchableHighlight,
          StatusBar,
+         Button,
         } from 'react-native';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
@@ -72,6 +73,11 @@ export default class categoriasScreen extends React.Component {
       this.setState({ fontLoaded: true });  
 
       // Buscar en servidor de BBDD 
+      this._getBoard();
+             
+    }
+
+    _getBoard = async () => {
       let formdata = new FormData();
       formdata.append('parent',0);
 
@@ -82,13 +88,14 @@ export default class categoriasScreen extends React.Component {
         .then( (response) => response.json() )
         .then( (responseJson) => {
             if (responseJson.length == 0){
-              alert("¡¡Oops!!. No se pudo traer l información.");
+              alert("¡¡Oops!!. No se pudo traer la información.");
             }else{
               categorias = responseJson;
-              this.setState({ categoriasLoaded: true });  
+              this.setState({ categoriasLoaded: true, itemChecked: null });  
+              this._seleccionaItem({index: null, id: null }) 
               console.log(categorias);
             }
-      });                
+      });   
     }
 
     _removeData = async (key) => {
@@ -134,6 +141,7 @@ export default class categoriasScreen extends React.Component {
         case 'delete': data='borrar';break;
       }
       this.props.navigation.navigate('HandleBoard', {
+        onGoBack : this._getBoard,
         params : {
           action: data,
           id: this.state.itemChecked,
@@ -182,7 +190,7 @@ export default class categoriasScreen extends React.Component {
                       activeOpacity={0.7}
                       onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
                       delayLongPress={1000}
-                      onLongPress={() => { this._seleccionaItem({index: index}) }}
+                      onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
                   >
                     <View style={localStyles.categoria}>
                       <CacheImage
@@ -190,7 +198,7 @@ export default class categoriasScreen extends React.Component {
                         uri= {'http://todoya2.aexelm.com/images/'+item.foto}
                       />                    
                       <Text style={localStyles.name}>{item.name}</Text>
-                      <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
+                      <Text style={localStyles.simpleDetalle}>{item.detalle}({item.cboa_id })[{item.foto}]</Text>
                       
                     </View>
                     {
@@ -203,7 +211,9 @@ export default class categoriasScreen extends React.Component {
                   </TouchableOpacity>
                 )}
               />
-                
+              <Button title='Refrescar'
+                    onPress={() => {this._getBoard() }  }
+              />
             </ScrollView>  
           </View>
         ) : (

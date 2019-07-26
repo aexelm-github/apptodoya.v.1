@@ -135,6 +135,7 @@ export default class loginScreen extends React.Component {
                     title={""} 
                     onPress={this.btnLogin}
                     style={{marginBottom: 30}}
+                    Icon={'check'}
                 />
                 <TouchableOpacity>
                     {

@@ -17,6 +17,7 @@ import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
 
+
 let params = null;
 
 export default class ImagePickerX extends React.Component {
@@ -118,6 +119,48 @@ export default class ImagePickerX extends React.Component {
         });
     }
 
+  _accionButtons = () => {
+    switch(params.action){
+      case "Nuevo": this._saveDatos();
+        break;
+      case "borrar": this._deleteDatos();
+        break;
+    }
+  }
+
+  _onGoBack = () => {
+    this.props.navigation.goBack();
+    this.props.navigation.state.params.onGoBack();
+  }
+
+  _deleteDatos = async () => {
+    let formdata = new FormData();
+    formdata.append('id',params.data.cboa_id);
+    formdata.append('name',this.state.name);
+    formdata.append('detalle',this.state.detalle);
+    formdata.append('filename',this.state.fileName);
+    formdata.append('action',params.action);
+
+    await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
+        method: "POST",
+        body: formdata,
+      })
+      .then( (response) => response.json() )
+      .then( (responseJson) => {
+          if (responseJson.length == 0){
+            alert("¡¡Oops!!. Problemas para tratar la información.");
+          }else{
+            alert(responseJson[0].message);
+            console.log(responseJson);
+            //categorias = responseJson;
+            //this.setState({ categoriasLoaded: true });  
+            if (responseJson[0].success == 'ok'){
+              this._onGoBack();
+            }
+          }
+    });         
+  }
+
   _saveDatos = async () => {
     if ((this.state.name == null)&&(this.state.detalle == null)) {
       alert('Todos lo campo deben ser dilgenciados.','');
@@ -143,10 +186,13 @@ export default class ImagePickerX extends React.Component {
                 if (responseJson.length == 0){
                   alert("¡¡Oops!!. Problemas para guardar la información.");
                 }else{
-                  alert(responseJson.message);
+                  alert(responseJson[0].message);
                   console.log(responseJson);
                   //categorias = responseJson;
                   //this.setState({ categoriasLoaded: true });  
+                  if (responseJson[0].success == 'ok'){
+                    this._onGoBack();
+                  }                  
                 }
           });                
         }
@@ -183,7 +229,7 @@ export default class ImagePickerX extends React.Component {
             <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
         </TouchableOpacity>
         <TextInput 
-          style={[localStyles.inputText,{fontWeight: '600'}]}
+          style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
           placeholder='Nombre'
           onChangeText={(name) => this.setState({name})}
           value={this.state.name}
@@ -202,7 +248,7 @@ export default class ImagePickerX extends React.Component {
       <CustomButton 
                     title={"Grabar"}
                     style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0}]}
-                    onPress={this._saveDatos}
+                    onPress={this._accionButtons}
                 />
       </View>
       </KeyboardAvoidingView>
