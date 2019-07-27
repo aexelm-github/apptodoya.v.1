@@ -6,7 +6,8 @@ import { Dimensions,
          ProgressBarAndroid,
          StyleSheet,
          ScrollView,
-         TouchableHighlight
+         TouchableHighlight,
+         Button
         } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import styles from '../styles/stylesOne';
@@ -23,102 +24,140 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 let categorias ;
 
 export default class comerciosScreen extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            fontLoaded: false, 
-            categoriasLoaded: false,
-            itemChecked: null,
-            estosBotonesActivos: {"add": true,"delete":false, "edit": false},
-        };        
-    }
+  constructor(props) {
+      super(props);
+      this.state = {
+          fontLoaded: false, 
+          categoriasLoaded: false,
+          itemChecked: null,
+          estosBotonesActivos: {"add": true,"delete":false, "edit": false},
+      };        
+  }
     
-    onPress = () => {
-        alert("exel");
-    }
+  onPress = () => {
+      alert("exel");
+  }
 
-    _goScreen = (params) => {
-        if (this.state.itemChecked == null )
-            this.props.navigation.navigate('Carta', { 
-            params : params
-            });
-      }
+  _goScreen = (params) => {
+      if (this.state.itemChecked == null )
+          this.props.navigation.navigate('Carta', { 
+          params : params
+          });
+  }
 
-      _seleccionaItem = (params) => {
-        this.state.itemChecked == params.index ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.index}) ;
-        if (this.state.itemChecked == null ){
-          this.setState((previousState) => ({
-            estosBotonesActivos: {
-              ...previousState.estosBotonesActivos,
-              add: true, edit: false, delete: false
-            }
-          }))
-        }else{
-          this.setState((previousState) => ({
-            estosBotonesActivos: {
-              ...previousState.estosBotonesActivos,
-              add: false, edit: true, delete: true
-            }
-          }))
+  _seleccionaItem = (params) => {
+    this.state.itemChecked == params.index ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.index}) ;
+    if (this.state.itemChecked == null ){
+      this.setState((previousState) => ({
+        estosBotonesActivos: {
+          ...previousState.estosBotonesActivos,
+          add: true, edit: false, delete: false
         }
-      }
-
-    static navigationOptions = ({ navigation }) => {
-        return {
-          headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
-                                           TodoYa
-                                </Text>},
-          headerStyle: {
-            backgroundColor: '#fff',
-            textAlign: 'center',
-            elevation: 0,
-          },
-          headerRight: (
-            <View style={{marginRight: 12, flexDirection:'row'}}>
-              <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-                onPress={() => {}}
-                style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
-              >
-                  <Ionicons name='ios-menu' color='#3498db' size={36} />
-              </TouchableHighlight>
-            </View>
-          ),
-          headerBackTitleStyle: {
-            color: 'white',
-          },
-        };
-    };
-    
-    async componentDidMount() { 
-        await  Font.loadAsync({
-            'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
-        });
-        this.setState({ fontLoaded: true });  
-        console.log("EEEXEXEXEEX");
-        // Buscar en servidor de BBDD 
-        let formdata = new FormData();
-        formdata.append('parent',this.props.navigation.getParam('params','').id);
-    
-        await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
-            method: "POST",
-            body: formdata,
-            })
-            .then( (response) => response.json() )
-            .then( (responseJson) => {
-                console.log("entro por aca");
-                if (responseJson.length == 0){
-                alert("¡¡Oops!!. Categoría esá vacía.");
-                }else{
-                categorias = responseJson;
-                this.setState({ categoriasLoaded: true });  
-                }
-        });               
-
+      }))
+    }else{
+      this.setState((previousState) => ({
+        estosBotonesActivos: {
+          ...previousState.estosBotonesActivos,
+          add: false, edit: true, delete: true
+        }
+      }))
     }
+  }
 
-    _accionMenuPress = (data) => {
-        alert('Pressed!! '+ data)
+  static navigationOptions = ({ navigation }) => {
+      return {
+        headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
+                                          TodoYa
+                              </Text>},
+        headerStyle: {
+          backgroundColor: '#fff',
+          textAlign: 'center',
+          elevation: 0,
+        },
+        headerRight: (
+          <View style={{marginRight: 12, flexDirection:'row'}}>
+            <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
+              onPress={() => {}}
+              style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
+            >
+                <Ionicons name='ios-menu' color='#3498db' size={36} />
+            </TouchableHighlight>
+          </View>
+        ),
+        headerBackTitleStyle: {
+          color: 'white',
+        },
+      };
+  };
+    
+  async componentDidMount() { 
+      await  Font.loadAsync({
+          'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
+      });
+      this.setState({ fontLoaded: true });  
+      // Buscar en servidor de BBDD
+      this._getBoard();
+      /*let formdata = new FormData();
+      formdata.append('parent',this.props.navigation.getParam('params','').id);
+  
+      await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+          method: "POST",
+          body: formdata,
+          })
+          .then( (response) => response.json() )
+          .then( (responseJson) => {
+              console.log("entro por aca");
+              if (responseJson.length == 0){
+              alert("¡¡Oops!!. Categoría esá vacía.");
+              }else{
+              categorias = responseJson;
+              this.setState({ categoriasLoaded: true });  
+              }
+      });*/               
+
+  }
+
+  _getBoard = async () => {
+    let formdata = new FormData();
+    formdata.append('parent',this.props.navigation.getParam('params','').id);
+    await this.setState({categoriasLoaded:false});
+    await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+        method: "POST",
+        body: formdata,
+      })
+      .then( (response) => response.json() )
+      .then( (responseJson) => {
+          if (responseJson.length == 0){
+            alert("¡¡Oops!!. Parece que está vacío!!.");
+          }else{
+            categorias = responseJson;
+            this.setState({ categoriasLoaded: true, itemChecked: null });  
+            this._seleccionaItem({index: null, id: null }) 
+            console.log(categorias);
+          }
+    });   
+  }
+
+
+  _accionMenuPress = (data) => {
+    const params = this.props.navigation.getParam('params','');
+    console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.id);
+    switch(data){
+      case 'add': data='Nuevo';break;
+      case 'edit': data='Editar';break;
+      case 'delete': data='borrar';break;
+    }
+    this.props.navigation.navigate('HandleBoard', {
+      onGoBack : this._getBoard,
+      params : {
+        commingFrom: 'comerciosScreen',
+        parentId: params.id,
+        action: data,
+        id: this.state.itemChecked,
+        data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
       }
+    }); 
+  }
 
   render() {
     const params = this.props.navigation.getParam('params','');
@@ -179,6 +218,9 @@ export default class comerciosScreen extends React.Component {
                   </TouchableOpacity>
                 )}
               />
+              <Button title='Refrescar'
+                    onPress={() => {this._getBoard() }  }
+              />              
             </ScrollView>  
           </View>
         ) : (

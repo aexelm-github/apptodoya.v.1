@@ -29,6 +29,7 @@ export default class ImagePickerX extends React.Component {
       name: null,
       detalle: null,
       fileName: null,
+      fileNameBrand: null,
       URImanipulatedFile: null,
       id: null,
       waittingWhileSaving : false,
@@ -185,7 +186,6 @@ export default class ImagePickerX extends React.Component {
       if (this.state.image != null) {
         this.setState({waittingWhileSaving: true});
         await this.upLoadImage(this.state.URImanipulatedFile);
-        console.log('>>>>> OJO> >>>> ');
         console.log(this.state)
       }else{
         alert('Es necesario escoger una imagen para cargar!!');
@@ -197,14 +197,16 @@ export default class ImagePickerX extends React.Component {
 
   _sendDataToServer = async () => {
     if (this.state.fileName != null) {
-      
+      console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+params.parentId);
       // Buscar en servidor de BBDD 
       let formdata = new FormData();
-      formdata.append('id',params.data.cboa_id);
+      formdata.append('id',params.action == "Editar" ? params.data.cboa_id : null);
       formdata.append('name',this.state.name);
       formdata.append('detalle',this.state.detalle);
       formdata.append('filename',this.state.fileName);
+      formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('action',params.action);
+      formdata.append('parentId ',params.parentId);
 
       await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
           method: "POST",
@@ -239,7 +241,7 @@ export default class ImagePickerX extends React.Component {
       >
       {this.state.waittingWhileSaving ? (
         <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-          <ActivityIndicator  size={80} color="#0000ff" />
+          <ActivityIndicator  size={80} color={ColorBoton1}/>
         </View>        
         ) : null
       }
@@ -309,7 +311,7 @@ const localStyles = StyleSheet.create({
     paddingLeft: 20, 
     color:'#3498db',
     fontSize: 16, 
-    backgroundColor:'#eee',
+    backgroundColor:'#eeeeee',
     marginTop: 4,
 
   }

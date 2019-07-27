@@ -80,7 +80,7 @@ export default class categoriasScreen extends React.Component {
     _getBoard = async () => {
       let formdata = new FormData();
       formdata.append('parent',0);
-
+      await this.setState({categoriasLoaded:false});
       await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
           method: "POST",
           body: formdata,
@@ -143,6 +143,8 @@ export default class categoriasScreen extends React.Component {
       this.props.navigation.navigate('HandleBoard', {
         onGoBack : this._getBoard,
         params : {
+          commingFrom: 'categoriasScreen',
+          parentId: 0,
           action: data,
           id: this.state.itemChecked,
           data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
@@ -199,7 +201,6 @@ export default class categoriasScreen extends React.Component {
                       />                    
                       <Text style={localStyles.name}>{item.name}</Text>
                       <Text style={localStyles.simpleDetalle}>{item.detalle}({item.cboa_id })[{item.foto}]</Text>
-                      
                     </View>
                     {
                       this.state.itemChecked == index ? (
