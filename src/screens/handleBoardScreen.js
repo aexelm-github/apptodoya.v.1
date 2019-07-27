@@ -8,6 +8,7 @@ import {
         TouchableHighlight,
         ScrollView,
         KeyboardAvoidingView ,
+        ActivityIndicator,
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
@@ -30,6 +31,7 @@ export default class ImagePickerX extends React.Component {
       fileName: null,
       URImanipulatedFile: null,
       id: null,
+      waittingWhileSaving : false,
     };
   }
 
@@ -56,7 +58,6 @@ export default class ImagePickerX extends React.Component {
     this.getPermissionAsync();
     params = this.props.navigation.getParam('params');
     if (params.action != 'Nuevo') {
-      //this.setState({'name':params.data.name, 'detalle':params.data.detalle,  'action':params.action});
       this.setState((previousState) => (
          {...previousState,  'name':params.data.name, 'detalle':params.data.detalle }
       ))      
@@ -91,8 +92,6 @@ export default class ImagePickerX extends React.Component {
         [ {compress : 1 }] 
       );
       this.setState({'URImanipulatedFile': manipResult.uri});
-      //console.log(manipResult);
-      //await this.upLoadImage(manipResult.uri);
     }
   };
 
@@ -108,14 +107,15 @@ export default class ImagePickerX extends React.Component {
       }).then(response => response.json())
         .then(response => { 
           if (response.status) {
-            //console.log(response.fileName + ' imagen cargada!!');
-            this.setState({'fileName' : response.fileName})
+            this.setState({'fileName' : response.fileName});
+            this._sendDataToServer();
           }else{
-            //console.log(response);
             alert( response.message);
+            this.setState({waittingWhileSaving: false});
           }
         }).catch((error) => {
             console.error('Ojo!! Ocurrió un error al subir la imagen. ' + error);
+            this.setState({waittingWhileSaving: false});
         });
     }
 
@@ -125,8 +125,23 @@ export default class ImagePickerX extends React.Component {
         break;
       case "borrar": this._deleteDatos();
         break;
+      case "Editar": this._editarDatos();
+        break;
     }
   }
+
+  _editarDatos = async () => {
+    this.setState({waittingWhileSaving: true});
+    if(this.state.image != null) {
+      await this.upLoadImage(this.state.URImanipulatedFile);  
+    }else{
+      await this.setState({'fileName':params.data.foto}) ;
+      console.log(this.state.fileName+" <<<<<<<<<"+params.data.foto)
+      this._sendDataToServer();
+    }
+    console.log(this.state.image+' '+params.data.foto+" "+this.state.fileName);
+  }
+
 
   _onGoBack = () => {
     this.props.navigation.goBack();
@@ -140,7 +155,7 @@ export default class ImagePickerX extends React.Component {
     formdata.append('detalle',this.state.detalle);
     formdata.append('filename',this.state.fileName);
     formdata.append('action',params.action);
-
+    this.setState({waittingWhileSaving: true});
     await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
         method: "POST",
         body: formdata,
@@ -149,11 +164,13 @@ export default class ImagePickerX extends React.Component {
       .then( (responseJson) => {
           if (responseJson.length == 0){
             alert("¡¡Oops!!. Problemas para tratar la información.");
+            this.setState({waittingWhileSaving: false});
           }else{
             alert(responseJson[0].message);
             console.log(responseJson);
             //categorias = responseJson;
             //this.setState({ categoriasLoaded: true });  
+            this.setState({waittingWhileSaving: false});
             if (responseJson[0].success == 'ok'){
               this._onGoBack();
             }
@@ -166,36 +183,10 @@ export default class ImagePickerX extends React.Component {
       alert('Todos lo campo deben ser dilgenciados.','');
     }else{
       if (this.state.image != null) {
+        this.setState({waittingWhileSaving: true});
         await this.upLoadImage(this.state.URImanipulatedFile);
+        console.log('>>>>> OJO> >>>> ');
         console.log(this.state)
-        if (this.state.fileName != null) {
-          // Buscar en servidor de BBDD 
-          let formdata = new FormData();
-          formdata.append('id',params.id);
-          formdata.append('name',this.state.name);
-          formdata.append('detalle',this.state.detalle);
-          formdata.append('filename',this.state.fileName);
-          formdata.append('action',params.action);
-
-          await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
-              method: "POST",
-              body: formdata,
-            })
-            .then( (response) => response.json() )
-            .then( (responseJson) => {
-                if (responseJson.length == 0){
-                  alert("¡¡Oops!!. Problemas para guardar la información.");
-                }else{
-                  alert(responseJson[0].message);
-                  console.log(responseJson);
-                  //categorias = responseJson;
-                  //this.setState({ categoriasLoaded: true });  
-                  if (responseJson[0].success == 'ok'){
-                    this._onGoBack();
-                  }                  
-                }
-          });                
-        }
       }else{
         alert('Es necesario escoger una imagen para cargar!!');
       }
@@ -204,14 +195,54 @@ export default class ImagePickerX extends React.Component {
 
   }
 
+  _sendDataToServer = async () => {
+    if (this.state.fileName != null) {
+      
+      // Buscar en servidor de BBDD 
+      let formdata = new FormData();
+      formdata.append('id',params.data.cboa_id);
+      formdata.append('name',this.state.name);
+      formdata.append('detalle',this.state.detalle);
+      formdata.append('filename',this.state.fileName);
+      formdata.append('action',params.action);
+
+      await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
+          method: "POST",
+          body: formdata,
+        })
+        .then( (response) => response.json() )
+        .then( (responseJson) => {
+            if (responseJson.length == 0){
+              alert("¡¡Oops!!. Problemas para guardar la información.");
+            }else{
+              this.setState({waittingWhileSaving: false});
+              alert(responseJson[0].message);
+              console.log(responseJson);
+              if (responseJson[0].success == 'ok'){
+                this._onGoBack();
+              }                  
+            }
+      });                
+    }
+
+
+  }
+
   render() {
     let { image } = this.state;
     const params = this.props.navigation.getParam('params');
+    let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     return (
       <KeyboardAvoidingView
         style={{flex: 1, height: '100%'}}
         behavior='padding'
       >
+      {this.state.waittingWhileSaving ? (
+        <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
+          <ActivityIndicator  size={80} color="#0000ff" />
+        </View>        
+        ) : null
+      }
       <View style={localStyles.container}>
       <ScrollView style={{flex:1, width:'100%', marginBottom: 70}}> 
         <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
@@ -246,8 +277,8 @@ export default class ImagePickerX extends React.Component {
         />
       </ScrollView>
       <CustomButton 
-                    title={"Grabar"}
-                    style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0}]}
+                    title={params.action}
+                    style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
                     onPress={this._accionButtons}
                 />
       </View>
