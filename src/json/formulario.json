@@ -1,0 +1,65 @@
+[  
+    {  
+       "value":"N/A",
+       "slideNumber":0,
+       "texto":"Hola!!, Queremos ayudarte a registrarte en nuestra aplicación TodoYa!",
+       "btnNext":true,
+       "btnPrevious":false,
+       "textInput":false,
+       "placeholder":null
+    },
+    {  
+       "value":null,
+       "slideNumber":1,
+       "texto":"Escribe tu dirección de correo electrónico",
+       "btnNext":true,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"email"
+    },
+    {  
+       "value":null,
+       "slideNumber":2,
+       "texto":"¿Cuál es tu primer nombre?",
+       "btnNext":true,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"nombre"
+    },
+    {  
+       "value":null,
+       "slideNumber":3,
+       "texto":"¿Cuál es tu primer apellido?",
+       "btnNext":true,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"apellido"
+    },
+    {  
+       "value":null,
+       "slideNumber":4,
+       "texto":"Ya casi terminas. Regálanos un numero de teléfono para contactarte.",
+       "btnNext":true,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"teléfono"
+    },
+    {  
+       "value":null,
+       "slideNumber":5,
+       "texto":"Es necesario registrar al menos un dirección de envíos",
+       "btnNext":true,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"dirección"
+    },
+    {  
+       "value":null,
+       "slideNumber":6,
+       "texto":"Por último, digita un password",
+       "btnNext":false,
+       "btnPrevious":true,
+       "textInput":true,
+       "placeholder":"password"
+    }
+ ]

@@ -205,15 +205,15 @@ export default class ImagePickerX extends React.Component {
       formdata.append('detalle',this.state.detalle);
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
+      formdata.append('parentId',params.parentId);
       formdata.append('action',params.action);
-      formdata.append('parentId ',params.parentId);
-
+      console.log(formdata);
       await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
         })
-        .then( (response) => response.json() )
-        .then( (responseJson) => {
+        .then( (response) => response.json())
+        .then( (responseJson) => { 
             if (responseJson.length == 0){
               alert("¡¡Oops!!. Problemas para guardar la información.");
             }else{
@@ -224,6 +224,9 @@ export default class ImagePickerX extends React.Component {
                 this._onGoBack();
               }                  
             }
+      }).catch((e) => { 
+          this.setState({waittingWhileSaving: false});
+          alert(e)
       });                
     }
 
