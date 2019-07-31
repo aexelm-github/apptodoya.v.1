@@ -5,8 +5,10 @@
        "texto":"Hola!!, Queremos ayudarte a registrarte en nuestra aplicación TodoYa!",
        "btnNext":true,
        "btnPrevious":false,
-       "textInput":false,
-       "placeholder":null
+       "requiereInputText":false,
+       "placeholder":null,
+       "state" : "N/A",
+       "keyboardType": "N/A"
     },
     {  
        "value":null,
@@ -14,8 +16,10 @@
        "texto":"Escribe tu dirección de correo electrónico",
        "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"email"
+       "requiereInputText":true,
+       "placeholder":"email",
+       "state" : "email",
+       "keyboardType": "email-address"
     },
     {  
        "value":null,
@@ -23,8 +27,10 @@
        "texto":"¿Cuál es tu primer nombre?",
        "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"nombre"
+       "requiereInputText":true,
+       "placeholder":"nombre",
+       "state" : "nombre",
+       "keyboardType": "default"
     },
     {  
        "value":null,
@@ -32,8 +38,10 @@
        "texto":"¿Cuál es tu primer apellido?",
        "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"apellido"
+       "requiereInputText":true,
+       "placeholder":"apellido",
+       "state" : "apellido",
+       "keyboardType": "default"
     },
     {  
        "value":null,
@@ -41,8 +49,10 @@
        "texto":"Ya casi terminas. Regálanos un numero de teléfono para contactarte.",
        "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"teléfono"
+       "requiereInputText":true,
+       "placeholder":"teléfono",
+       "state" : "telefono",
+       "keyboardType": "phone-pad"
     },
     {  
        "value":null,
@@ -50,16 +60,20 @@
        "texto":"Es necesario registrar al menos un dirección de envíos",
        "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"dirección"
+       "requiereInputText":true,
+       "placeholder":"dirección",
+       "state" : "direccion",
+       "keyboardType": "default"
     },
     {  
        "value":null,
        "slideNumber":6,
        "texto":"Por último, digita un password",
-       "btnNext":false,
+       "btnNext":true,
        "btnPrevious":true,
-       "textInput":true,
-       "placeholder":"password"
+       "requiereInputText":true,
+       "placeholder":"password",
+       "state" : "password",
+       "keyboardType": "default"
     }
  ]

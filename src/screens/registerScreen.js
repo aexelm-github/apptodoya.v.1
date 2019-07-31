@@ -34,9 +34,10 @@ export default class registerScreen extends React.Component {
             apellido2: '',
             telefono1: '',
             telefono2: '',
-            slideThis: 0,
+            slideActual: 0,
             fontLoaded: false, 
             inputValue : null,
+            mostrarTodosLosDatos: null,
         };
     }
 
@@ -73,63 +74,138 @@ export default class registerScreen extends React.Component {
     }
 
     btnNext = () => {
-        console.log("["+this.state.inputValue+"]")
-        if (this.state.inputValue==null && formulario[this.state.slideThis].textInput) {
+        var slideActual = formulario[this.state.slideActual] 
+        if (slideActual.value==null && slideActual.requiereInputText) {
             alert('Oops! debes ingresar un valor')
             return;
         }
                
-        if (this.state.slideThis < formulario.length-1) {
-            formulario[this.state.slideThis].value = this.state.inputValue
-            console.log(formulario[this.state.slideThis])
-            this.setState({slideThis: this.state.slideThis +1})
-            this.setState({inputValue:formulario[this.state.slideThis].value })
+        if (this.state.slideActual < formulario.length-1) {
+            console.log(slideActual.value)
+            this.setState({slideActual: this.state.slideActual +1})
+        }else{
+            this.setState({mostrarTodosLosDatos: true})
         }
-
     }
 
     btnPrevious = () => {
-        this.setState({slideThis: this.state.slideThis -1})
+        this.setState({slideActual: this.state.slideActual -1, mostrarTodosLosDatos: false})
+        formulario[this.state.slideActual].value = null;
+        console.log(formulario[this.state.slideActual]);
     }    
 
-  render() {
-    const slideThis = formulario[this.state.slideThis];
-    return (
-        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 100}]}>
-            <Image style={localStyles.logoImage}
-            source={require('../images/TodoYa-03.png')}
-            />              
-            {this.state.fontLoaded ? (
-                <View style={styles.logoContainer}>
-                    <Text style={localStyles.introText}> 
-                        {slideThis.texto}
-                    </Text>  
-                    { slideThis.textInput ? (                             
-                    <TextInput 
-                        style={localStyles.textInputLogin}
-                        onChangeText={(inputValue) => this.setState({inputValue})}
-                        placeholder={slideThis.placeholder}
-                        value={slideThis.value}
-                    />  ) : null }
-                    <View style={localStyles.botonesContainer}>
-                    {slideThis.btnPrevious ?
+    setInputValue = async (value) => {
+         formulario[this.state.slideActual].value = value;
+    }
+
+    renderFormulario() {
+        const slideActual = formulario[this.state.slideActual];
+        let renderThis=<View></View>;
+        if (this.state.fontLoaded) {
+            renderThis = 
+            <View style={styles.logoContainer}>
+                <Text style={localStyles.introText}> 
+                    {slideActual.texto}
+                </Text>  
+                { slideActual.requiereInputText ? (                             
+                <TextInput 
+                    style={localStyles.textInputLogin}
+                    onChangeText={(value) => this.setInputValue(value)}
+                    placeholder={slideActual.placeholder}
+                    value={this.state.state}
+                    keyboardType={slideActual.keyboardType}
+                    autoCompleteType="off"
+                />  ) : null }
+                <View style={localStyles.botonesContainer}>
+                    {slideActual.btnPrevious ?
                     <CustomButton 
                         title={""} 
                         onPress={this.btnPrevious}
                         style={{marginBottom: 30, backgroundColor: '#e74c3c'}}
                         Icon={'arrowleft'}
                     /> : null}
-                    {slideThis.btnNext ?
+                    {slideActual.btnNext ?
                     <CustomButton 
                         title={""} 
                         onPress={this.btnNext}
                         style={{marginBottom: 30, backgroundColor: '#3498db'}}
                         Icon={'arrowright'}
                     /> : null}
-                    </View>                      
-                </View>
-            ) : null }                
+                </View>    
+            </View>   
+        } 
+        return renderThis
+    }
 
+    renderAllInfo(){
+        const slideActual = formulario[this.state.slideActual];
+        let renderThis=<View></View>;
+        let body=null;
+        if (this.state.fontLoaded) {
+            formulario.map((item)=> {
+                console.log('<Text style={{color:"#000"}}>'+item.value+'</Text>');
+                body = body + <Text style={{color:"#000"}}>o{item.value}</Text>
+            })           
+            console.log(body);
+            renderThis = 
+            <View style={styles.logoContainer}>
+                {body}
+            </View>
+        }
+        return renderThis
+    }
+
+    renderTest () {
+        
+        const slideActual = formulario[this.state.slideActual];
+        let renderThis=<View></View>;
+        if (this.state.fontLoaded) {
+            renderThis = <View style={{textAlign: 'left'}}>
+                <Text style={localStyles.showTitle}>{formulario[1].state}</Text>
+                <Text style={localStyles.showText}>{formulario[1].value}</Text>
+                <Text style={localStyles.showTitle}>{formulario[2].state}</Text>
+                <Text style={localStyles.showText}>{formulario[2].value}</Text>
+                <Text style={localStyles.showTitle}>{formulario[3].state}</Text>
+                <Text style={localStyles.showText}>{formulario[3].value}</Text>
+                <Text style={localStyles.showTitle}>{formulario[4].state}</Text>
+                <Text style={localStyles.showText}>{formulario[4].value}</Text>
+                <Text style={localStyles.showTitle}>{formulario[5].state}</Text>
+                <Text style={localStyles.showText}>{formulario[5].value}</Text>
+                <Text style={localStyles.showTitle}>{formulario[6].state}</Text>
+                <Text style={localStyles.showText}>{formulario[6].value}</Text>
+                <View style={localStyles.botonesContainer}>
+                    {slideActual.btnPrevious ?
+                    <CustomButton 
+                        title={""} 
+                        onPress={this.btnPrevious}
+                        style={{marginBottom: 30, backgroundColor: '#e74c3c'}}
+                        Icon={'arrowleft'}
+                    /> : null}
+                    {slideActual.btnNext ?
+                    <CustomButton 
+                        title={""} 
+                        onPress={this.btnNext}
+                        style={{marginBottom: 30}}
+                        Icon={'check'}
+                    /> : null}
+                </View>                    
+            </View>
+
+        }
+        return renderThis
+  
+    }
+
+  render() {
+    return (
+        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+            <Image style={localStyles.logoImage}
+            source={require('../images/TodoYa-03.png')}
+            />  
+            <ScrollView>
+                {this.state.mostrarTodosLosDatos ? this.renderTest() : this.renderFormulario()}
+
+            </ScrollView>     
         </View>
     );
   }
@@ -153,6 +229,20 @@ const localStyles = StyleSheet.create ({
         fontSize: 22,
         padding: 20,
     },
+    showText :  {
+        color: '#3498db', 
+        fontFamily: 'RussoOne-Regular',
+        fontSize: 22,
+        padding: 20,
+        textAlign: 'left',
+    },
+    showTitle: {
+        color:'red', 
+        fontSize: 14,
+        fontFamily: 'RussoOne-Regular',
+        textTransform: 'capitalize',
+        paddingLeft: 20,
+    },
     logoImage: {
         width:  110,
         height : 110
@@ -175,5 +265,7 @@ const localStyles = StyleSheet.create ({
     botonesContainer: {
         flexDirection: 'row',
         marginTop: 30,
+        textAlign: 'center',
+        alignContent: 'center',
     }  
 })
