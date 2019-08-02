@@ -14,6 +14,8 @@ import {
 import { Dimensions } from "react-native";
 import * as Font from 'expo-font'
 import formulario from '../json/formulario.json'
+import { Divider } from 'react-native-elements';
+
 
 import styles from '../styles/stylesOne';
 import CustomButton from '../components/customButton';
@@ -38,6 +40,7 @@ export default class registerScreen extends React.Component {
             fontLoaded: false, 
             inputValue : null,
             mostrarTodosLosDatos: null,
+            waittingWhileSaving : false,
         };
     }
 
@@ -48,30 +51,38 @@ export default class registerScreen extends React.Component {
           await this.setState({ fontLoaded: true , slideNumber: 0});   
     }
     
-    btnLogin = async (params) => {
-        if ((this.state.email.trim().length =0) || (this.state.pass.trim().length == 0) ){
-            alert("Error. Los campos Email y Password no pueden estar vacíos!");
-        }else{
-            let formdata = new FormData();
-            formdata.append('email',this.state.email);
-            formdata.append('password',this.state.pass);
+    _sendDataToServer = async () => {
+          // Buscar en servidor de BBDD 
+          let formdata = new FormData();
+          formdata.append('email',formulario[1].value);
+          formdata.append('email',formulario[2].value);
+          formdata.append('email',formulario[3].value);
+          formdata.append('email',formulario[4].value);
+          formdata.append('email',formulario[5].value);
+          console.log(formdata);
+          this.setState({waittingWhileSaving: false});
 
-            fetch('http://todoya2.aexelm.com/', {
-                method: "POST",
-                body: formdata,
-              })
-              .then( (response) => response.json() )
-              .then( (responseJson) => {
+          await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveUsuario', {   
+              method: "POST",
+              body: formdata,
+            })
+            .then( (response) => response.json())
+            .then( (responseJson) => { 
+                if (responseJson.length == 0){
+                  alert("¡¡Oops!!. Problemas para guardar la información.");
+                }else{
+                  this.setState({waittingWhileSaving: false});
+                  alert(responseJson[0].message);
                   console.log(responseJson);
-                  console.log(responseJson.length);
-                  if (responseJson.length == 0){
-                    alert("¡¡Oops!!. El email o el password son incorrectos.");
-                  }else{
-                    
-                  }
-              });                
-        }
-    }
+                  if (responseJson[0].success == 'ok'){
+                    this._onGoBack();
+                  }                  
+                }
+          }).catch((e) => { 
+              this.setState({waittingWhileSaving: false});
+              alert(e)
+          });                
+    }    
 
     btnNext = () => {
         var slideActual = formulario[this.state.slideActual] 
@@ -89,7 +100,13 @@ export default class registerScreen extends React.Component {
     }
 
     btnPrevious = () => {
-        this.setState({slideActual: this.state.slideActual -1, mostrarTodosLosDatos: false})
+        this.setState({slideActual: this.state.slideActual -1, mostrarTodosLosDatos: false })
+        formulario[this.state.slideActual].value = null;
+        console.log(formulario[this.state.slideActual]);
+    }    
+
+    btnPreviousInfo = () => {
+        this.setState({slideActual: this.state.slideActual , mostrarTodosLosDatos: false })
         formulario[this.state.slideActual].value = null;
         console.log(formulario[this.state.slideActual]);
     }    
@@ -160,7 +177,7 @@ export default class registerScreen extends React.Component {
         const slideActual = formulario[this.state.slideActual];
         let renderThis=<View></View>;
         if (this.state.fontLoaded) {
-            renderThis = <View style={{textAlign: 'left'}}>
+            renderThis = <View style={{paddingTop: 30,textAlign: 'left'}}>
                 <Text style={localStyles.showTitle}>{formulario[1].state}</Text>
                 <Text style={localStyles.showText}>{formulario[1].value}</Text>
                 <Text style={localStyles.showTitle}>{formulario[2].state}</Text>
@@ -171,13 +188,11 @@ export default class registerScreen extends React.Component {
                 <Text style={localStyles.showText}>{formulario[4].value}</Text>
                 <Text style={localStyles.showTitle}>{formulario[5].state}</Text>
                 <Text style={localStyles.showText}>{formulario[5].value}</Text>
-                <Text style={localStyles.showTitle}>{formulario[6].state}</Text>
-                <Text style={localStyles.showText}>{formulario[6].value}</Text>
                 <View style={localStyles.botonesContainer}>
                     {slideActual.btnPrevious ?
                     <CustomButton 
                         title={""} 
-                        onPress={this.btnPrevious}
+                        onPress={this.btnPreviousInfo}
                         style={{marginBottom: 30, backgroundColor: '#e74c3c'}}
                         Icon={'arrowleft'}
                     /> : null}
@@ -199,12 +214,18 @@ export default class registerScreen extends React.Component {
   render() {
     return (
         <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+            {this.state.waittingWhileSaving ? (
+                <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
+                <ActivityIndicator  size={80} color={ColorBoton1}/>
+                </View>        
+                ) : null
+            }            
             <Image style={localStyles.logoImage}
             source={require('../images/TodoYa-03.png')}
             />  
+              <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
             <ScrollView>
                 {this.state.mostrarTodosLosDatos ? this.renderTest() : this.renderFormulario()}
-
             </ScrollView>     
         </View>
     );

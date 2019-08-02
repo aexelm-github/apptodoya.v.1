@@ -64,16 +64,5 @@
        "placeholder":"dirección",
        "state" : "direccion",
        "keyboardType": "default"
-    },
-    {  
-       "value":null,
-       "slideNumber":6,
-       "texto":"Por último, digita un password",
-       "btnNext":true,
-       "btnPrevious":true,
-       "requiereInputText":true,
-       "placeholder":"password",
-       "state" : "password",
-       "keyboardType": "default"
     }
  ]
