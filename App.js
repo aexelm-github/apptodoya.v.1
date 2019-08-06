@@ -17,6 +17,7 @@ import carritoScreen from './src/screens/carritoScreen'
 import handleBoardScreen from './src/screens/handleBoardScreen'  
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import confirmScreen from './src/screens/confirmScreen';
+import recuperaScreen from './src/screens/recuperaScreen';
 
   class App extends React.Component {
     render() {
@@ -34,6 +35,7 @@ import confirmScreen from './src/screens/confirmScreen';
       Login: loginScreen, 
       Register: registerScreen,
       Confirm: confirmScreen,
+      RecuperaPassword : recuperaScreen,
     },
     {
       headerMode: 'none',

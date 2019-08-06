@@ -87,14 +87,11 @@ export default class loginScreen extends React.Component {
     }
 
     btnRegister = (params) => {
-        console.log("RegisterScreen");
-        this.props.navigation.navigate('Register', {});
+      this.props.navigation.navigate('Register', {});
     }
 
     btnRecuperar = (params) => {
-        this._textInputEmail.setNativeProps({value: '', text: ''})
-        his._textInputEmail.style
-        this.setState({"email":''});
+      this.props.navigation.navigate('RecuperaPassword', {});
     }
 
   render() {
@@ -154,7 +151,7 @@ export default class loginScreen extends React.Component {
               
             </View>
         </View>
-        <Text style={styles.copyright}>TodoYa! Derechos Reservados 2019. (aexelm@gmail.com)</Text>
+        <Text style={styles.copyright}>Derechos Reservados 2019. (aexelm@gmail.com) Powered by TodoYa!</Text>
       </View>
       </ImageBackground>
     );

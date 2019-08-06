@@ -24,7 +24,7 @@ import CustomButton from '../components/customButton';
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
-export default class confirmScreen extends React.Component {
+export default class recuperaScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
