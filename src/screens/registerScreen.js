@@ -10,6 +10,7 @@ import {
         ImageBackground,
         StyleSheet,
         TextInput,
+        ActivityIndicator,
        } from 'react-native';
 import { Dimensions } from "react-native";
 import * as Font from 'expo-font'
@@ -55,12 +56,12 @@ export default class registerScreen extends React.Component {
           // Buscar en servidor de BBDD 
           let formdata = new FormData();
           formdata.append('email',formulario[1].value);
-          formdata.append('email',formulario[2].value);
-          formdata.append('email',formulario[3].value);
-          formdata.append('email',formulario[4].value);
-          formdata.append('email',formulario[5].value);
+          formdata.append('nombre',formulario[2].value);
+          formdata.append('apellido',formulario[3].value);
+          formdata.append('telefono',formulario[4].value);
+          formdata.append('direccion',formulario[5].value);
           console.log(formdata);
-          this.setState({waittingWhileSaving: false});
+          this.setState({waittingWhileSaving: true});
 
           await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveUsuario', {   
               method: "POST",
@@ -72,11 +73,16 @@ export default class registerScreen extends React.Component {
                   alert("¡¡Oops!!. Problemas para guardar la información.");
                 }else{
                   this.setState({waittingWhileSaving: false});
-                  alert(responseJson[0].message);
+                  
                   console.log(responseJson);
                   if (responseJson[0].success == 'ok'){
-                    this._onGoBack();
-                  }                  
+                    this.props.navigation.navigate('Confirm',{
+                        confirmCode : responseJson[0].confirmCode,
+                        email: formulario[1].value,
+                    });
+                  } else{
+                    alert(responseJson[0].message);
+                  }                 
                 }
           }).catch((e) => { 
               this.setState({waittingWhileSaving: false});
@@ -199,7 +205,7 @@ export default class registerScreen extends React.Component {
                     {slideActual.btnNext ?
                     <CustomButton 
                         title={""} 
-                        onPress={this.btnNext}
+                        onPress={this._sendDataToServer}
                         style={{marginBottom: 30}}
                         Icon={'check'}
                     /> : null}
@@ -216,7 +222,7 @@ export default class registerScreen extends React.Component {
         <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
             {this.state.waittingWhileSaving ? (
                 <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-                <ActivityIndicator  size={80} color={ColorBoton1}/>
+                <ActivityIndicator  size={80} color='#e74c3c'/>
                 </View>        
                 ) : null
             }            

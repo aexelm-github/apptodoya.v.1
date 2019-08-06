@@ -16,6 +16,7 @@ import comerciosScreen from './src/screens/comerciosScreen'
 import carritoScreen from './src/screens/carritoScreen'  
 import handleBoardScreen from './src/screens/handleBoardScreen'  
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import confirmScreen from './src/screens/confirmScreen';
 
   class App extends React.Component {
     render() {
@@ -31,7 +32,8 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
   const AppStackLogin = createStackNavigator(
     { 
       Login: loginScreen, 
-      Register: registerScreen 
+      Register: registerScreen,
+      Confirm: confirmScreen,
     },
     {
       headerMode: 'none',
