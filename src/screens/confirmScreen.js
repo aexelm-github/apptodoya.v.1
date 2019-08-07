@@ -7,7 +7,7 @@ import {
         TouchableOpacity, 
         ProgressBarAndroid ,
         ScrollView, 
-        ImageBackground,
+        Keyboard,
         StyleSheet,
         TextInput,
         ActivityIndicator,
@@ -35,6 +35,7 @@ export default class confirmScreen extends React.Component {
             mostrarTodosLosDatos: null,
             waittingWhileSaving : false,
             registerSuccessfull : false,
+            shrinkScreen: 0,
         };
     }
 
@@ -43,8 +44,37 @@ export default class confirmScreen extends React.Component {
             'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
           });
           await this.setState({ fontLoaded: true });   
+          this.keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            this._keyboardDidShow,
+          );
+          this.keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            this._keyboardDidHide,
+          );            
     }
     
+    componentWillUnmount() {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
+
+    _keyboardDidShow = (e) => {
+        keyboardParams = {
+            keyboardHeight: e.endCoordinates.height,
+            normalHeight: Dimensions.get('window').height, 
+            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
+        };         
+        console.log(keyboardParams);
+        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
+    }
+
+    _keyboardDidHide = () => {
+        console.log('Keyboard Hidden');
+        this.setState({shrinkScreen : 0 })
+
+    }
+
     _confirmCode = async () => {
         let error = false;
         if (this.state.password1 != this.state.password2) {
@@ -182,7 +212,7 @@ export default class confirmScreen extends React.Component {
 
   render() {
     return (
-        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50},{paddingBottom: this.state.shrinkScreen}]}>
             {this.state.waittingWhileSaving ? (
                 <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
                 <ActivityIndicator  size={80} color='#3498db'/>

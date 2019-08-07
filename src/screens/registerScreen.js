@@ -82,6 +82,16 @@ export default class registerScreen extends React.Component {
 
     }
 
+    validateEmail = (text) => {
+        console.log(text);
+        let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/ ;
+        if(reg.test(text) === false){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
     _sendDataToServer = async () => {
           // Buscar en servidor de BBDD 
           let formdata = new FormData();
@@ -122,6 +132,10 @@ export default class registerScreen extends React.Component {
 
     btnNext = () => {
         var slideActual = formulario[this.state.slideActual] 
+        if ((slideActual.state == 'email')&&(!this.validateEmail(slideActual.value))) {
+            alert('Oops!! Lo que has ingresado no parece ser una dirección de correo válida. Inténtalo de nuevo!!')
+            return;
+        }
         if (slideActual.value==null && slideActual.requiereInputText) {
             alert('Oops! debes ingresar un valor')
             return;
