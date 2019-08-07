@@ -118,6 +118,7 @@ export default class loginScreen extends React.Component {
                     autoCompleteType ={"email"}
                     textContentType={"emailAddress"}
                     ref={component => this._textInputEmail = component}
+                    keyboardType='email-address'
                 />
                 <TextInput 
                     style={styles.textInputLogin}

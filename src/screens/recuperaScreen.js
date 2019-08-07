@@ -7,12 +7,12 @@ import {
         TouchableOpacity, 
         ProgressBarAndroid ,
         ScrollView, 
-        ImageBackground,
+        Keyboard,
         StyleSheet,
         TextInput,
         ActivityIndicator,
+        Dimensions,
        } from 'react-native';
-import { Dimensions } from "react-native";
 import * as Font from 'expo-font'
 import formulario from '../json/formulario.json'
 import { Divider } from 'react-native-elements';
@@ -23,18 +23,17 @@ import CustomButton from '../components/customButton';
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
+let   keyboardParams = {}
 
 export default class recuperaScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
-            confirmCodeState : null,
-            password1: null,
-            password2: null,
+            email : null,
             fontLoaded: false, 
-            mostrarTodosLosDatos: null,
             waittingWhileSaving : false,
             registerSuccessfull : false,
+            shrinkScreen: 0,
         };
     }
 
@@ -43,32 +42,51 @@ export default class recuperaScreen extends React.Component {
             'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
           });
           await this.setState({ fontLoaded: true });   
+          this.keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            this._keyboardDidShow,
+          );
+          this.keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            this._keyboardDidHide,
+          );          
     }
     
-    _confirmCode = async () => {
+    componentWillUnmount() {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
+
+    _keyboardDidShow = (e) => {
+        keyboardParams = {
+            keyboardHeight: e.endCoordinates.height,
+            normalHeight: Dimensions.get('window').height, 
+            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
+        };         
+        console.log(keyboardParams);
+        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
+    }
+
+    _keyboardDidHide = () => {
+        console.log('Keyboard Hidden');
+        this.setState({shrinkScreen : 0 })
+
+    }
+
+    _recoveryPassword = async () => {
         let error = false;
-        if (this.state.password1 != this.state.password2) {
-            alert('Oops!! El valor de los passwords no coinciden.');
-            error = true;
-        }
-        if (this.state.password1 == "" || this.state.password2== "") {
-            alert('Oops!! Los passwords no pueden ser vacíos.');
-            error = true;
-        }
-        if (this.state.confirmCode == "") {
-            alert('Oops!! Por favor escribe el código de confirmación.');
+        if (this.state.email == "" ) {
+            alert('Oops!! El email no puede ser vacío.');
             error = true;
         }
         if (!error) {
-            const email = this.props.navigation.getParam('email');
+            const email = this.state.email ;
             let formdata = new FormData();
             formdata.append('email',email);
-            formdata.append('confirmCode',this.state.confirmCodeState);
-            formdata.append('password',this.state.password1);
             console.log(formdata);
             this.setState({waittingWhileSaving: true});
 
-            await fetch('http://todoya2.aexelm.com/index.php/maincontrol/confirmCode', {   
+            await fetch('http://todoya2.aexelm.com/index.php/maincontrol/recoveryPassword', {   
                 method: "POST",
                 body: formdata,
             })
@@ -99,44 +117,23 @@ export default class recuperaScreen extends React.Component {
             renderThis = 
             <View style={styles.logoContainer}>
                 <Text style={localStyles.introText}> 
-                    Enhorabuena! Solo basta un paso más para poder disfrutar de nuestros servicios.
-                    Introduce en siguiente código para continuar.
+                    Hola!! Entiendo que quieres recuperar tu contraseña. Te ayudaremos!!
                 </Text>  
-                <Text  style={[localStyles.introText,{color:'red'}]}> 
-                 {confirmCode}
+                <Text style={[localStyles.introText,{color:'#555', fontSize: 18}]}>   
+                    Danos tu email y te enviaremos un correo con tu clave
                 </Text>
                 <TextInput 
                     style={localStyles.textInputLogin}
-                    onChangeText={(confirmCodeState) => this.setState({confirmCodeState})}
-                    placeholder="Código de confirmación"
-                    value={this.state.confirmCodeState}
-                    keyboardType='numeric'
+                    onChangeText={(email) => this.setState({email})}
+                    placeholder="email"
+                    value={this.state.email}
+                    keyboardType='email-address'
                     autoCompleteType="off"
-                    maxLength={6}
-                />  
-                <Text style={[localStyles.introText,{color:'#555', fontSize: 18}]}>   Elige una clave secreta de maximo 8 caracteres</Text>
-                <TextInput 
-                    style={localStyles.textInputLogin}
-                    onChangeText={(password1) => this.setState({password1})}
-                    placeholder="Password"
-                    value={this.state.password1}
-                    keyboardType='default'
-                    autoCompleteType="off"
-                    maxLength={8}
-                />  
-                <TextInput 
-                    style={localStyles.textInputLogin}
-                    onChangeText={(password2) => this.setState({password2})}
-                    placeholder="Confirmar password"
-                    value={this.state.password2}
-                    keyboardType='default'
-                    autoCompleteType="off"
-                    maxLength={8}
                 />  
                 <View style={localStyles.botonesContainer}>
                     <CustomButton 
                         title={""} 
-                        onPress={this._confirmCode}
+                        onPress={this._recoveryPassword}
                         style={{marginBottom: 30, backgroundColor: '#3498db'}}
                         Icon='check'
                     /> 
@@ -159,14 +156,8 @@ export default class recuperaScreen extends React.Component {
                     Ya puedes acceder a nuestros servicios
                 </Text>
                 <Text style={[localStyles.introText,{color:'#555', fontSize: 18}]}> 
-                    Recuerda, el usuario y password que has registrado son:
+                    Recuerda, hemos enviado un correo con la información de tu password. Por fa, espera unos minutos y búscalo allí!
                 </Text>
-                <Text style={[localStyles.introText,{color:'#555', fontSize: 18}]}> 
-                    email: {email}
-                </Text>
-                <Text style={[localStyles.introText,{color:'#555', fontSize: 18}]}> 
-                    password: {this.state.password1}
-                </Text>                                
                 <View style={localStyles.botonesContainer}>
                     <CustomButton 
                         title={""} 
@@ -182,7 +173,7 @@ export default class recuperaScreen extends React.Component {
 
   render() {
     return (
-        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50},{paddingBottom: this.state.shrinkScreen}]}>
             {this.state.waittingWhileSaving ? (
                 <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
                 <ActivityIndicator  size={80} color='#3498db'/>
@@ -193,7 +184,7 @@ export default class recuperaScreen extends React.Component {
             source={require('../images/TodoYa-03.png')}
             />  
             <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
-            <ScrollView>
+            <ScrollView >
                 {this.state.registerSuccessfull ? this.renderSuccessful() :  this.renderFormulario()}
             </ScrollView>     
         </View>
