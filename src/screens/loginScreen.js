@@ -4,9 +4,11 @@ import { StyleSheet,
          View, 
          Image, 
          TouchableOpacity, 
-         ImageBackground
+         ImageBackground,
+         Keyboard,
+         Dimensions,
+         ScrollView,
        } from 'react-native';
-import { Dimensions } from "react-native";
 import { Icon ,Input} from 'react-native-elements'
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import * as Font from 'expo-font'
@@ -25,7 +27,11 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 export default class loginScreen extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { email: 'aexelm@gmail.com', pass: '123' ,fontLoaded: false};
+        this.state = { email: 'aexelm@gmail.com', 
+                       pass: '123' ,
+                       fontLoaded: false, 
+                       shrinkScreen: 0,
+                     };
     }
 
     async componentDidMount() {
@@ -34,7 +40,36 @@ export default class loginScreen extends React.Component {
         });
         
         this.setState({ fontLoaded: true });
+        this.keyboardDidShowListener = Keyboard.addListener(
+          'keyboardDidShow',
+          this._keyboardDidShow,
+        );
+        this.keyboardDidHideListener = Keyboard.addListener(
+          'keyboardDidHide',
+          this._keyboardDidHide,
+        ); 
       }
+
+      componentWillUnmount() {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
+
+    _keyboardDidShow = (e) => {
+        keyboardParams = {
+            keyboardHeight: e.endCoordinates.height,
+            normalHeight: Dimensions.get('window').height, 
+            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
+        };         
+        console.log(keyboardParams);
+        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
+    }
+
+    _keyboardDidHide = () => {
+        console.log('Keyboard Hidden');
+        this.setState({shrinkScreen : 0 })
+
+    }
 
       _storeData = async (key, value) => {
         try {
@@ -72,7 +107,7 @@ export default class loginScreen extends React.Component {
               })
               .then( (response) => response.json() )
               .then( (responseJson) => {
-                  //console.log(responseJson);
+                  console.log(responseJson);
                   //console.log(responseJson.length);
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
@@ -102,7 +137,8 @@ export default class loginScreen extends React.Component {
         imageStyle={{resizeMode: 'stretch'}}
         /*style={Style.someAdditionalViewStyles}*/
       >
-      <View style={styles.containerLogin}>
+      <View style={[styles.containerLogin,{paddingBottom: this.state.shrinkScreen}]}>
+        
         <View>
             <View  style={styles.logoContainer}>
                 <Image style={[styles.logoImage,{resizeMode: "stretch",marginBottom:50}]}

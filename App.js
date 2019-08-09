@@ -1,10 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, Text, View, ScrollView , Dimensions, Button} from 'react-native';
 import { 
         createStackNavigator, 
         createSwitchNavigator, 
         createAppContainer,
-        createBottomTabNavigator
+        createBottomTabNavigator,
+        createDrawerNavigator,DrawerItems, SafeAreaView ,
       }  from 'react-navigation';
 import logoScreen from './src/screens/logoScreen'
 import loginScreen from './src/screens/loginScreen'
@@ -13,11 +14,19 @@ import categoriasScreen from './src/screens/categoriasScreen'
 import cartaScreen from './src/screens/cartaScreen'  
 import pedidoScreen from './src/screens/pedidoScreen'  
 import comerciosScreen from './src/screens/comerciosScreen'  
+import contenidoScreen from './src/screens/contenidoScreen'  
 import carritoScreen from './src/screens/carritoScreen'  
 import handleBoardScreen from './src/screens/handleBoardScreen'  
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import confirmScreen from './src/screens/confirmScreen';
 import recuperaScreen from './src/screens/recuperaScreen';
+import Styles from "./src/styles/stylesOne"
+import CustomButton from "./src/components/customButton";
+import pedidoDescriptivoScreen from './src/screens/pedidoDescriptivoScreen';
+
+
+const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
 
   class App extends React.Component {
     render() {
@@ -30,6 +39,43 @@ import recuperaScreen from './src/screens/recuperaScreen';
     }
   }
 
+  class closeSession extends React.Component {
+    render() {
+      return (
+        <View style={[Styles.container,{}]} >
+          <Image style={{width: 150, height: 150}}
+            source={require('./src/images/TodoYa-03.png')}
+            />  
+          <Text style={{fontSize: 25, color: "#00000055", textAlign: 'center', padding: 20,}}
+            >Hola, lamentamos que tengas que irte y cerrar la aplicación. Esperamos verte pronto!
+          </Text>
+          <CustomButton 
+              title="Cerrar Sesíón" 
+              onPress={() => {this.props.navigation.navigate('Login')}}
+              style={{marginBottom: 15, width: 200, height: 50 }}
+              fontSize={12}
+
+          />          
+        </View>
+      )
+    }
+  }
+
+  const CustomDrawerContentComponent = props => (
+    <ScrollView>
+      <SafeAreaView style={{flex:1}} forceInset={{ top: 'always', horizontal: 'never' }}>
+        <Image 
+          style={[{resizeMode: "stretch",marginTop:45,marginLeft: 75, marginBottom: 25}]}
+          width={150}
+          height={150}
+          source={require('./src/images/TodoYa-03.png')}
+        />
+        <DrawerItems {...props} />
+      </SafeAreaView>
+    </ScrollView>
+  );
+
+  
   const AppStackLogin = createStackNavigator(
     { 
       Login: loginScreen, 
@@ -43,7 +89,7 @@ import recuperaScreen from './src/screens/recuperaScreen';
       defaultNavigationOptions: {
         title: '', 
         headerStyle: {
-          backgroundColor: '#f345',
+          backgroundColor: 'transparent',
           elevation: 0,
           shadowOpacity: 0,
         },
@@ -58,6 +104,8 @@ import recuperaScreen from './src/screens/recuperaScreen';
     { 
       Categorias: categoriasScreen, 
       Comercios: comerciosScreen, 
+      Contenido: contenidoScreen,
+      PedidoDescriptivo: pedidoDescriptivoScreen,
       Carta: cartaScreen ,
       Pedido: pedidoScreen,
       HandleBoard: handleBoardScreen,
@@ -67,7 +115,7 @@ import recuperaScreen from './src/screens/recuperaScreen';
       defaultNavigationOptions: {
         title: '', 
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: 'transparent',
           elevation: 0,
           shadowOpacity: 0,
         },
@@ -114,12 +162,29 @@ import recuperaScreen from './src/screens/recuperaScreen';
     }
   ); 
 
+  const appDrawerNavigator = createDrawerNavigator(
+    {
+      Home: tabNavigatorMain,
+      'Cerrar Sesión' : closeSession ,
+    },
+    {
+      drawerType: 'slide',
+      drawerWidth: 300,
+      drawerBackgroundColor: '#fff',
+      contentOptions: {
+        activeTintColor: "#fff",
+        activeBackgroundColor: "#e74c3c"
+      },
+      contentComponent: CustomDrawerContentComponent,
+    }
+  );
+
   const AppNavigator = createSwitchNavigator(
     {
       AppStackLogin: AppStackLogin,
       LogoScreen: logoScreen,
       //AppStackPpal: AppStackPpal
-      tabNavigatorMain: tabNavigatorMain,
+      appDrawerNavigator: appDrawerNavigator,
     },
     {
       initialRouteName: 'LogoScreen',

@@ -39,8 +39,9 @@ export default class comerciosScreen extends React.Component {
   }
 
   _goScreen = (params) => {
+      console.log(params);
       if (this.state.itemChecked == null )
-          this.props.navigation.navigate('Carta', { 
+          this.props.navigation.navigate(params.cboa_go, { 
           params : params
           });
   }
@@ -77,7 +78,7 @@ export default class comerciosScreen extends React.Component {
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
             <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-              onPress={() => {}}
+              onPress={() => {  navigation.openDrawer() }}
               style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
             >
                 <Ionicons name='ios-menu' color='#3498db' size={36} />
@@ -188,8 +189,8 @@ export default class comerciosScreen extends React.Component {
                 spacing={15}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity 
-                    onPress={() => {this._goScreen(item.name)}}
-                    delayLongPress={1000}
+                    onPress={() => {this._goScreen(item)}}
+                    delayLongPress={2000}
                     onLongPress={() => { this._seleccionaItem({index: index}) }}
                     activeOpacity={0.7}
                   >

@@ -4,7 +4,7 @@ import { Ionicons, FontAwesome, AntDesign } from '@expo/vector-icons';
 
 
 const customButton = (props) => {
-    const {title = 'Enter', style={}, textStyle={}, onPress, Icon=null } = props;
+    const {title = 'Enter', style={}, textStyle={}, onPress, Icon=null , fontSize=16} = props;
 
     return (
         <TouchableOpacity 
@@ -12,7 +12,7 @@ const customButton = (props) => {
                 activeOpacity={0.7}
         >
                 <AntDesign name={props.Icon} style={{fontSize: 40, color: '#fff'}}></AntDesign>
-                <Text style={[styles.text, textStyle]}>{props.title}</Text>
+                <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>{props.title}</Text>
         </TouchableOpacity>
     );  
 };

@@ -44,7 +44,7 @@ export default class categoriasScreen extends React.Component {
         };
     }
 
-    static navigationOptions = ({ navigation }) => {
+    static navigationOptions = ({navigation}) => {
       return {
         headerTitle: "TodoYa!",
         headerLeft: (
@@ -56,7 +56,7 @@ export default class categoriasScreen extends React.Component {
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-                onPress={() => {}}
+                onPress={() => {  navigation.openDrawer() }}
                 style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
               >
                   <Ionicons name='ios-menu' color='#3498db' size={36} />
@@ -191,7 +191,7 @@ export default class categoriasScreen extends React.Component {
                   <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
-                      delayLongPress={1000}
+                      delayLongPress={2000}
                       onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
                   >
                     <View style={localStyles.categoria}>

@@ -9,6 +9,8 @@ import {
         ScrollView,
         KeyboardAvoidingView ,
         ActivityIndicator,
+        Keyboard,
+        Dimensions,
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
@@ -33,6 +35,7 @@ export default class ImagePickerX extends React.Component {
       URImanipulatedFile: null,
       id: null,
       waittingWhileSaving : false,
+      shrinkScreen: 0,
     };
   }
 
@@ -53,6 +56,7 @@ export default class ImagePickerX extends React.Component {
   };
 
   async componentWillMount(){
+    
   }
 
   async componentDidMount() {
@@ -63,9 +67,36 @@ export default class ImagePickerX extends React.Component {
          {...previousState,  'name':params.data.name, 'detalle':params.data.detalle }
       ))      
     }
-    
-      console.log("ZXXXXZZ>>>>>>>>>>"+params.action );
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow,
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide,
+    );  
   }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+}
+
+_keyboardDidShow = (e) => {
+    keyboardParams = {
+        keyboardHeight: e.endCoordinates.height,
+        normalHeight: Dimensions.get('window').height, 
+        shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
+    };         
+    console.log(keyboardParams);
+    this.setState({shrinkScreen : keyboardParams.keyboardHeight  });
+}
+
+_keyboardDidHide = () => {
+    console.log('Keyboard Hidden');
+    this.setState({shrinkScreen : 0 })
+
+}
 
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
@@ -238,8 +269,8 @@ export default class ImagePickerX extends React.Component {
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     return (
-      <KeyboardAvoidingView
-        style={{flex: 1, height: '100%'}}
+      <View
+        style={{flex: 1,}}
         behavior='padding'
       >
       {this.state.waittingWhileSaving ? (
@@ -248,7 +279,7 @@ export default class ImagePickerX extends React.Component {
         </View>        
         ) : null
       }
-      <View style={localStyles.container}>
+      <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
       <ScrollView style={{flex:1, width:'100%', marginBottom: 70}}> 
         <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
         >
@@ -287,7 +318,7 @@ export default class ImagePickerX extends React.Component {
                     onPress={this._accionButtons}
                 />
       </View>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 
