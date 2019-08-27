@@ -18,7 +18,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import CustomButton from '../components/customButton';
 import CustomInput from '../components/customInput';
 import {AsyncStorage} from 'react-native';
-
+GLOBAL = require('../globals/globals');
 const retrieveStorage = {"value":''};
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -101,7 +101,7 @@ export default class loginScreen extends React.Component {
             formdata.append('email',this.state.email);
             formdata.append('password',this.state.pass);
 
-            fetch('http://todoya2.aexelm.com/index.php/maincontrol/validausuario', {   
+            fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/validausuario', {   
                 method: "POST",
                 body: formdata,
               })

@@ -17,6 +17,8 @@ import { FlatGrid } from 'react-native-super-grid';
 import { Divider } from 'react-native-elements';
 import ActionMenu2 from '../components/ActionMenu2';
 
+GLOBAL = require('../globals/globals');
+
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
@@ -39,7 +41,9 @@ export default class comerciosScreen extends React.Component {
   }
 
   _goScreen = (params) => {
+      console.log('Desde comerciosScreen: goScreen incios');
       console.log(params);
+      console.log('Desde comerciosScreen: goScreen fin');
       if (this.state.itemChecked == null )
           this.props.navigation.navigate(params.cboa_go, { 
           params : params
@@ -101,7 +105,7 @@ export default class comerciosScreen extends React.Component {
       /*let formdata = new FormData();
       formdata.append('parent',this.props.navigation.getParam('params','').id);
   
-      await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+      await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getboard', {   
           method: "POST",
           body: formdata,
           })
@@ -122,7 +126,7 @@ export default class comerciosScreen extends React.Component {
     let formdata = new FormData();
     formdata.append('parent',this.props.navigation.getParam('params','').id);
     await this.setState({categoriasLoaded:false});
-    await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+    await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getboard', {   
         method: "POST",
         body: formdata,
       })
@@ -134,7 +138,7 @@ export default class comerciosScreen extends React.Component {
             categorias = responseJson;
             this.setState({ categoriasLoaded: true, itemChecked: null });  
             this._seleccionaItem({index: null, id: null }) 
-            console.log(categorias);
+            //console.log(categorias);
           }
     });   
   }
@@ -142,7 +146,7 @@ export default class comerciosScreen extends React.Component {
 
   _accionMenuPress = (data) => {
     const params = this.props.navigation.getParam('params','');
-    console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.id);
+    //console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.id);
     switch(data){
       case 'add': data='Nuevo';break;
       case 'edit': data='Editar';break;
@@ -156,13 +160,14 @@ export default class comerciosScreen extends React.Component {
         action: data,
         id: this.state.itemChecked,
         data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
+        go: 'Contenido',
       }
     }); 
   }
 
   render() {
     const params = this.props.navigation.getParam('params','');
-    console.log(params.id);
+    //console.log(params.id);
     const nombreCategoria = 'Default';//this.props.navigation.getParam('data','');
     return (
         <View style={[styles.container,{backgroundColor: '#fff'}]}>
@@ -190,7 +195,7 @@ export default class comerciosScreen extends React.Component {
                 renderItem={({ item, index }) => (
                   <TouchableOpacity 
                     onPress={() => {this._goScreen(item)}}
-                    delayLongPress={2000}
+                    delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
                     onLongPress={() => { this._seleccionaItem({index: index}) }}
                     activeOpacity={0.7}
                   >
@@ -200,13 +205,13 @@ export default class comerciosScreen extends React.Component {
                       <View>
                         <CacheImage
                             style={localStyles.image}
-                            uri= {'http://todoya2.aexelm.com/images/'+item.foto}
+                            uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
                         /> 
                         
                       </View>
                       <CacheImage
                         style={localStyles.imageBrand}
-                        uri= {'http://todoya2.aexelm.com/images/'+item.foto}
+                        uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
                       />                                          
                     </View>
                     {

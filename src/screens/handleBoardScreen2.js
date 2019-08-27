@@ -22,7 +22,7 @@ import styles from '../styles/stylesOne';
 
 GLOBAL = require('../globals/globals');
 
-let didMountParams = null;
+let params = null;
 
 export default class ImagePickerX extends React.Component {
   constructor(props) {
@@ -64,17 +64,17 @@ export default class ImagePickerX extends React.Component {
 
   async componentDidMount() {
     this.getPermissionAsync();
-    didMountParams = this.props.navigation.getParam('params');
+    params = this.props.navigation.getParam('params');
     console.log('componentDidMount');
     
-    if (didMountParams.action != 'Nuevo') {
-      console.log(didMountParams);
+    if (params.action != 'Nuevo') {
+      console.log(params);
       this.setState((previousState) => (
          {...previousState,  
-          'name':didMountParams.data.name, 
-          'detalle':didMountParams.data.detalle, 
-          'grupo':didMountParams.data.cboa_grupo,
-          'precio':didMountParams.data.cboa_precio ,
+          'name':params.data.name, 
+          'detalle':params.data.detalle, 
+          'grupo':params.data.cboa_grupo,
+          'precio':params.data.cboa_precio ,
         }
       ))      
     }
@@ -163,7 +163,7 @@ _keyboardDidHide = () => {
     }
 
   _accionButtons = () => {
-    switch(didMountParams.action){
+    switch(params.action){
       case "Nuevo": this._saveDatos();
         break;
       case "borrar": this._deleteDatos();
@@ -178,11 +178,11 @@ _keyboardDidHide = () => {
     if(this.state.image != null) {
       await this.upLoadImage(this.state.URImanipulatedFile);  
     }else{
-      await this.setState({'fileName':didMountParams.data.foto}) ;
-      console.log(this.state.fileName+" <<<<<<<<<"+didMountParams.data.foto)
+      await this.setState({'fileName':params.data.foto}) ;
+      console.log(this.state.fileName+" <<<<<<<<<"+params.data.foto)
       this._sendDataToServer();
     }
-    console.log(this.state.image+' '+didMountParams.data.foto+" "+this.state.fileName);
+    console.log(this.state.image+' '+params.data.foto+" "+this.state.fileName);
   }
 
 
@@ -193,11 +193,11 @@ _keyboardDidHide = () => {
 
   _deleteDatos = async () => {
     let formdata = new FormData();
-    formdata.append('id',didMountParams.data.cboa_id);
+    formdata.append('id',params.data.cboa_id);
     formdata.append('name',this.state.name);
     formdata.append('detalle',this.state.detalle);
     formdata.append('filename',this.state.fileName);
-    formdata.append('action',didMountParams.action);
+    formdata.append('action',params.action);
     this.setState({waittingWhileSaving: true});
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
         method: "POST",
@@ -239,17 +239,17 @@ _keyboardDidHide = () => {
 
   _sendDataToServer = async () => {
     if (this.state.fileName != null) {
-      console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
+      console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+params.parentId);
       // Buscar en servidor de BBDD 
       let formdata = new FormData();
-      formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
+      formdata.append('id',params.action == "Editar" ? params.data.cboa_id : null);
       formdata.append('name',this.state.name);
       formdata.append('detalle',this.state.detalle);
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
-      formdata.append('parentId',didMountParams.parentId);
-      formdata.append('action',didMountParams.action);
-      formdata.append('GO',didMountParams.go);
+      formdata.append('parentId',params.parentId);
+      formdata.append('action',params.action);
+      formdata.append('GO',params.go);
       formdata.append('grupo',this.state.grupo);
       formdata.append('precio',this.state.precio);
       console.log(formdata);
@@ -282,7 +282,7 @@ _keyboardDidHide = () => {
     let { image } = this.state;
     const params = this.props.navigation.getParam('params');
     console.log('entro a handleScreen');
-    console.log(params);
+    console.log(params.data);
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     return (
       <View
@@ -327,25 +327,24 @@ _keyboardDidHide = () => {
           value={this.state.detalle}
           maxLength={120}
         />
-        { params.go == 'Pedido' ? (
-          <TextInput 
+        <TextInput 
           style={localStyles.inputText}
           placeholder='¿Cómo prefieres agrupar este producto?'
+          multiline={true}
+          numberOfLines={2}
           onChangeText={(grupo) => this.setState({grupo})}
           value={this.state.grupo}
           maxLength={50}
         />
-        ) : null }
-        { params.go == 'Pedido' ? (
         <TextInput 
           style={localStyles.inputText}
           placeholder='¿Qué valor deseas darle a este producto?'
+          multiline={true}
+          numberOfLines={2}
           onChangeText={(precio) => this.setState({precio})}
           value={this.state.precio}
           maxLength={50}
-          keyboardType='number-pad'
         />
-        ) : null }
       </ScrollView>
       <CustomButton 
                     title={params.action}

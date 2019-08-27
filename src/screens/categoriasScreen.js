@@ -20,6 +20,7 @@ import { FlatGrid } from 'react-native-super-grid';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import ActionMenu2 from '../components/ActionMenu2';
 
+GLOBAL = require('../globals/globals');
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -74,7 +75,6 @@ export default class categoriasScreen extends React.Component {
 
       // Buscar en servidor de BBDD 
       this._getBoard();
-             
     }
 
     _getBoard = async () => {
@@ -93,7 +93,7 @@ export default class categoriasScreen extends React.Component {
               categorias = responseJson;
               this.setState({ categoriasLoaded: true, itemChecked: null });  
               this._seleccionaItem({index: null, id: null }) 
-              console.log(categorias);
+              //console.log(categorias);
             }
       });   
     }
@@ -130,7 +130,7 @@ export default class categoriasScreen extends React.Component {
             add: false, edit: true, delete: true
           }
         }))
-        console.log(categorias[this.state.itemChecked].foto);
+        //console.log(categorias[this.state.itemChecked].foto);
       }
     }
 
@@ -148,6 +148,7 @@ export default class categoriasScreen extends React.Component {
           action: data,
           id: this.state.itemChecked,
           data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
+          go: 'Contenido',
         }
       }); 
     }
@@ -191,7 +192,7 @@ export default class categoriasScreen extends React.Component {
                   <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
-                      delayLongPress={2000}
+                      delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
                       onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
                   >
                     <View style={localStyles.categoria}>
