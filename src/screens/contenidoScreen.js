@@ -116,7 +116,7 @@ export default class cartaScreen extends React.Component {
     })
     this.setState({ categoriasLoaded: true, itemChecked: null });  
     this._seleccionaItem({index: null, id: null }) 
-    //console.log(jsonFinal);
+    console.log(jsonFinal);
   }
 
   _renderSectionList() {
@@ -164,11 +164,10 @@ export default class cartaScreen extends React.Component {
 
   _goScreen = (params) => {
     console.log('Desde contenidoScreen: goScreen');
-    console.log(params);
-    /*if (this.state.itemChecked == null )
+    if (this.state.itemChecked == null )
         this.props.navigation.navigate(params.cboa_go, { 
         params : params
-        }); */
+        }); 
   }
 
   _seleccionaItem = (params) => {

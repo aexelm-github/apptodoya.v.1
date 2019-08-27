@@ -11,6 +11,7 @@ import {
         ActivityIndicator,
         Keyboard,
         Dimensions,
+        Text
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
@@ -65,10 +66,8 @@ export default class ImagePickerX extends React.Component {
   async componentDidMount() {
     this.getPermissionAsync();
     didMountParams = this.props.navigation.getParam('params');
-    console.log('componentDidMount');
     
     if (didMountParams.action != 'Nuevo') {
-      console.log(didMountParams);
       this.setState((previousState) => (
          {...previousState,  
           'name':didMountParams.data.name, 
@@ -100,7 +99,7 @@ _keyboardDidShow = (e) => {
         shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
     };         
     console.log(keyboardParams);
-    this.setState({shrinkScreen : keyboardParams.keyboardHeight    });
+    this.setState({shrinkScreen : keyboardParams.keyboardHeight - 68   });
 }
 
 _keyboardDidHide = () => {
@@ -210,7 +209,7 @@ _keyboardDidHide = () => {
             this.setState({waittingWhileSaving: false});
           }else{
             alert(responseJson[0].message);
-            console.log(responseJson);
+            //console.log(responseJson);
             //categorias = responseJson;
             //this.setState({ categoriasLoaded: true });  
             this.setState({waittingWhileSaving: false});
@@ -239,7 +238,7 @@ _keyboardDidHide = () => {
 
   _sendDataToServer = async () => {
     if (this.state.fileName != null) {
-      console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
+      //console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
       // Buscar en servidor de BBDD 
       let formdata = new FormData();
       formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
@@ -252,7 +251,7 @@ _keyboardDidHide = () => {
       formdata.append('GO',didMountParams.go);
       formdata.append('grupo',this.state.grupo);
       formdata.append('precio',this.state.precio);
-      console.log(formdata);
+      //console.log(formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
@@ -264,7 +263,7 @@ _keyboardDidHide = () => {
             }else{
               this.setState({waittingWhileSaving: false});
               alert(responseJson[0].message);
-              console.log(responseJson);
+              //console.log(responseJson);
               if (responseJson[0].success == 'ok'){
                 this._onGoBack();
               }                  
@@ -281,8 +280,6 @@ _keyboardDidHide = () => {
   render() {
     let { image } = this.state;
     const params = this.props.navigation.getParam('params');
-    console.log('entro a handleScreen');
-    console.log(params);
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     return (
       <View
@@ -296,7 +293,7 @@ _keyboardDidHide = () => {
         ) : null
       }
       <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
-      <ScrollView style={{flex:1, width:'100%', marginBottom: 70}}> 
+      <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
         <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
         >
             { 
@@ -311,16 +308,18 @@ _keyboardDidHide = () => {
               <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
             <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
         </TouchableOpacity>
+        <Text style={localStyles.label} >Nombre</Text>
         <TextInput 
           style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
-          placeholder='Nombre'
+          placeholder='¿Qué nombre tiene el producto o servicio?'
           onChangeText={(name) => this.setState({name})}
           value={this.state.name}
           maxLength={20}
         />
+        <Text style={localStyles.label} >Descripción</Text>
         <TextInput 
           style={localStyles.inputText}
-          placeholder='Describe el producto'
+          placeholder='Describe el producto o el servicio'
           multiline={true}
           numberOfLines={2}
           onChangeText={(detalle) => this.setState({detalle})}
@@ -328,15 +327,19 @@ _keyboardDidHide = () => {
           maxLength={120}
         />
         { params.go == 'Pedido' ? (
-          <TextInput 
+          <View>
+        <Text style={localStyles.label} >Grupo</Text>
+        <TextInput 
           style={localStyles.inputText}
           placeholder='¿Cómo prefieres agrupar este producto?'
           onChangeText={(grupo) => this.setState({grupo})}
           value={this.state.grupo}
           maxLength={50}
-        />
+        /></View>
         ) : null }
         { params.go == 'Pedido' ? (
+        <View>
+        <Text style={localStyles.label} >Precio</Text>
         <TextInput 
           style={localStyles.inputText}
           placeholder='¿Qué valor deseas darle a este producto?'
@@ -344,7 +347,7 @@ _keyboardDidHide = () => {
           value={this.state.precio}
           maxLength={50}
           keyboardType='number-pad'
-        />
+        /></View>
         ) : null }
       </ScrollView>
       <CustomButton 
@@ -382,6 +385,11 @@ const localStyles = StyleSheet.create({
     fontSize: 16, 
     backgroundColor:'#eeeeee',
     marginTop: 4,
-
+  },
+  label: {
+    fontSize: 14,
+    color: "#3f3f3f",
+    paddingLeft: 20,
+    paddingTop: 4,
   }
 })
