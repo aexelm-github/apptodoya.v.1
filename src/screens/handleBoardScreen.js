@@ -7,7 +7,7 @@ import {
         TouchableOpacity, 
         TouchableHighlight,
         ScrollView,
-        KeyboardAvoidingView ,
+        Picker ,
         ActivityIndicator,
         Keyboard,
         Dimensions,
@@ -22,6 +22,9 @@ import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
 
 GLOBAL = require('../globals/globals');
+
+const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
 
 let didMountParams = null;
 
@@ -49,7 +52,7 @@ export default class ImagePickerX extends React.Component {
       headerRight: (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-            onPress={() => {}}
+            onPress={() => {  navigation.openDrawer() }}
             style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
           >
               <Ionicons name='ios-menu' color='#3498db' size={36} />
@@ -281,6 +284,8 @@ _keyboardDidHide = () => {
     let { image } = this.state;
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
+    const grupoPickerOPtions = params.jsonGrupo;
+    
     return (
       <View
         style={{flex: 1,}}
@@ -328,14 +333,24 @@ _keyboardDidHide = () => {
         />
         { params.go == 'Pedido' ? (
           <View>
-        <Text style={localStyles.label} >Grupo</Text>
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='¿Cómo prefieres agrupar este producto?'
-          onChangeText={(grupo) => this.setState({grupo})}
-          value={this.state.grupo}
-          maxLength={50}
-        /></View>
+            <Text style={localStyles.label} >Grupo</Text>
+              <View style={{flexDirection: 'row'}}>
+              <TextInput 
+                style={[localStyles.inputText,{width: screenWidth-50}]}
+                placeholder='¿Cómo prefieres agrupar este producto?'
+                onChangeText={(grupo) => this.setState({grupo})}
+                value={this.state.grupo}
+                maxLength={50}
+              />
+              <Picker
+                style={{width: 50}}
+                onValueChange={(value) => this.setState({grupo: value})}
+                selectedValue={''}
+              >
+                {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+              </Picker>
+            </View>
+        </View>
         ) : null }
         { params.go == 'Pedido' ? (
         <View>

@@ -27,6 +27,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 const PRACTICE_TIME = 2* 1000;
 let categorias;
 let jsonFinal = new Array;
+let jsonGrupo = new Array;
 
 export default class cartaScreen extends React.Component {
     constructor(props) {
@@ -104,9 +105,12 @@ export default class cartaScreen extends React.Component {
 
   organizarPorGrupos(data) {
     jsonFinal = new Array;  
+    jsonGrupo = new Array;  
+    jsonGrupo.push('');
     let grupoAnterior;
     data.map((item, i) => {
       if (item.cboa_grupo != grupoAnterior ) {
+        jsonGrupo.push(item.cboa_grupo);
         grupoAnterior = item.cboa_grupo;
         jsonFinal.push({"title":grupoAnterior, data:[]})
         jsonFinal[jsonFinal.length-1 ].data.push(item);
@@ -209,6 +213,7 @@ export default class cartaScreen extends React.Component {
         id: this.state.itemChecked,
         data: this.state.itemChecked == null ? null : item[0],
         go: 'Pedido',
+        jsonGrupo: jsonGrupo,
       }
     }); 
   }

@@ -11,16 +11,18 @@ import {
         ActivityIndicator,
         Keyboard,
         Dimensions,
-        Text
+        Text,
+        SectionList,
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
 import { CheckBox } from 'react-native-elements'
+import ActionMenu2 from '../components/ActionMenu2';
 
 GLOBAL = require('../globals/globals');
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -28,6 +30,10 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 
 let didMountParams = null;
+let categorias;
+let jsonFinal = new Array;
+let jsonGrupo = new Array;
+let checkboxSelected = new Array;
 
 export default class pedidoScreen extends React.Component {
     constructor(props) {
@@ -36,12 +42,39 @@ export default class pedidoScreen extends React.Component {
           direccion: null,
           shrinkScreen: 0,         
           checked : false, 
+          fontLoaded: false, 
+          categoriasLoaded: false,
+          itemChecked: null,
+          estosBotonesActivos: {"add": true,"delete":false, "edit": false},
+          Total : '$0.00',
         }
     }
+
+
+
+    static navigationOptions = ({navigation}) => {
+      return {
+        headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
+                                          TodoYa
+                              </Text>},
+        headerRight: (
+          <View style={{marginRight: 12, flexDirection:'row'}}>
+            <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
+              onPress={() => {  navigation.openDrawer() }}
+              style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
+            >
+                <Ionicons name='ios-menu' color='#3498db' size={36} />
+            </TouchableHighlight>
+          </View>
+          
+        ),
+      };
+    };  
+
     async componentDidMount() {
       this.getPermissionAsync();
       didMountParams = this.props.navigation.getParam('params');
-      
+      checkboxSelected = new Array;
       if (didMountParams.action != 'Nuevo') {
         this.setState((previousState) => (
            {...previousState,  
@@ -55,7 +88,8 @@ export default class pedidoScreen extends React.Component {
       this.keyboardDidHideListener = Keyboard.addListener(
         'keyboardDidHide',
         this._keyboardDidHide,
-      );  
+      );
+      this._getBoard();
     }
   
   componentWillUnmount() {
@@ -88,9 +122,127 @@ export default class pedidoScreen extends React.Component {
       }
     }
   
+    _getBoard = async () => {
+      console.log('_getBoard(): ');
+      console.log(this.props.navigation.getParam('params').cboa_id);
+      let formdata = new FormData();
+      formdata.append('parent',this.props.navigation.getParam('params').cboa_id);
+      await this.setState({categoriasLoaded:false});
+      await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getBoard', {   
+          method: "POST",
+          body: formdata,
+        })
+        .then( (response) => response.json() )
+        .then( (responseJson) => {
+            if (responseJson.length == 0){
+              alert("¡¡Oops!!. Parece que está vacío!!.");
+            }else{
+              categorias = responseJson;
+              //console.log(categorias)
+              //this.setState({ categoriasLoaded: true, itemChecked: null });  
+              //this._seleccionaItem({index: null, id: null }) 
+              this.organizarPorGrupos(categorias);
+              
+            }
+      });   
+    }
+
+    organizarPorGrupos(data) {
+      jsonFinal = new Array;  
+      jsonGrupo = new Array;  
+      jsonGrupo.push('');
+      let grupoAnterior;
+      let checkbox;
+      data.map((item, i) => {
+        if (item.cboa_grupo != grupoAnterior ) {
+          jsonGrupo.push(item.cboa_grupo);
+          grupoAnterior = item.cboa_grupo;
+          jsonFinal.push({"title":grupoAnterior, data:[]})
+          jsonFinal[jsonFinal.length-1 ].data.push(item);
+        }else{
+          jsonFinal[jsonFinal.length-1 ].data.push(item);
+        }
+      })
+      this.setState({ categoriasLoaded: true, itemChecked: null });  
+      //this._seleccionaItem({index: null, id: null }) 
+      //console.log(jsonFinal);
+    }
+
+    _seleccionaItem = (params) => {
+      console.log('selecciono: '+params.cboa_id)
+      this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
+      this._accionMenuPress('edit');
+    }
+
+    _pressCheckBox(item, value) {
+      this.setState({['cbox'+item.cboa_id]: !this.state['cbox'+item.cboa_id]});
+      if (this.state['cbox'+item.cboa_id]){
+        checkboxSelected = checkboxSelected.filter(thisItem => thisItem.cboa_id !== item.cboa_id);
+      }else{
+        checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio})
+      }
+      console.log(checkboxSelected)
+      let total = 0;
+      checkboxSelected.map((item) => {
+        total+= parseInt(item.precio);
+      })
+      this.setState({Total: '$ '+ new Intl.NumberFormat("en-US").format(total)+'.00'})
+    }
+
+    _renderSectionList() {
+      let renderThis = <SectionList 
+                          sections={jsonFinal}
+                          renderSectionHeader={({ section }) => (
+                            <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >{section.title}</Text>
+                          )}                                 
+                          renderItem={({ item, index }) => (
+                            <CheckBox
+                            style={{width: screenWidth - 50}}
+                            title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
+                            checked= { this.state['cbox'+item.cboa_id] }
+                            onPress={() => this._pressCheckBox(item, item.cboa_id)}
+                            delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
+                            onLongPress={() => { this._seleccionaItem({cboa_id: item.cboa_id}) }}
+                            value={item.cboa_id}
+                          />                            
+                          )}
+                          keyExtractor={(item,index) => index.toString()}
+                        ></SectionList>
+      return renderThis;
+    }
+
+    _accionMenuPress = (data) => { 
+      const params = this.props.navigation.getParam('params','');
+      //console.log(params);
+      console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
+      const item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
+      //console.log(item[0]); 
+      switch(data){
+        case 'add': data='Nuevo';break;
+        case 'edit': data='Editar';break;
+        case 'delete': data='borrar';break;
+      }
+      this.props.navigation.navigate('HandleBoardPedido', {
+        onGoBack : this._getBoard,
+        params : {
+          commingFrom: 'pedidoScreen',
+          parentId: params.cboa_id,
+          action: data,
+          id: this.state.itemChecked,
+          data: this.state.itemChecked == null ? null : item[0],
+          go: 'detalle',
+          jsonGrupo: jsonGrupo,
+        }
+      }); 
+    }
+  
+    goMaps() {
+      this.props.navigation.navigate('Mapa', {})
+    }
+    
   render() {
     const params = this.props.navigation.getParam('params');
-    console.log(params);
+    //console.log(this.state);
     return (
       <View
         style={{flex: 1,}}
@@ -111,45 +263,25 @@ export default class pedidoScreen extends React.Component {
           </Text>
         </View>        
           <Text style={localStyles.label} >Dirección de envío</Text>
-          <TextInput 
-            style={[localStyles.inputText,{fontSize: 19}]}
-            placeholder='Escriba la dirección de envío'
-            onChangeText={(direccion) => this.setState({direccion})}
-            value={this.state.direccion}
-            maxLength={80}
-          />
-          <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >DEFINIR PEDIDO</Text>
-          <CheckBox
-            title='Tamaño Small ($ 8000)'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
-          <CheckBox
-            title='Tamaño MEdium ($ 25000)'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
-          <CheckBox
-            title='Tamaño Large ($ 45000)'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
-          <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >BEBIDAS</Text>
-          <CheckBox
-            title='Gaseosa Litro'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
-          <CheckBox
-            title='Mr Tea'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
-          <CheckBox
-            title='Agua'
-            checked={this.state.checked}
-            onPress={() => this.setState({checked: !this.state.checked})}
-          />
+          
+          <View style={{flexDirection: 'row'}}>
+              <TextInput 
+                style={[localStyles.inputText,{width: screenWidth-50}]}
+                placeholder='Escriba la dirección de envío'
+                onChangeText={(direccion) => this.setState({direccion})}
+                value={this.state.direccion}
+                maxLength={80}
+              />            
+              <TouchableOpacity
+                style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
+                onPress={() => {this.goMaps()}}
+              >
+                <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
+              </TouchableOpacity>
+          </View>          
+          { this.state.categoriasLoaded ? ( 
+              this._renderSectionList()
+          ) : null }
           <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >INFORMACIÓN ADICIONAL</Text>
           <TextInput 
             style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
@@ -161,7 +293,17 @@ export default class pedidoScreen extends React.Component {
             maxLength={180}
           />          
         </ScrollView>
+   
+        <CustomButton 
+            title={`[ ${this.state.Total} ] Confirmar Pedido`}
+            style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
+            onPress={() =>{}}
+        />  
         </View>
+        <ActionMenu2
+          callbackFromParent={this._accionMenuPress}
+          estosBotonesActivos={this.state.estosBotonesActivos}
+        /> 
       </View>
 
     );

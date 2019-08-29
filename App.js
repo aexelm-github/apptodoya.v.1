@@ -17,13 +17,14 @@ import comerciosScreen from './src/screens/comerciosScreen'
 import contenidoScreen from './src/screens/contenidoScreen'  
 import carritoScreen from './src/screens/carritoScreen'  
 import handleBoardScreen from './src/screens/handleBoardScreen'  
-import handleBoardScreen2 from './src/screens/handleBoardScreen2'  
+import handleBoardPedido from './src/screens/handleBoardPedido'  
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import confirmScreen from './src/screens/confirmScreen';
 import recuperaScreen from './src/screens/recuperaScreen';
 import Styles from "./src/styles/stylesOne"
 import CustomButton from "./src/components/customButton";
 import pedidoDescriptivoScreen from './src/screens/pedidoDescriptivoScreen';
+import mapScreen from './src/screens/mapScreen';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -110,7 +111,8 @@ const screenHeight = Math.round(Dimensions.get('window').height);
       Carta: cartaScreen ,
       Pedido: pedidoScreen,
       HandleBoard: handleBoardScreen,
-      HandleBoard2: handleBoardScreen2,
+      HandleBoardPedido: handleBoardPedido,
+      Mapa: mapScreen,
     },
     {
       initialRoutName:'Categorias',

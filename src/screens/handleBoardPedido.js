@@ -7,10 +7,11 @@ import {
         TouchableOpacity, 
         TouchableHighlight,
         ScrollView,
-        KeyboardAvoidingView ,
+        Picker ,
         ActivityIndicator,
         Keyboard,
         Dimensions,
+        Text
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
 import * as ImagePicker from 'expo-image-picker';
@@ -22,7 +23,10 @@ import styles from '../styles/stylesOne';
 
 GLOBAL = require('../globals/globals');
 
-let params = null;
+const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
+
+let didMountParams = null;
 
 export default class ImagePickerX extends React.Component {
   constructor(props) {
@@ -48,7 +52,7 @@ export default class ImagePickerX extends React.Component {
       headerRight: (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
-            onPress={() => {}}
+            onPress={() => {  navigation.openDrawer() }}
             style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
           >
               <Ionicons name='ios-menu' color='#3498db' size={36} />
@@ -59,22 +63,20 @@ export default class ImagePickerX extends React.Component {
   };
 
   async componentWillMount(){
-    
+    console.log('exe')
   }
 
   async componentDidMount() {
-    this.getPermissionAsync();
-    params = this.props.navigation.getParam('params');
-    console.log('componentDidMount');
+    //this.getPermissionAsync();
+    didMountParams = this.props.navigation.getParam('params');
     
-    if (params.action != 'Nuevo') {
-      console.log(params);
+    if (didMountParams.action != 'Nuevo') {
       this.setState((previousState) => (
          {...previousState,  
-          'name':params.data.name, 
-          'detalle':params.data.detalle, 
-          'grupo':params.data.cboa_grupo,
-          'precio':params.data.cboa_precio ,
+          'name':didMountParams.data.name, 
+          'detalle':didMountParams.data.detalle, 
+          'grupo':didMountParams.data.cboa_grupo,
+          'precio':didMountParams.data.cboa_precio ,
         }
       ))      
     }
@@ -100,7 +102,7 @@ _keyboardDidShow = (e) => {
         shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
     };         
     console.log(keyboardParams);
-    this.setState({shrinkScreen : keyboardParams.keyboardHeight    });
+    this.setState({shrinkScreen : keyboardParams.keyboardHeight - 68   });
 }
 
 _keyboardDidHide = () => {
@@ -109,61 +111,9 @@ _keyboardDidHide = () => {
 
 }
 
-  getPermissionAsync = async () => {
-    if (Constants.platform.ios) {
-      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-      }
-    }
-  }
-
-  _pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-    });
-
-    console.log(result);
-
-    if (!result.cancelled) {
-      this.setState({ image: result.uri });
-      const manipResult = await ImageManipulator.manipulateAsync(
-        result.uri,
-        [ { resize : { widht: 480, height: 270 } } ],
-        [ {compress : 1 }] 
-      );
-      this.setState({'URImanipulatedFile': manipResult.uri});
-    }
-  };
-
-  upLoadImage = async (image_uri) => {
-    let base_url = GLOBAL.BASE_URL+'/index.php/Upload_img';
-    let uploadData = new FormData();
-    uploadData.append('submit','ok');
-    uploadData.append('file', {type: 'image/jpg', uri: image_uri, name: 'uploadimagetmp.jpg'});
-    //API that use fetch to input data to database via backend php script
-    fetch(base_url,{
-        method: 'POST',
-        body: uploadData
-      }).then(response => response.json())
-        .then(response => { 
-          if (response.status) {
-            this.setState({'fileName' : response.fileName});
-            this._sendDataToServer();
-          }else{
-            alert( response.message);
-            this.setState({waittingWhileSaving: false});
-          }
-        }).catch((error) => {
-            console.error('Ojo!! Ocurrió un error al subir la imagen. ' + error);
-            this.setState({waittingWhileSaving: false});
-        });
-    }
 
   _accionButtons = () => {
-    switch(params.action){
+    switch(didMountParams.action){
       case "Nuevo": this._saveDatos();
         break;
       case "borrar": this._deleteDatos();
@@ -178,11 +128,11 @@ _keyboardDidHide = () => {
     if(this.state.image != null) {
       await this.upLoadImage(this.state.URImanipulatedFile);  
     }else{
-      await this.setState({'fileName':params.data.foto}) ;
-      console.log(this.state.fileName+" <<<<<<<<<"+params.data.foto)
+      await this.setState({'fileName':didMountParams.data.foto}) ;
+      console.log(this.state.fileName+" <<<<<<<<<"+didMountParams.data.foto)
       this._sendDataToServer();
     }
-    console.log(this.state.image+' '+params.data.foto+" "+this.state.fileName);
+    console.log(this.state.image+' '+didMountParams.data.foto+" "+this.state.fileName);
   }
 
 
@@ -193,11 +143,11 @@ _keyboardDidHide = () => {
 
   _deleteDatos = async () => {
     let formdata = new FormData();
-    formdata.append('id',params.data.cboa_id);
+    formdata.append('id',didMountParams.data.cboa_id);
     formdata.append('name',this.state.name);
     formdata.append('detalle',this.state.detalle);
     formdata.append('filename',this.state.fileName);
-    formdata.append('action',params.action);
+    formdata.append('action',didMountParams.action);
     this.setState({waittingWhileSaving: true});
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
         method: "POST",
@@ -210,7 +160,7 @@ _keyboardDidHide = () => {
             this.setState({waittingWhileSaving: false});
           }else{
             alert(responseJson[0].message);
-            console.log(responseJson);
+            //console.log(responseJson);
             //categorias = responseJson;
             //this.setState({ categoriasLoaded: true });  
             this.setState({waittingWhileSaving: false});
@@ -222,37 +172,29 @@ _keyboardDidHide = () => {
   }
 
   _saveDatos = async () => {
-    if ((this.state.name == null)&&(this.state.detalle == null)) {
+    if ((this.state.name == null)||(this.state.grupo == null)||(this.state.precio == null)) {
       alert('Todos lo campo deben ser dilgenciados.','');
     }else{
-      if (this.state.image != null) {
-        this.setState({waittingWhileSaving: true});
-        await this.upLoadImage(this.state.URImanipulatedFile);
-        console.log(this.state)
-      }else{
-        alert('Es necesario escoger una imagen para cargar!!');
-      }
-      console.log(this.state.image);
+      this._sendDataToServer();
     }
 
   }
 
   _sendDataToServer = async () => {
-    if (this.state.fileName != null) {
-      console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+params.parentId);
+      //console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
       // Buscar en servidor de BBDD 
       let formdata = new FormData();
-      formdata.append('id',params.action == "Editar" ? params.data.cboa_id : null);
+      formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
       formdata.append('name',this.state.name);
       formdata.append('detalle',this.state.detalle);
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
-      formdata.append('parentId',params.parentId);
-      formdata.append('action',params.action);
-      formdata.append('GO',params.go);
+      formdata.append('parentId',didMountParams.parentId);
+      formdata.append('action',didMountParams.action);
+      formdata.append('GO',didMountParams.go);
       formdata.append('grupo',this.state.grupo);
       formdata.append('precio',this.state.precio);
-      console.log(formdata);
+      //console.log(formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
@@ -264,7 +206,7 @@ _keyboardDidHide = () => {
             }else{
               this.setState({waittingWhileSaving: false});
               alert(responseJson[0].message);
-              console.log(responseJson);
+              //console.log(responseJson);
               if (responseJson[0].success == 'ok'){
                 this._onGoBack();
               }                  
@@ -273,17 +215,16 @@ _keyboardDidHide = () => {
           this.setState({waittingWhileSaving: false});
           alert(e)
       });                
-    }
+
 
 
   }
 
   render() {
-    let { image } = this.state;
     const params = this.props.navigation.getParam('params');
-    console.log('entro a handleScreen');
-    console.log(params.data);
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
+    const grupoPickerOPtions = params.jsonGrupo;
+    console.log(params);
     return (
       <View
         style={{flex: 1,}}
@@ -296,61 +237,68 @@ _keyboardDidHide = () => {
         ) : null
       }
       <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
-      <ScrollView style={{flex:1, width:'100%', marginBottom: 70}}> 
-        <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
-        >
-            { 
-              params.action!='Nuevo' ? (
-              <CacheImage
-                style={localStyles.image}
-                uri= {GLOBAL.BASE_URL+'/images/'+params.data.foto}
+      <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
+          <View>
+            <Text style={localStyles.label} >Grupo</Text>
+              <View style={{flexDirection: 'row'}}>
+              <TextInput 
+                style={[localStyles.inputText,{width: screenWidth-50}]}
+                placeholder='¿Cómo prefieres agrupar este producto?'
+                onChangeText={(grupo) => this.setState({grupo})}
+                value={this.state.grupo}
+                maxLength={50}
               />
-              ) : null
-            }           
-            {image &&
-              <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
-            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
-        </TouchableOpacity>
+              <Picker
+                style={{width: 50}}
+                onValueChange={(value) => this.setState({grupo: value})}
+                selectedValue={''}
+              >
+                {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+              </Picker>
+            </View>
+        </View>
+        <View>
+        <Text style={localStyles.label} >Nombre</Text>
         <TextInput 
           style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
-          placeholder='Nombre'
+          placeholder='¿Qué nombre tiene el producto o servicio?'
           onChangeText={(name) => this.setState({name})}
           value={this.state.name}
           maxLength={20}
-        />
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='Describe el producto'
-          multiline={true}
-          numberOfLines={2}
-          onChangeText={(detalle) => this.setState({detalle})}
-          value={this.state.detalle}
-          maxLength={120}
-        />
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='¿Cómo prefieres agrupar este producto?'
-          multiline={true}
-          numberOfLines={2}
-          onChangeText={(grupo) => this.setState({grupo})}
-          value={this.state.grupo}
-          maxLength={50}
-        />
+        />          
+        <Text style={localStyles.label} >Precio</Text>
         <TextInput 
           style={localStyles.inputText}
           placeholder='¿Qué valor deseas darle a este producto?'
-          multiline={true}
-          numberOfLines={2}
           onChangeText={(precio) => this.setState({precio})}
           value={this.state.precio}
           maxLength={50}
-        />
+          keyboardType='number-pad'
+        /></View>
       </ScrollView>
-      <CustomButton 
+      
+      { params.action == 'Editar' ? 
+          <View style={{flexDirection: 'row'}}>
+            <CustomButton 
+                title={""} 
+                onPress={() => this._editarDatos()}
+                style={{marginBottom: 50, backgroundColor: "#27ae60"}}
+                Icon={'check'}
+            />    
+            <CustomButton 
+                title={""} 
+                onPress={() => this._deleteDatos()}
+                style={{marginBottom: 50, backgroundColor: "#e74c3c"}}
+                Icon={'delete'}
+            />              
+          </View>                        
+        : 
+        <CustomButton 
                     title={params.action}
                     style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
-                    onPress={this._accionButtons}
+                    onPress={() => this._saveDatos()}
                 />
+      }
       </View>
       </View>
     );
@@ -381,6 +329,11 @@ const localStyles = StyleSheet.create({
     fontSize: 16, 
     backgroundColor:'#eeeeee',
     marginTop: 4,
-
+  },
+  label: {
+    fontSize: 14,
+    color: "#3f3f3f",
+    paddingLeft: 20,
+    paddingTop: 4,
   }
 })
