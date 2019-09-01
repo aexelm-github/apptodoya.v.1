@@ -13,10 +13,8 @@ import {
         Dimensions,
         Text
       } from 'react-native';
-import { Permissions, Constants} from 'expo';
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+
+  import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';

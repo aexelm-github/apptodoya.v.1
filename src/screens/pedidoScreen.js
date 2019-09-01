@@ -15,6 +15,8 @@ import {
         SectionList,
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
+//import * as Permissions from 'expo-permissions'
+//import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';

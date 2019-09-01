@@ -4,14 +4,17 @@
     "slug": "apptodoya",
     "privacy": "public",
     "sdkVersion": "33.0.0",
+    "packagerOpts": {
+      "nonPersistent": "--nonPersistent"
+    },
     "android": {
       "package": "com.aexelm.todoya",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCC6CLhuXlm04kU8C3Dzor6C4bsZ8A16zE"
-        }  
-      }    
-    },    
+        }
+      }
+    },
     "platforms": [
       "ios",
       "android",
@@ -33,6 +36,7 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": ""
   }
 }

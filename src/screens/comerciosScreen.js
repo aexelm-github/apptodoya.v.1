@@ -42,7 +42,7 @@ export default class comerciosScreen extends React.Component {
 
   _goScreen = (params) => {
       console.log('Desde comerciosScreen: goScreen incios');
-      console.log(params);
+      //console.log(params);
       console.log('Desde comerciosScreen: goScreen fin');
       if (this.state.itemChecked == null )
           this.props.navigation.navigate(params.cboa_go, { 
