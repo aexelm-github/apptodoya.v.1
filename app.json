@@ -11,7 +11,7 @@
       "package": "com.aexelm.todoya",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCC6CLhuXlm04kU8C3Dzor6C4bsZ8A16zE"
+          "apiKey": "AIzaSyDpj1hn8uHHoCEsUefUSIvATJr1mDhZRfI"
         }
       }
     },
@@ -37,6 +37,6 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": ""
+    "description": "Version 1.0"
   }
 }

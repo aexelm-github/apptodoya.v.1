@@ -52,7 +52,9 @@ export default class pedidoScreen extends React.Component {
         }
     }
 
-
+    handleChange(data) {
+      this.setState(data);
+    }
 
     static navigationOptions = ({navigation}) => {
       return {
@@ -188,7 +190,8 @@ export default class pedidoScreen extends React.Component {
       checkboxSelected.map((item) => {
         total+= parseInt(item.precio);
       })
-      this.setState({Total: '$ '+ new Intl.NumberFormat("en-US").format(total)+'.00'})
+      //this.setState({Total: '$ '+ new Intl.NumberFormat("en-US").format(total)+'.00'})
+      this.setState({Total: '$ '+ (total)+'.00'})
     }
 
     _renderSectionList() {
@@ -200,7 +203,8 @@ export default class pedidoScreen extends React.Component {
                           renderItem={({ item, index }) => (
                             <CheckBox
                             style={{width: screenWidth - 50}}
-                            title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
+                            //title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
+                            title={item.name+ ' [ $ '+ item.cboa_precio +' ]' }
                             checked= { this.state['cbox'+item.cboa_id] }
                             onPress={() => this._pressCheckBox(item, item.cboa_id)}
                             delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
@@ -239,7 +243,7 @@ export default class pedidoScreen extends React.Component {
     }
   
     goMaps() {
-      this.props.navigation.navigate('Mapa', {})
+      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this)})
     }
     
   render() {
