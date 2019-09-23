@@ -93,12 +93,14 @@ export default class mapScreen extends React.Component {
         .then((response) => response.json())
         .then((responseJson) => {
             //console.log('ADDRESS GEOCODE is BACK!! => ' + JSON.stringify(responseJson));
-            //console.log(responseJson.results)
+            console.log(responseJson.results[0].address_components[0])
+            console.log(responseJson.results[0].address_components[1])
+            const address = responseJson.results[0].address_components[1].short_name+" "+responseJson.results[0].address_components[0].short_name
             responseJson.results.map((item, index) => {
-              console.log(item.formatted_address); 
+              //console.log(item.formatted_address); 
             });
-            this.setState({ formatted_address: responseJson.results[0].formatted_address });
-            this.props.navigation.state.params.handleChange({ direccion: responseJson.results[0].formatted_address })
+            this.setState({ formatted_address: address });
+            this.props.navigation.state.params.handleChange({ direccion: address })
     })
   }    
 
@@ -132,7 +134,7 @@ export default class mapScreen extends React.Component {
     }
     return (
         <View style={{flex:1 , justifyContent:'center', alignItems: 'center'}}>
-            <Text>We need your Permissions</Text>
+            <Text>Loading map..</Text>
         </View>
     )    
   }
@@ -142,11 +144,12 @@ const localStyles = StyleSheet.create({
   address : {
     position: 'absolute',
     color: '#fff',
-    backgroundColor: '#34495e',
+    backgroundColor: '#34495e99',
     padding: 20,
     textAlign: 'center',
     margin: 20,
     borderRadius: 10,
+    width: '90%',
   },
   markerFixed: {
     left: '50%',

@@ -49,6 +49,7 @@ export default class pedidoScreen extends React.Component {
           itemChecked: null,
           estosBotonesActivos: {"add": true,"delete":false, "edit": false},
           Total : '$0.00',
+          informacionAdicional: null,
         }
     }
 
@@ -139,7 +140,8 @@ export default class pedidoScreen extends React.Component {
         .then( (response) => response.json() )
         .then( (responseJson) => {
             if (responseJson.length == 0){
-              alert("¡¡Oops!!. Parece que está vacío!!.");
+              //alert("¡¡Oops!!. Parece que está vacío!!.");
+              this.setState({Total: `$ ${didMountParams.cboa_precio}.00`})
             }else{
               categorias = responseJson;
               //console.log(categorias)
@@ -169,7 +171,9 @@ export default class pedidoScreen extends React.Component {
       })
       this.setState({ categoriasLoaded: true, itemChecked: null });  
       //this._seleccionaItem({index: null, id: null }) 
-      //console.log(jsonFinal);
+      if (jsonFinal.length == 0) {
+        this.setState({Total: `$ ${didMountParams.cboa_precio}.00`})
+      }
     }
 
     _seleccionaItem = (params) => {
@@ -183,7 +187,7 @@ export default class pedidoScreen extends React.Component {
       if (this.state['cbox'+item.cboa_id]){
         checkboxSelected = checkboxSelected.filter(thisItem => thisItem.cboa_id !== item.cboa_id);
       }else{
-        checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio})
+        checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio, name: item.name })
       }
       console.log(checkboxSelected)
       let total = 0;
@@ -202,7 +206,7 @@ export default class pedidoScreen extends React.Component {
                           )}                                 
                           renderItem={({ item, index }) => (
                             <CheckBox
-                            style={{width: screenWidth - 50}}
+                            style={localStyles.itemCheckBox}
                             //title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
                             title={item.name+ ' [ $ '+ item.cboa_precio +' ]' }
                             checked= { this.state['cbox'+item.cboa_id] }
@@ -288,7 +292,7 @@ export default class pedidoScreen extends React.Component {
           { this.state.categoriasLoaded ? ( 
               this._renderSectionList()
           ) : null }
-          <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >INFORMACIÓN ADICIONAL</Text>
+          <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >Detalla un poco tu pedido</Text>
           <TextInput 
             style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
             multiline={true}
@@ -343,6 +347,11 @@ const localStyles = StyleSheet.create({
     color: "#3f3f3f",
     paddingLeft: 20,
     paddingTop: 4,
+  },
+  itemCheckBox : {
+    fontSize: 10,
+    width: screenWidth - 50,
+    color: 'red',
   },
   title2 : {
     fontFamily: 'RussoOne-Regular',

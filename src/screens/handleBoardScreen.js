@@ -46,6 +46,7 @@ export default class ImagePickerX extends React.Component {
       id: null,
       waittingWhileSaving : false,
       shrinkScreen: 0,
+      tipoGo: 'Contenido',
     };
   }
 
@@ -80,6 +81,7 @@ export default class ImagePickerX extends React.Component {
           'detalle':didMountParams.data.detalle, 
           'grupo':didMountParams.data.cboa_grupo,
           'precio':didMountParams.data.cboa_precio ,
+          'tipoGo': didMountParams.data.cboa_go,
         }
       ))      
     }
@@ -254,10 +256,11 @@ _keyboardDidHide = () => {
       formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('parentId',didMountParams.parentId);
       formdata.append('action',didMountParams.action);
-      formdata.append('GO',didMountParams.go);
+      //formdata.append('GO',didMountParams.go);
+      formdata.append('GO',this.state.tipoGo);
       formdata.append('grupo',this.state.grupo);
       formdata.append('precio',this.state.precio);
-      //console.log(formdata);
+      console.log(formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
@@ -288,7 +291,9 @@ _keyboardDidHide = () => {
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     const grupoPickerOPtions = params.jsonGrupo;
+    const tipoOpcionPicker = params.commingFrom=='comerciosScreen' ?  ['Contenido','Pedido'] : ['Comercios','Contenido','Pedido']
     
+    console.log(params)
     return (
       <View
         style={{flex: 1,}}
@@ -367,6 +372,28 @@ _keyboardDidHide = () => {
           keyboardType='number-pad'
         /></View>
         ) : null }
+        { params.go != 'Pedido' ? (
+          <View style={{}}>
+            <Text style={localStyles.label} >Tipo de Opción</Text>
+            <Text style={[localStyles.label,{fontSize:10}]}>
+              El tipo de opción significa que cuando el usuario haga click en esta, será dirigido hacia que tipo de pantalla.{"\n"}
+              Comercios: Quiere decir que esta opción es una categoría y al pulsar en ella será llevado a los diferentes establecimientos comerciales que contendría.{"\n"}
+              Contenido: Que va directamente a revisar el contenido de una opción. Por lo general de un establecimiento comercial.{"\n"}
+              Pedido: Quiere decir que se abre directamente la ventana donde se especfica el pedido.
+            </Text>
+              <Picker
+                style={{padding: 20,margin: 10,backgroundColor:'#00000055', borderRadius: 10}}
+                onValueChange={(value) => this.setState({tipoGo: value})}
+                selectedValue={this.state.tipoGo}
+              >
+                {tipoOpcionPicker.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+              </Picker>
+        </View>
+        ) : null }
+        <Text style={localStyles.label} >¿Es ésto un local comercial?</Text>
+        <Text style={[localStyles.label,{fontSize:10}]}>
+          Seleccione la siguiente casilla si el item actual es un negocio.  
+        </Text>        
       </ScrollView>
       <CustomButton 
                     title={params.action}

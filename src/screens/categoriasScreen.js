@@ -72,6 +72,7 @@ export default class categoriasScreen extends React.Component {
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
       this.setState({ fontLoaded: true });  
+      console.log(screenHeight + " " + screenWidth)
 
       // Buscar en servidor de BBDD 
       this._getBoard();
@@ -109,7 +110,7 @@ export default class categoriasScreen extends React.Component {
 
     _goScreen = (params) => {
       if (this.state.itemChecked == null )
-            this.props.navigation.navigate('Comercios', { 
+            this.props.navigation.navigate(params.cboa_go, { 
               params : params
             });
     }
@@ -163,17 +164,19 @@ export default class categoriasScreen extends React.Component {
           <StatusBar backgroundColor="blue" barStyle="dark-content" />
           { this.state.categoriasLoaded ? (
           <View >
+              <ScrollView>  
               {
                 this.state.fontLoaded ? (
                   <Text style={localStyles.simpleName} 
-                        onPress = {() => {this._removeData("keyLogin");}} >
+                        //onPress = {() => {this._removeData("keyLogin");}} 
+                  >
                         Hola, {nombre1}
                   </Text>
                 ) : null
               }
               <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
               <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
-              <ScrollView>  
+              
               {
                 this.state.fontLoaded ? (
                   <Text style={localStyles.simpleTitle} >
@@ -191,7 +194,8 @@ export default class categoriasScreen extends React.Component {
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id })}}
+                      /*onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id, cboa_go: item.cboa_go })}}*/
+                      onPress={() => {this._goScreen(item)}}
                       delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
                       onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
                   >

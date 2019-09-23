@@ -141,9 +141,9 @@ export default class loginScreen extends React.Component {
         
         <View>
             <View  style={styles.logoContainer}>
-                <Image style={[styles.logoImage,{resizeMode: "stretch",marginBottom:50}]}
-                    width={200}
-                    height={200}
+                <Image style={[styles.logoImage,{resizeMode: "stretch",marginBottom:25}]}
+                    width={120}
+                    height={120}
                     source={require('../images/TodoYa-03.png')}
                     />        
                 <TextInput 

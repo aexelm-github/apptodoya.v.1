@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image } from 'react-native';
+import { Image, ImageEditor } from 'react-native';
 import shorthash from 'shorthash';
 import * as FileSystem from 'expo-file-system'
 
@@ -8,19 +8,32 @@ export default class CacheImage extends React.Component {
     source: null,
   };
 
+  cropThis (img) {
+    ImageEditor.cropImage(img.uri, {
+      offset: { x:140 , y:0 },
+      size: { width: 200, height: 270},
+      resizeMode : 'content'
+    },
+    uri => this.setState({ source : {uri: uri}}),
+    err => alert(err))
+    console.log(img);
+  }
+
   componentDidMount = async () => {
-    const { uri } = this.props;
+    const { uri,crop } = this.props;
     const name = shorthash.unique(uri);
-    console.log(name);
+    console.log(name+" "+crop);
     const path = `${FileSystem.cacheDirectory}${name}`;
     const image = await FileSystem.getInfoAsync(path);
     if (image.exists) {
+      crop ? this.cropThis(image) : (
       //console.log('read image from cache: '+name+" "+uri+ " " + path);
-      this.setState({
-        source: {
-          uri: image.uri,
-        },
-      });
+        this.setState({
+          source: {
+            uri: image.uri,
+          },
+        })
+      )
       return;
     }
 
@@ -34,6 +47,10 @@ export default class CacheImage extends React.Component {
   };
 
   render() {
-    return <Image style={this.props.style} source={this.state.source} />;
+    const {crop, blurRadius} = this.props;
+    return <Image style={this.props.style} 
+                  source={this.state.source} 
+                  blurRadius={blurRadius ? blurRadius : null}
+            />;
   }
 }

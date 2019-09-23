@@ -10,6 +10,7 @@ import { Button,
          Dimensions,
          FlatList,
          SectionList,
+         ActivityIndicator,
         } from 'react-native';
 import styles from '../styles/stylesOne';
 import CacheImage from '../components/CacheImage';
@@ -60,9 +61,11 @@ export default class cartaScreen extends React.Component {
               </TouchableHighlight>
           </View>
         ),
+        headerTransparent: true,
         headerTintColor: '#fff',
         headerStyle : {
-          backgroundColor: '#3498db',
+          //backgroundColor: '#3498db',
+          backgroundColor: '#00000033',
           
           
         }
@@ -79,8 +82,8 @@ export default class cartaScreen extends React.Component {
 
 
     _getBoard = async () => {
-      console.log('_getBoard(): ');
-      console.log(this.props.navigation.getParam('params').cboa_id);
+      //console.log('_getBoard(): ');
+      //console.log(this.props.navigation.getParam('params').cboa_id);
       let formdata = new FormData();
       formdata.append('parent',this.props.navigation.getParam('params').cboa_id);
       await this.setState({categoriasLoaded:false});
@@ -91,10 +94,10 @@ export default class cartaScreen extends React.Component {
         .then( (response) => response.json() )
         .then( (responseJson) => {
             if (responseJson.length == 0){
-              alert("¡¡Oops!!. Parece que está vacío!!.");
+              //alert("¡¡Oops!!. Parece que está vacío!!.");
             }else{
               categorias = responseJson;
-              console.log(categorias)
+              //console.log(categorias)
               //this.setState({ categoriasLoaded: true, itemChecked: null });  
               //this._seleccionaItem({index: null, id: null }) 
               this.organizarPorGrupos(categorias);
@@ -120,7 +123,7 @@ export default class cartaScreen extends React.Component {
     })
     this.setState({ categoriasLoaded: true, itemChecked: null });  
     this._seleccionaItem({index: null, id: null }) 
-    console.log(jsonFinal);
+    //console.log(jsonFinal);
   }
 
   _renderSectionList() {
@@ -144,8 +147,8 @@ export default class cartaScreen extends React.Component {
                                   uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
                               />   
                               <View style={{width:0, flexGrow: 1, marginTop: 15, marginRight: 15}}>
-                                <Text style={{fontSize: 20, color:"orange"}}>{item.name}</Text>
-                                <Text style={{fontSize: 16, color:"#343434",flexWrap: 'wrap'}}>{item.detalle}</Text>
+                                <Text style={{fontSize: 16, color:"orange"}}>{item.name}</Text>
+                                <Text style={{fontSize: 14, color:"#343434",flexWrap: 'wrap'}}>{item.detalle}</Text>
                                 { item.cboa_precio>0 ? 
                                   <Text style={localStyles.precio}>$ {item.cboa_precio}</Text>
                                 : null }
@@ -167,7 +170,8 @@ export default class cartaScreen extends React.Component {
 
 
   _goScreen = (params) => {
-    console.log('Desde contenidoScreen: goScreen');
+    //console.log('Desde contenidoScreen: goScreen');
+    //console.log(params.cboa_precio);
     if (this.state.itemChecked == null )
         this.props.navigation.navigate(params.cboa_go, { 
         params : params
@@ -175,7 +179,7 @@ export default class cartaScreen extends React.Component {
   }
 
   _seleccionaItem = (params) => {
-    console.log('selecciono: '+params.cboa_id)
+    //console.log('selecciono: '+params.cboa_id)
     this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
     if (this.state.itemChecked == null ){
       this.setState((previousState) => ({
@@ -196,9 +200,9 @@ export default class cartaScreen extends React.Component {
 
   _accionMenuPress = (data) => {
     const params = this.props.navigation.getParam('params','');
-    console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
+    //console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
     const item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
-    console.log(item[0]);
+    //console.log(item[0]);
     switch(data){
       case 'add': data='Nuevo';break;
       case 'edit': data='Editar';break;
@@ -220,7 +224,7 @@ export default class cartaScreen extends React.Component {
 
   render() {
     const item = this.props.navigation.getParam('params');
-    console.log(item);
+    //console.log(item);
     return (
       <View>
       <ScrollView>
@@ -228,6 +232,8 @@ export default class cartaScreen extends React.Component {
           <CacheImage
               style={localStyles.image}
               uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
+              crop={true}
+              blurRadius={2}
           />   
           <View style={localStyles.titleBox}>   
             {this.state.fontLoaded ? 
@@ -235,6 +241,15 @@ export default class cartaScreen extends React.Component {
                   style={[localStyles.title1,localStyles.shadow]}
               >{item.name}</Text> : null }
           </View>
+          <View style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}} >
+            {this.state.fontLoaded ? 
+              <Text 
+                  style={[localStyles.title1,localStyles.shadow]}
+              >{item.name}</Text> : null }
+            <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 20}]} >
+              {item.detalle}
+            </Text>   
+          </View>       
         </View>
         <View style={{padding: 15, paddingTop:10}}>
           <Text style={localStyles.title2} >{item.name}</Text>
@@ -244,7 +259,12 @@ export default class cartaScreen extends React.Component {
         </View>
         { this.state.categoriasLoaded ? ( 
               this._renderSectionList()
-          ) : null }
+          ) : (
+            <View style={{zIndex: 1000}} >
+             <ActivityIndicator  size={30} color={"#e74c3c"}/>
+            </View> 
+          )
+        }
       </ScrollView>
       <ActionMenu2
         callbackFromParent={this._accionMenuPress}
@@ -262,14 +282,19 @@ const localStyles = StyleSheet.create (
         resizeMode: "stretch",
         borderRadius:0,
         margin: 0,
-        height: screenWidth*0.80,
+        //height: screenWidth*0.80,
+        height: screenHeight,
       },
       imageProduct : {
-        width: screenWidth*0.25,
+        /*width: screenWidth*0.25,
         resizeMode: "stretch",
         margin: 15,
         borderRadius: 8,
-        height: screenWidth*0.25,
+        height: screenWidth*0.25,*/
+        width: screenWidth*0.20, 
+        height: screenWidth*0.20,
+        borderRadius: (screenWidth*0.20)/2, 
+        margin: 15,
       },      
     title1 : {
       fontFamily: 'RussoOne-Regular',
@@ -277,15 +302,17 @@ const localStyles = StyleSheet.create (
     }  ,
     shadow: {
       color: '#fff',
-      textShadowOffset: { width: 2, height: 2 },
+      textShadowOffset: { width: 0.5, height: 0.5 },
       textShadowRadius: 1,
       textShadowColor: '#000',
     },    
     titleBox : {
-      position: 'absolute', top:0, left: 0, color: "#fff", fontSize: 36,
-      justifyContent: 'center',
+      position: 'absolute', 
+      //top:0, left: 0, 
+      color: "#fff", fontSize: 36,
+      //justifyContent: 'center',
       alignItems: 'center',
-      height: screenWidth*0.80,
+      height: screenWidth*0.50,
       width: screenWidth,
     },
     title2 : {

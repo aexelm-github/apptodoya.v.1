@@ -124,7 +124,7 @@ export default class comerciosScreen extends React.Component {
 
   _getBoard = async () => {
     let formdata = new FormData();
-    formdata.append('parent',this.props.navigation.getParam('params','').id);
+    formdata.append('parent',this.props.navigation.getParam('params','').cboa_id);
     await this.setState({categoriasLoaded:false});
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getboard', {   
         method: "POST",
@@ -133,7 +133,7 @@ export default class comerciosScreen extends React.Component {
       .then( (response) => response.json() )
       .then( (responseJson) => {
           if (responseJson.length == 0){
-            alert("¡¡Oops!!. Parece que está vacío!!.");
+            //alert("¡¡Oops!!. Parece que está vacío!!.");
           }else{
             categorias = responseJson;
             this.setState({ categoriasLoaded: true, itemChecked: null });  
@@ -156,7 +156,7 @@ export default class comerciosScreen extends React.Component {
       onGoBack : this._getBoard,
       params : {
         commingFrom: 'comerciosScreen',
-        parentId: params.id,
+        parentId: params.cboa_id,
         action: data,
         id: this.state.itemChecked,
         data: this.state.itemChecked == null ? null : categorias[this.state.itemChecked],
@@ -167,24 +167,25 @@ export default class comerciosScreen extends React.Component {
 
   render() {
     const params = this.props.navigation.getParam('params','');
-    //console.log(params.id);
+    //console.log(params.cboa_id);
     const nombreCategoria = 'Default';//this.props.navigation.getParam('data','');
     return (
         <View style={[styles.container,{backgroundColor: '#fff'}]}>
           { this.state.categoriasLoaded ? (
           <View >
+              <ScrollView>  
               <View style={{backgroundColor: "#fff"}}> 
                 {
                     this.state.fontLoaded ? (
                     <Text style={localStyles.simpleName}  >
-                            {params.categoria}
+                            {params.name}
                     </Text>
                     ) : null
                 }    
                 <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
                 <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
               </View>              
-              <ScrollView>  
+              
               <FlatGrid
                 itemDimension={200}
                 items={categorias}
@@ -288,7 +289,7 @@ const localStyles = StyleSheet.create({
     height: 130,
     width: "100%",
     resizeMode: "stretch",
-    borderRadius:0,
+    borderRadius:5,
     margin: 0,
     height: screenWidth/2,
     borderWidth: 1,
