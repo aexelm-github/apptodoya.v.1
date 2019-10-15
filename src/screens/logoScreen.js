@@ -5,7 +5,7 @@ import {AsyncStorage} from 'react-native';
 
 const PRACTICE_TIME = 0.2* 1000;
 
-const retrieveStorage = {"value":''};
+const retrieveStorage = {"value":null};
 
 export default class logoScreen extends React.Component {
     constructor(props) {
@@ -16,29 +16,35 @@ export default class logoScreen extends React.Component {
         alert("exel");
       }
 
-    componentDidMount() {
-        this._retrieveData("keyLogin");
-        console.log("LogonScreen: " + retrieveStorage.value);
-        setTimeout(() => (
+    async componentDidMount() {
+        await this._retrieveData("keyLogin");
+        console.log( JSON.parse(retrieveStorage.value));
+        if (retrieveStorage.value == null)  {
+          this.props.navigation.navigate('AppStackLogin', {});
+        }else {
+          this.props.navigation.navigate('Categorias', { 
+            data : retrieveStorage.value
+          });          
+        }
+          
+        /*setTimeout(() => (
             this.props.navigation.navigate('AppStackLogin', {})
-            ), PRACTICE_TIME);        
+            ), PRACTICE_TIME);        */
     }
 
     _retrieveData = async (key) => {
       try {
         const value = await AsyncStorage.getItem(key);
         if (value !== null) {
-          keyStorage.keyLogin =  value;
-          console.log(keyStorage.keyLogin);
-          this.props.navigation.navigate('AppStackPpal', {})
+          retrieveStorage.value =  value;
+          //await this.props.navigation.navigate('AppStackPpal', {})
         }else{
-          console.log(key+" : No tiene nada!!!");
+          console.log('_retrieveData: error: logoScreen: '+value)
         }
       } catch (error) {
         // Error retrieving data
-        console.log(key+" : Error recuperando dato!!" + error);
       }
-    };
+    };    
 
   render() {
     return (

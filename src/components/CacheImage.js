@@ -10,8 +10,8 @@ export default class CacheImage extends React.Component {
 
   cropThis (img) {
     ImageEditor.cropImage(img.uri, {
-      offset: { x:140 , y:0 },
-      size: { width: 200, height: 270},
+      offset: { x:0 , y:0 },
+      size: { width: 280, height: 150},
       resizeMode : 'content'
     },
     uri => this.setState({ source : {uri: uri}}),

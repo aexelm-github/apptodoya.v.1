@@ -42,7 +42,7 @@ export default class comerciosScreen extends React.Component {
 
   _goScreen = (params) => {
       console.log('Desde comerciosScreen: goScreen incios');
-      //console.log(params);
+      console.log(params);
       console.log('Desde comerciosScreen: goScreen fin');
       if (this.state.itemChecked == null )
           this.props.navigation.navigate(params.cboa_go, { 
@@ -289,7 +289,7 @@ const localStyles = StyleSheet.create({
     height: 130,
     width: "100%",
     resizeMode: "stretch",
-    borderRadius:5,
+    borderRadius:0,
     margin: 0,
     height: screenWidth/2,
     borderWidth: 1,

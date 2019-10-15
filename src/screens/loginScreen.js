@@ -18,6 +18,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import CustomButton from '../components/customButton';
 import CustomInput from '../components/customInput';
 import {AsyncStorage} from 'react-native';
+
 GLOBAL = require('../globals/globals');
 const retrieveStorage = {"value":''};
 
@@ -74,19 +75,20 @@ export default class loginScreen extends React.Component {
       _storeData = async (key, value) => {
         try {
           await AsyncStorage.setItem(key, JSON.stringify(value));
-          console.log(key + " " + value);
         } catch (error) {
           console.log("Error al salvar datos locales!!");
         }
       }
       
-      _retrieveData = async (props) => {
+      _retrieveData = async (key) => {
         try {
-          const value = await AsyncStorage.getItem('value');
+          const value = await AsyncStorage.getItem(key);
           if (value !== null) {
-            console.log(value);
+            console.log('_retrieveData: '+value);
             retrieveStorage.value =  value;
             console.log(retrieveStorage.value);
+          }else{
+            console.log('_retrieveData: error: loginScreen: '+value)
           }
         } catch (error) {
           // Error retrieving data
@@ -112,7 +114,9 @@ export default class loginScreen extends React.Component {
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
                   }else{
-                    this._storeData("keyLogin",responseJson);                   
+                    this._storeData("keyLogin",responseJson); 
+                    console.log(responseJson)
+                    this._retrieveData("keyLogin")        
                     this.props.navigation.navigate('Categorias', { 
                         data : JSON.stringify(responseJson)
                     });

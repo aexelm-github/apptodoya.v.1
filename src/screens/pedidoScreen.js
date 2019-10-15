@@ -15,16 +15,13 @@ import {
         SectionList,
       } from 'react-native';
 import { Permissions, Constants} from 'expo';
-//import * as Permissions from 'expo-permissions'
-//import Constants from 'expo-constants'
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
 import { CheckBox } from 'react-native-elements'
 import ActionMenu2 from '../components/ActionMenu2';
+import {AsyncStorage} from 'react-native';
 
 GLOBAL = require('../globals/globals');
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -32,10 +29,12 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 
 let didMountParams = null;
+let didMountParamsParent = null;
 let categorias;
 let jsonFinal = new Array;
 let jsonGrupo = new Array;
 let checkboxSelected = new Array;
+
 
 export default class pedidoScreen extends React.Component {
     constructor(props) {
@@ -48,37 +47,48 @@ export default class pedidoScreen extends React.Component {
           categoriasLoaded: false,
           itemChecked: null,
           estosBotonesActivos: {"add": true,"delete":false, "edit": false},
-          Total : '$0.00',
+          Total : '$ 0.00',
           informacionAdicional: null,
+          latitud : null,
+          longitud: null,
         }
     }
 
-    handleChange(data) {
+    async handleChange(data) {
       this.setState(data);
+      AsyncStorage.setItem('direccion',this.state.direccion)
     }
+
+    
 
     static navigationOptions = ({navigation}) => {
       return {
-        headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
-                                          TodoYa
-                              </Text>},
+        headerTitle: (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
             <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
               onPress={() => {  navigation.openDrawer() }}
               style={{width:40, height:40, borderRadius:20, alignItems:'center', justifyContent:'center'}}
             >
-                <Ionicons name='ios-menu' color='#3498db' size={36} />
+                <Ionicons name='ios-menu' color='#fff' size={36} />
             </TouchableHighlight>
-          </View>
-          
+          </View>          
         ),
+        headerTransparent: true,
+        headerTintColor: '#fff',
+        headerStyle : {
+          //backgroundColor: '#3498db',
+          backgroundColor: '#00000033',
+        }
       };
     };  
 
     async componentDidMount() {
       this.getPermissionAsync();
       didMountParams = this.props.navigation.getParam('params');
+      didMountParamsParent = this.props.navigation.getParam('paramsParent');
+      console.log(didMountParamsParent)
+      console.log('<<<<< entro a pedidos')
       checkboxSelected = new Array;
       if (didMountParams.action != 'Nuevo') {
         this.setState((previousState) => (
@@ -95,6 +105,12 @@ export default class pedidoScreen extends React.Component {
         this._keyboardDidHide,
       );
       this._getBoard();
+      //this.goMaps()
+      console.log('oho'+ await AsyncStorage.getItem('direccion'))
+      const direccion =  await AsyncStorage.getItem('direccion')
+      console.log('ojo'+direccion)
+      this.setState({direccion : direccion})
+      
     }
   
   componentWillUnmount() {
@@ -102,6 +118,14 @@ export default class pedidoScreen extends React.Component {
       this.keyboardDidHideListener.remove();
   }
   
+  find_dimensions(layout){
+    const {x, y, width, height} = layout;
+    console.log(x);
+    console.log(y);
+    console.log(width);
+    console.log(height);
+  }
+
   _keyboardDidShow = (e) => {
       keyboardParams = {
           keyboardHeight: e.endCoordinates.height,
@@ -189,7 +213,7 @@ export default class pedidoScreen extends React.Component {
       }else{
         checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio, name: item.name })
       }
-      console.log(checkboxSelected)
+      //console.log(checkboxSelected)
       let total = 0;
       checkboxSelected.map((item) => {
         total+= parseInt(item.precio);
@@ -247,11 +271,35 @@ export default class pedidoScreen extends React.Component {
     }
   
     goMaps() {
-      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this)})
+      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Pedido'})
+    }
+
+    async _confirmPedido() {
+      if (this.state.direccion==null) {
+        alert('Oops!!. Falta definir una dirección.')
+        return
+      }
+      if (this.state.Total=="$ 0.00") {
+        alert('Oops!!. No hay nada por pagar.')
+        return
+      }
+      const pedido = { 
+                        direccion : this.state.direccion, detalle : checkboxSelected,
+                        informacionAdicional: this.state.informacionAdicional,
+                        comercio: didMountParamsParent.name,
+                        idComercio: didMountParamsParent.cboa_id,
+                        productName: didMountParams.name,
+                     }
+
+      await AsyncStorage.setItem("pedido",JSON.stringify(pedido), 
+            () => {
+              this.props.navigation.navigate('ConfirmPedido', {})
+            })
     }
     
   render() {
     const params = this.props.navigation.getParam('params');
+    const paramsParent = this.props.navigation.getParam('paramsParent');
     //console.log(this.state);
     return (
       <View
@@ -260,13 +308,24 @@ export default class pedidoScreen extends React.Component {
       >
         <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
         <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
-        <TouchableOpacity style={localStyles.imageView} >
+        <View style={styles.container} elevation={15}>
           <CacheImage
             style={localStyles.image}
             uri= {GLOBAL.BASE_URL+'/images/'+params.foto}
           />
-        </TouchableOpacity>
-        <View style={{padding: 20, paddingTop:10}}>
+          <View 
+              style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}}
+              onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }} 
+           >
+            <Text 
+                  style={[localStyles.title1,localStyles.shadow]}
+              >{paramsParent.name}</Text>
+            <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 18}]} >
+              {paramsParent.detalle}
+            </Text>   
+          </View>    
+        </View>
+        <View style={{padding: 20, paddingTop:30}}>
           <Text style={localStyles.title2} >{params.name}</Text>
           <Text style={localStyles.paragraph} >
             {params.detalle}
@@ -307,7 +366,7 @@ export default class pedidoScreen extends React.Component {
         <CustomButton 
             title={`[ ${this.state.Total} ] Confirmar Pedido`}
             style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
-            onPress={() =>{}}
+            onPress={() =>{this._confirmPedido()}}
         />  
         </View>
         <ActionMenu2
@@ -332,7 +391,14 @@ const localStyles = StyleSheet.create({
   iconCamera : {
     
   },
-  image: {  width: screenWidth*0.25, height: screenWidth*0.25, borderRadius: (screenWidth*0.25)/2, },
+  image: {  
+    /*width: screenWidth*0.25, 
+    height: screenWidth*0.25, 
+    borderRadius: (screenWidth*0.25)/2,*/
+    width: '100%',
+    height: screenHeight*0.5, 
+    borderRadius: 0,
+  },
   inputText : {
     width:'100%', 
     padding: 10,
@@ -372,5 +438,16 @@ const localStyles = StyleSheet.create({
     textAlign: 'justify',
     color: "#00000077",
   },
+  shadow: {
+    color: '#fff',
+    textShadowOffset: { width: 0.4, height: 0.4 },
+    textShadowRadius: 1,
+    textShadowColor: '#000',
+  }, 
+  title1 : {
+    //fontFamily: 'RussoOne-Regular',
+    fontFamily: 'Roboto-Medium',
+    color: "#fff", fontSize: 30,
+  }  ,
 
 })

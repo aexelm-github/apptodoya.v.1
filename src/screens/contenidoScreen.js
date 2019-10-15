@@ -11,13 +11,15 @@ import { Button,
          FlatList,
          SectionList,
          ActivityIndicator,
+         Animated,
         } from 'react-native';
 import styles from '../styles/stylesOne';
 import CacheImage from '../components/CacheImage';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Font from 'expo-font'
 import ActionMenu2 from '../components/ActionMenu2';
+import {AsyncStorage} from 'react-native';
 
 GLOBAL = require('../globals/globals');
 
@@ -38,19 +40,19 @@ export default class cartaScreen extends React.Component {
           categoriasLoaded: false,
           itemChecked: null,
           estosBotonesActivos: {"add": true,"delete":false, "edit": false},
+          hora: '',
+          heartLike: false,
+          x1HeightLayout: null,
+          x1Height:  screenHeight *.80,
+          x1HeightAnimated:  new Animated.Value(screenHeight *.80),
+          x1Full : true,
         }
 
     }
 
     static navigationOptions = ({navigation}) => {
       return {
-        headerTitle: (<Text style={{paddingLeft: 2  , color: "#fff"}} >TodoYA!</Text>),
-       /* headerLeft: (
-          <Image 
-            source={require('../images/TodoYa-03.png')} 
-            style={{marginLeft: 8,marginTop: 5, width:50,height: 50, resizeMode:'stretch'}}
-          />
-        ),*/
+        headerTitle: (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
         headerRight: (
           <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
@@ -65,9 +67,7 @@ export default class cartaScreen extends React.Component {
         headerTintColor: '#fff',
         headerStyle : {
           //backgroundColor: '#3498db',
-          backgroundColor: '#00000033',
-          
-          
+          backgroundColor: '#00000000',
         }
       };
     };
@@ -75,11 +75,38 @@ export default class cartaScreen extends React.Component {
     async componentDidMount() { 
       await  Font.loadAsync({
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
+        'Roboto-Thin': require('../../assets/fonts/Roboto/Roboto-Thin.ttf'),
+        'Roboto-Medium': require('../../assets/fonts/Roboto/Roboto-Medium.ttf'),
       });
       this.setState({ fontLoaded: true });  
       this._getBoard();
+      this.getTimeDate();
+      const item = this.props.navigation.getParam('params');
+      await AsyncStorage.setItem("fotoComercio",item.foto)
+            
     }
 
+    find_dimesions(layout){
+      const {x, y, width, height} = layout;
+      this.setState({x1HeightLayout: height})
+    }
+
+    getTimeDate() {
+      var wDay = new Array('Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado')
+      var nMonth = new Array('Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre')
+      var nDay = new Date().getDay();
+      var date = new Date().getDate(); //Current Date
+      var month = new Date().getMonth() ; //Current Month
+      var year = new Date().getFullYear(); //Current Year      
+      var hours = new Date().getHours(); //Current Hours
+      var min = new Date().getMinutes(); //Current Minutes
+      var sec = new Date().getSeconds(); //Current Seconds      
+
+      var day = wDay[nDay];
+      var Mes = nMonth[month]
+
+      this.setState({ hora: hours + ':' + ("00" + min).slice(-2) , fecha : day +', '+date+' de '+Mes })
+    }
 
     _getBoard = async () => {
       //console.log('_getBoard(): ');
@@ -172,9 +199,15 @@ export default class cartaScreen extends React.Component {
   _goScreen = (params) => {
     //console.log('Desde contenidoScreen: goScreen');
     //console.log(params.cboa_precio);
+    console.log(params)
+    console.log('con lo del parent >>>>')
+    const paramsParent = this.props.navigation.getParam('params','')
+    console.log(paramsParent)
+    console.log('con lo del parent >>>>')
     if (this.state.itemChecked == null )
         this.props.navigation.navigate(params.cboa_go, { 
-        params : params
+          params : params,
+          paramsParent : this.props.navigation.getParam('params','')
         }); 
   }
 
@@ -222,26 +255,74 @@ export default class cartaScreen extends React.Component {
     }); 
   }
 
+  _heartLike = () => {
+    console.log(this.props)
+    this.state.heartLike ? this.setState({heartLike: false}):this.setState({heartLike: true})
+  }
+
+  _test = () => {
+    const { x1Height, x1Full, x1HeightLayout,x1HeightAnimated } = this.state
+    const newHeight = x1Full ? x1HeightLayout+100 : screenHeight *.80
+    this.setState({x1Height : newHeight, x1Full : x1Full ? false : true });
+    console.log('this.state.x1Height: '+newHeight)
+    console.log(this.state.x1Height)
+    Animated.timing(
+      // Animate over time
+      this.state.x1HeightAnimated, // The animated value to drive
+      {
+        toValue: newHeight, // Animate to opacity: 1 (opaque)
+        duration: 200, // Make it take a while
+      }
+    ).start(); // Starts the animation    
+  }
+
   render() {
     const item = this.props.navigation.getParam('params');
+
     //console.log(item);
     return (
       <View>
       <ScrollView>
-        <View style={[styles.container]}>
+        <Animated.View style={[styles.container, {height: this.state.x1HeightAnimated}]} elevation={20}>
           <CacheImage
-              style={localStyles.image}
+              style={[localStyles.image]}
               uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
               crop={true}
-              blurRadius={2}
+              blurRadius={1}
           />   
+          
+          {this.state.fontLoaded && this.state.x1Full ? 
+          <View style={{position: 'absolute', top: 100, left: 20}} >  
+            <Text style={[localStyles.shadow,{fontSize: 50, color:'#fff', fontFamily:'Roboto-Thin'}]}>
+              {this.state.hora}
+            </Text>
+            <Text style={[localStyles.shadow, {color:"#ffF", fontSize: 16 }]}>{this.state.fecha}</Text>   
+            <View style={{flexDirection: 'row'}}>
+              <Ionicons name='md-star' color='#fff' size={28} style={[localStyles.shadow, {}]}/>
+              <Ionicons name='md-star' color='#fff' size={28} style={[localStyles.shadow, {}]}/>
+              <Ionicons name='md-star' color='#fff' size={28} style={[localStyles.shadow, {}]}/>
+              <Ionicons name='md-star' color='#fff' size={28} style={[localStyles.shadow, {}]}/>
+              <Ionicons name='md-star' color='#fff' size={28} style={[localStyles.shadow, {}]}/>
+            </View>       
+            <Text style={[localStyles.shadow, {color:"#ffF", fontSize:16, paddingRight: 30, paddingTop: 15}]}>Horario de Atención{'\n'}08:00 am a 09:00 pm</Text>          
+          </View> 
+          : null }
+          {this.state.x1Full ? 
+            <View 
+              style={{position:'absolute', top:100, right: 20, justifyContent:'center', alignItems: 'center'}} 
+              onPress={() => {this._heartLike()}}
+            >
+              { this.state.heartLike ? 
+                <Ionicons onPress={() => {this._heartLike()}} name="ios-heart" size={46}  color='#e74c3c' />
+              : <Ionicons onPress={() => {this._heartLike()}} name="ios-heart-empty" size={46}  color='#ffffff55'  />
+              }
+            </View>
+          : null}
           <View style={localStyles.titleBox}>   
-            {this.state.fontLoaded ? 
-              <Text 
-                  style={[localStyles.title1,localStyles.shadow]}
-              >{item.name}</Text> : null }
           </View>
-          <View style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}} >
+          <View style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}} 
+                onLayout={(event) => { this.find_dimesions(event.nativeEvent.layout) }}  
+          >
             {this.state.fontLoaded ? 
               <Text 
                   style={[localStyles.title1,localStyles.shadow]}
@@ -250,8 +331,11 @@ export default class cartaScreen extends React.Component {
               {item.detalle}
             </Text>   
           </View>       
-        </View>
-        <View style={{padding: 15, paddingTop:10}}>
+          <TouchableOpacity onPress={() => {this._test()}} style={[localStyles.iconDown,{backgroundColor: '#fff'}]} elevation={15} >
+              <MaterialCommunityIcons  name= {this.state.x1Full? 'chevron-up':'chevron-down'} size={25} color="#e74c3c" />
+          </TouchableOpacity>              
+        </Animated.View>
+        <View style={{padding: 15, paddingTop:30}}>
           <Text style={localStyles.title2} >{item.name}</Text>
           <Text style={localStyles.paragraph} >
             {item.detalle}
@@ -279,11 +363,11 @@ const localStyles = StyleSheet.create (
   {
     image : {
         width: "100%",
-        resizeMode: "stretch",
+        //resizeMode: "stretch",
         borderRadius:0,
         margin: 0,
         //height: screenWidth*0.80,
-        height: screenHeight,
+        height: '100%',
       },
       imageProduct : {
         /*width: screenWidth*0.25,
@@ -291,18 +375,19 @@ const localStyles = StyleSheet.create (
         margin: 15,
         borderRadius: 8,
         height: screenWidth*0.25,*/
-        width: screenWidth*0.20, 
-        height: screenWidth*0.20,
-        borderRadius: (screenWidth*0.20)/2, 
+        width: screenWidth*0.15, 
+        height: screenWidth*0.15,
+        borderRadius: (screenWidth*0.15)/2, 
         margin: 15,
       },      
     title1 : {
-      fontFamily: 'RussoOne-Regular',
+      //fontFamily: 'RussoOne-Regular',
+      fontFamily: 'Roboto-Medium',
       color: "#fff", fontSize: 36,
     }  ,
     shadow: {
       color: '#fff',
-      textShadowOffset: { width: 0.5, height: 0.5 },
+      textShadowOffset: { width: 0.4, height: 0.4 },
       textShadowRadius: 1,
       textShadowColor: '#000',
     },    
@@ -353,5 +438,18 @@ const localStyles = StyleSheet.create (
       fontSize: 18, color:"#e74c3c", textAlign: 'right',
       marginRight: 5,
     },
+    iconDown: {
+      position: 'absolute',
+      bottom: -30,
+      borderWidth: 0,
+      borderColor: 'white',
+      width: 60,
+      height: 60,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 30,
+      backgroundColor: 'orange',
+      marginRight: 5,
+    }      
    }
 )

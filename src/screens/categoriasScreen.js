@@ -72,17 +72,29 @@ export default class categoriasScreen extends React.Component {
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
       this.setState({ fontLoaded: true });  
-      console.log(screenHeight + " " + screenWidth)
-
+      //console.log(this.props)
+      this.goMaps()
       // Buscar en servidor de BBDD 
       this._getBoard();
+      
+    }
+
+    goMaps() {
+      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Categorias'})
+    }
+
+    handleChange = async (data) => {
+      this.setState(data);
+      console.log(data.direccion);
+      await AsyncStorage.setItem('direccion',data.direccion)
+      
     }
 
     _getBoard = async () => {
       let formdata = new FormData();
       formdata.append('parent',0);
       await this.setState({categoriasLoaded:false});
-      await fetch('http://todoya2.aexelm.com/index.php/maincontrol/getboard', {   
+      await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getboard', {   
           method: "POST",
           body: formdata,
         })
@@ -98,6 +110,23 @@ export default class categoriasScreen extends React.Component {
             }
       });   
     }
+
+
+    _retrieveData = async (key) => {
+      try {
+        const value = await AsyncStorage.getItem(key);
+        if (value !== null) {
+          keyStorage.keyLogin =  value;
+          console.log(keyStorage.keyLogin);
+          this.props.navigation.navigate('AppStackPpal', {})
+        }else{
+          console.log(key+" : No tiene nada!!!");
+        }
+      } catch (error) {
+        // Error retrieving data
+        console.log(key+" : Error recuperando dato!!" + error);
+      }
+    };    
 
     _removeData = async (key) => {
       try {

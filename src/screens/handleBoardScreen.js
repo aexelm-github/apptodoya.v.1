@@ -73,7 +73,7 @@ export default class ImagePickerX extends React.Component {
   async componentDidMount() {
     this.getPermissionAsync();
     didMountParams = this.props.navigation.getParam('params');
-    
+    console.log(didMountParams);
     if (didMountParams.action != 'Nuevo') {
       this.setState((previousState) => (
          {...previousState,  
@@ -84,6 +84,8 @@ export default class ImagePickerX extends React.Component {
           'tipoGo': didMountParams.data.cboa_go,
         }
       ))      
+    }else{
+      didMountParams.go == 'Pedido' ? this.setState({tipoGo : 'Pedido'}) : null;
     }
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
@@ -291,7 +293,7 @@ _keyboardDidHide = () => {
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     const grupoPickerOPtions = params.jsonGrupo;
-    const tipoOpcionPicker = params.commingFrom=='comerciosScreen' ?  ['Contenido','Pedido'] : ['Comercios','Contenido','Pedido']
+    const tipoOpcionPicker = params.commingFrom=='comerciosScreen' ?  ['Contenido','Pedido'] : ['Comercios','Contenido']
     
     console.log(params)
     return (

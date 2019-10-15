@@ -10,11 +10,10 @@ import { Button,
         } from 'react-native';
 import styles from '../styles/stylesOne';
 import { Permissions } from 'expo';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-//import Constants from 'expo-constants'
-//import Permissions from 'expo-permissions'
-//import MapView from 'react-native-maps'
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import {AsyncStorage} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import CustomButton from '../components/customButton';
 
 GLOBAL = require('../globals/globals');
 
@@ -59,8 +58,8 @@ export default class mapScreen extends React.Component {
       }; 
 
     async componentDidMount() {
-        console.log('exel');
-        console.log(Permissions.LOCATION);
+        //console.log('exel');
+        //console.log(Permissions.LOCATION);
         const { status } = await  Permissions.getAsync(Permissions.LOCATION)
     
         if (status !== 'granted'){
@@ -74,8 +73,9 @@ export default class mapScreen extends React.Component {
                   latitude: latitude,
                   longitude: longitude,
                 }
-              }))
-              console.log('State:',this.state)
+              }))   
+              //console.log('State:',this.state)
+              //await AsyncStorage.setItem("gpsLocation",region)
                 this.showAddress(this.state.latitude, this.state.longitude);
             }),
             (error) => console.log('Error:', error)
@@ -93,42 +93,70 @@ export default class mapScreen extends React.Component {
         .then((response) => response.json())
         .then((responseJson) => {
             //console.log('ADDRESS GEOCODE is BACK!! => ' + JSON.stringify(responseJson));
-            console.log(responseJson.results[0].address_components[0])
-            console.log(responseJson.results[0].address_components[1])
+            //console.log(responseJson.results[0].address_components[0])
+            //console.log(responseJson.results[0].address_components[1])
             const address = responseJson.results[0].address_components[1].short_name+" "+responseJson.results[0].address_components[0].short_name
             responseJson.results.map((item, index) => {
               //console.log(item.formatted_address); 
             });
             this.setState({ formatted_address: address });
-            this.props.navigation.state.params.handleChange({ direccion: address })
+            //this.props.navigation.state.params.handleChange({ direccion: address })
     })
   }    
 
-  onRegionChange = (region) => {
-    console.log(region);
+  onRegionChange = async (region) => {
+    //console.log(region);
     this.setState({
       region
     })
     this.showAddress(region.latitude, region.longitude)
+    await AsyncStorage.setItem("gpsLocation",JSON.stringify(region))
+    const gpsLocation = await AsyncStorage.getItem("gpsLocation")
+    console.log(gpsLocation)
   }
+
+  _usarDireccion = () => {
+    const { commingFrom } = this.props.navigation.state.params
+    this.props.navigation.state.params.handleChange({ direccion:  this.state.formatted_address, })
+    this.props.navigation.navigate(commingFrom)
+  }
+
+  _retrieveData = async (key) => {
+    try {
+      const value = await AsyncStorage.getItem(key);
+      if (value !== null) {
+        retrieveStorage.value =  value;
+        //await this.props.navigation.navigate('AppStackPpal', {})
+      }else{
+        console.log('_retrieveData: error: logoScreen: '+value)
+      }
+    } catch (error) {
+      // Error retrieving data
+    }
+  };    
 
   render() {
     const { region } = this.state
     
     if (this.state.latitude) {
         return (
-        <View style={{flex:1}}>
+        <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
           <MapView
               /*showsUserLocation*/
-              style={{ flex : 1}}
+              style={{ flex : 1, width:'100%'}}
               initialRegion={region}
               onRegionChangeComplete={this.onRegionChange}
           >
           </MapView>
-          <Ionicons style={localStyles.markerFixed } name='md-locate' color='red' size={36} />
+          <FontAwesome style={localStyles.markerFixed } name='map-pin' color='red' size={36} />
           <Text style={localStyles.address}>
             {this.state.formatted_address}
           </Text>
+          <CustomButton 
+              title={'Usar dirección'}
+              style={[ styles.buttonViewLogin, {margin:0, width: '100%',position:'absolute',bottom:0, marginBottom: 0, backgroundColor: '#e17055'}]}
+              onPress={() => this._usarDireccion()}
+          />
         </View>
         );
     }
@@ -144,16 +172,17 @@ const localStyles = StyleSheet.create({
   address : {
     position: 'absolute',
     color: '#fff',
-    backgroundColor: '#34495e99',
-    padding: 20,
+    backgroundColor: '#34495eee',
+    padding: 10,
     textAlign: 'center',
-    margin: 20,
-    borderRadius: 10,
-    width: '90%',
+    marginTop: 10,
+    borderRadius: 4,
+    //width: '90%',
+    top: '40%',
   },
   markerFixed: {
     left: '50%',
-    marginLeft: -17,
+    marginLeft: -10,
     marginTop: -17,
     position: 'absolute',
     top: '50%'

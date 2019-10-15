@@ -14,7 +14,7 @@ import {
         Text
       } from 'react-native';
 
-  import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
@@ -67,6 +67,7 @@ export default class ImagePickerX extends React.Component {
   async componentDidMount() {
     //this.getPermissionAsync();
     didMountParams = this.props.navigation.getParam('params');
+    console.log(didMountParams);
     
     if (didMountParams.action != 'Nuevo') {
       this.setState((previousState) => (

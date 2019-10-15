@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, Text, View, ScrollView , Dimensions, Button} from 'react-native';
+import {AsyncStorage} from 'react-native';
 import { 
         createStackNavigator, 
         createSwitchNavigator, 
@@ -25,6 +26,7 @@ import Styles from "./src/styles/stylesOne"
 import CustomButton from "./src/components/customButton";
 import pedidoDescriptivoScreen from './src/screens/pedidoDescriptivoScreen';
 import mapScreen from './src/screens/mapScreen';
+import confirmPedido from './src/screens/confirmPedido';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -41,7 +43,12 @@ const screenHeight = Math.round(Dimensions.get('window').height);
     }
   }
 
+
   class closeSession extends React.Component {
+    deleteKey = async() => {
+      await AsyncStorage.removeItem("keyLogin");
+      this.props.navigation.navigate('Login')
+    }
     render() {
       return (
         <View style={[Styles.container,{}]} >
@@ -53,7 +60,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
           </Text>
           <CustomButton 
               title="Cerrar Sesíón" 
-              onPress={() => {this.props.navigation.navigate('Login')}}
+              onPress={() => {this.deleteKey()}}
               style={{marginBottom: 15, width: 200, height: 50 }}
               fontSize={12}
 
@@ -110,6 +117,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
       PedidoDescriptivo: pedidoDescriptivoScreen,
       Carta: cartaScreen ,
       Pedido: pedidoScreen,
+      ConfirmPedido: confirmPedido,
       HandleBoard: handleBoardScreen,
       HandleBoardPedido: handleBoardPedido,
       Mapa: mapScreen,
