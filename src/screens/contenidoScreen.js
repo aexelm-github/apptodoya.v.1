@@ -28,7 +28,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 
 const PRACTICE_TIME = 2* 1000;
-let categorias;
+let categorias = null;
 let jsonFinal = new Array;
 let jsonGrupo = new Array;
 
@@ -234,7 +234,10 @@ export default class cartaScreen extends React.Component {
   _accionMenuPress = (data) => {
     const params = this.props.navigation.getParam('params','');
     //console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
-    const item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
+    let item = null
+    if (categorias !== null ) {
+      item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
+    } 
     //console.log(item[0]);
     switch(data){
       case 'add': data='Nuevo';break;
@@ -248,7 +251,7 @@ export default class cartaScreen extends React.Component {
         parentId: params.cboa_id,
         action: data,
         id: this.state.itemChecked,
-        data: this.state.itemChecked == null ? null : item[0],
+        data: this.state.itemChecked == null ? null : (item==null?null:item[0]),
         go: 'Pedido',
         jsonGrupo: jsonGrupo,
       }
@@ -260,7 +263,7 @@ export default class cartaScreen extends React.Component {
     this.state.heartLike ? this.setState({heartLike: false}):this.setState({heartLike: true})
   }
 
-  _test = () => {
+  _OpenShrink = () => {
     const { x1Height, x1Full, x1HeightLayout,x1HeightAnimated } = this.state
     const newHeight = x1Full ? x1HeightLayout+100 : screenHeight *.80
     this.setState({x1Height : newHeight, x1Full : x1Full ? false : true });
@@ -331,7 +334,7 @@ export default class cartaScreen extends React.Component {
               {item.detalle}
             </Text>   
           </View>       
-          <TouchableOpacity onPress={() => {this._test()}} style={[localStyles.iconDown,{backgroundColor: '#fff'}]} elevation={15} >
+          <TouchableOpacity onPress={() => {this._OpenShrink()}} style={[localStyles.iconDown,{backgroundColor: '#fff'}]} elevation={15} >
               <MaterialCommunityIcons  name= {this.state.x1Full? 'chevron-up':'chevron-down'} size={25} color="#e74c3c" />
           </TouchableOpacity>              
         </Animated.View>

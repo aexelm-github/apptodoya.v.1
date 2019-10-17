@@ -72,8 +72,8 @@ export default class categoriasScreen extends React.Component {
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
       this.setState({ fontLoaded: true });  
-      //console.log(this.props)
-      this.goMaps()
+      const JSONpedido = await AsyncStorage.getItem('JSONPedido')
+      JSONpedido == null ? this.goMaps() : this.props.navigation.navigate('Carrito')
       // Buscar en servidor de BBDD 
       this._getBoard();
       

@@ -22,6 +22,8 @@ import styles from '../styles/stylesOne';
 import { CheckBox } from 'react-native-elements'
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
+import { Divider } from 'react-native-elements';
+
 
 GLOBAL = require('../globals/globals');
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -35,6 +37,34 @@ let jsonFinal = new Array;
 let jsonGrupo = new Array;
 let checkboxSelected = new Array;
 
+const ModalShow = (props) =>  {
+      const { onPress } = props;
+      return (
+        <View style={localStyles.modal}>
+          <View style={{overflow: 'hidden', 
+                        margin: 15, backgroundColor: '#fff',
+                        padding: 15, paddingBottom: 110, 
+                        borderRadius: 10, minHeight: 300,
+                        borderWidth: 2,
+                        borderColor: "#fff",
+                        alignItems: 'center',
+                        }} elevation={10}>
+            <Text style={{fontSize: 30}}>¡Qué bien!</Text>
+            <Text style={{fontSize: 18, margin: 15}}>Enhorabuena!. Acabas de agregar un pedido a tu carrito. Puedes en este momento confirmar en 'PEDIR TODOYA!' para dar inicio al envío o bien puedes agregar otro pedido en el mismo local.</Text>
+            <CustomButton 
+                title={`Agregar mas +`}
+                style={[localStyles.buttonModal,{position:'absolute',bottom:5, backgroundColor:'#5dade2'} ]}
+                onPress={() =>{onPress("agregarMas")}}
+            /> 
+            <CustomButton 
+                title={`Pedir TodoYa! `}
+                style={[localStyles.buttonModal,{position:'absolute',bottom:56} ]}
+                onPress={() =>{onPress("pedirTodoYa")}}
+            />             
+          </View>
+        </View>
+      )
+  }
 
 export default class pedidoScreen extends React.Component {
     constructor(props) {
@@ -51,6 +81,8 @@ export default class pedidoScreen extends React.Component {
           informacionAdicional: null,
           latitud : null,
           longitud: null,
+          showModal : false,
+          totalCalculado: 0,
         }
     }
 
@@ -87,7 +119,7 @@ export default class pedidoScreen extends React.Component {
       this.getPermissionAsync();
       didMountParams = this.props.navigation.getParam('params');
       didMountParamsParent = this.props.navigation.getParam('paramsParent');
-      console.log(didMountParamsParent)
+      //console.log(didMountParams)
       console.log('<<<<< entro a pedidos')
       checkboxSelected = new Array;
       if (didMountParams.action != 'Nuevo') {
@@ -106,9 +138,7 @@ export default class pedidoScreen extends React.Component {
       );
       this._getBoard();
       //this.goMaps()
-      console.log('oho'+ await AsyncStorage.getItem('direccion'))
       const direccion =  await AsyncStorage.getItem('direccion')
-      console.log('ojo'+direccion)
       this.setState({direccion : direccion})
       
     }
@@ -220,6 +250,7 @@ export default class pedidoScreen extends React.Component {
       })
       //this.setState({Total: '$ '+ new Intl.NumberFormat("en-US").format(total)+'.00'})
       this.setState({Total: '$ '+ (total)+'.00'})
+      this.setState({totalCalculado: total})
     }
 
     _renderSectionList() {
@@ -289,12 +320,49 @@ export default class pedidoScreen extends React.Component {
                         comercio: didMountParamsParent.name,
                         idComercio: didMountParamsParent.cboa_id,
                         productName: didMountParams.name,
+                        fotoComercio: didMountParamsParent.foto,
+                        detalleComercio: didMountParamsParent.detalle,
+                        precio: didMountParams.cboa_precio,
+                        totalCalculado: this.state.totalCalculado,
                      }
+      
+      //AsyncStorage.removeItem("JSONpedido");
 
-      await AsyncStorage.setItem("pedido",JSON.stringify(pedido), 
-            () => {
-              this.props.navigation.navigate('ConfirmPedido', {})
-            })
+      const JSONpedido = await AsyncStorage.getItem('JSONpedido')
+      
+      if (JSONpedido===null) {
+        let JSONpedidoArray = new Array(pedido)
+        await AsyncStorage.setItem('JSONpedido',JSON.stringify(JSONpedidoArray))
+        console.log(JSONpedidoArray)
+
+      }else{
+        //await AsyncStorage.getItem('JSONpedido').then(console.log)
+        let JSONpedidoArray = new Array(...JSON.parse(JSONpedido))
+        JSONpedidoArray.push(pedido)
+        console.log(JSONpedidoArray)
+        await AsyncStorage.setItem('JSONpedido',JSON.stringify(JSONpedidoArray))
+      }
+      /*await AsyncStorage.setItem("pedido",JSON.stringify(pedido), 
+        () => {
+          this.props.navigation.navigate('ConfirmPedido', {})
+        }
+      )*/
+      this.setState({showModal: true})
+      //this.props.navigation.goBack()
+      //this.props.navigation.navigate('Carrito')
+      await AsyncStorage.setItem('estadoPedidoActual','enCreacion')
+    }
+
+    adminModal(number) {
+      switch(number) {
+        case "agregarMas": 
+          this.props.navigation.goBack()
+        break;
+        case "pedirTodoYa":
+          this.props.navigation.goBack()
+          this.props.navigation.navigate('Carrito')
+        break;
+      }
     }
     
   render() {
@@ -364,7 +432,7 @@ export default class pedidoScreen extends React.Component {
         </ScrollView>
    
         <CustomButton 
-            title={`[ ${this.state.Total} ] Confirmar Pedido`}
+            title={`[ ${this.state.Total} ] Agregar`}
             style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
             onPress={() =>{this._confirmPedido()}}
         />  
@@ -373,7 +441,13 @@ export default class pedidoScreen extends React.Component {
           callbackFromParent={this._accionMenuPress}
           estosBotonesActivos={this.state.estosBotonesActivos}
         /> 
+        { this.state.showModal ? 
+        <ModalShow
+          onPress={(number) => {this.adminModal(number)}}
+        ></ModalShow>
+        : null }
       </View>
+     
 
     );
   }
@@ -449,5 +523,17 @@ const localStyles = StyleSheet.create({
     fontFamily: 'Roboto-Medium',
     color: "#fff", fontSize: 30,
   }  ,
-
+  modal : {
+    position: 'absolute', 
+    top: 0, left: 0, width: '100%', height: '100%',
+    backgroundColor:'#00000088', 
+    justifyContent: 'center', alignContent: 'center',
+  },
+  buttonModal: {
+    height: 50, 
+    padding: 0, 
+    width: '105%', 
+    margin: 0, 
+    borderRadius: 0, 
+  }
 })

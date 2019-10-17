@@ -16,6 +16,7 @@ import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
 import { Divider } from 'react-native-elements';
 import ActionMenu2 from '../components/ActionMenu2';
+import {AsyncStorage} from 'react-native';
 
 GLOBAL = require('../globals/globals');
 
@@ -40,14 +41,21 @@ export default class comerciosScreen extends React.Component {
       alert("exel");
   }
 
-  _goScreen = (params) => {
+  _goScreen = async (params) => {
       console.log('Desde comerciosScreen: goScreen incios');
       console.log(params);
       console.log('Desde comerciosScreen: goScreen fin');
-      if (this.state.itemChecked == null )
+      const estadoPedidoActual = await AsyncStorage.getItem('estadoPedidoActual')
+      if (estadoPedidoActual == "noHay") {
+        if (this.state.itemChecked == null ) {
           this.props.navigation.navigate(params.cboa_go, { 
-          params : params
+            params : params
           });
+        }
+      }else{
+        alert('Hay algo en el carro')
+        this.props.navigation.navigate('Carrito')
+      }
   }
 
   _seleccionaItem = (params) => {
