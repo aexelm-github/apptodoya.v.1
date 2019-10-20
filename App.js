@@ -145,7 +145,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
       Home: AppStackPpal,
       Carrito:  carritoScreen,
     },
-    { resetOnBlur : true,
+    { 
       initialRouteName: 'Home',
       defaultNavigationOptions: ({ navigation }) => ({
         tabBarIcon: ({ focused, horizontal, tintColor }) => {
@@ -165,7 +165,6 @@ const screenHeight = Math.round(Dimensions.get('window').height);
           return <IconComponent elevation={10} name={iconName} size={25} color={tintColor} />;
         },
       }),
-      
       tabBarOptions : {
         activeTintColor: '#3498db',
         inactiveTintColor: 'gray',        

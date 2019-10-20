@@ -69,7 +69,10 @@ export default class confirmPedido extends React.Component {
           'Roboto-Medium': require('../../assets/fonts/Roboto/Roboto-Medium.ttf'),
         });
         this.setState({ fontLoaded: true });                
-        const pedido = await AsyncStorage.getItem("pedido")
+        const JSONpedido = JSON.parse(await AsyncStorage.getItem("JSONpedido"))
+        JSONpedido === null ? pedido=null : pedido = JSONpedido[0]
+        console.log((JSONpedido))
+        console.log('Juera')
         this.setState({pedido: pedido})
         
     }

@@ -120,7 +120,6 @@ export default class pedidoScreen extends React.Component {
       didMountParams = this.props.navigation.getParam('params');
       didMountParamsParent = this.props.navigation.getParam('paramsParent');
       //console.log(didMountParams)
-      console.log('<<<<< entro a pedidos')
       checkboxSelected = new Array;
       if (didMountParams.action != 'Nuevo') {
         this.setState((previousState) => (
@@ -162,7 +161,7 @@ export default class pedidoScreen extends React.Component {
           normalHeight: Dimensions.get('window').height, 
           shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
       };         
-      console.log(keyboardParams);
+      //console.log(keyboardParams);
       this.setState({shrinkScreen : keyboardParams.keyboardHeight - 68   });
   }
   
@@ -182,8 +181,8 @@ export default class pedidoScreen extends React.Component {
     }
   
     _getBoard = async () => {
-      console.log('_getBoard(): ');
-      console.log(this.props.navigation.getParam('params').cboa_id);
+      //console.log('_getBoard(): ');
+      //console.log(this.props.navigation.getParam('params').cboa_id);
       let formdata = new FormData();
       formdata.append('parent',this.props.navigation.getParam('params').cboa_id);
       await this.setState({categoriasLoaded:false});
@@ -231,7 +230,7 @@ export default class pedidoScreen extends React.Component {
     }
 
     _seleccionaItem = (params) => {
-      console.log('selecciono: '+params.cboa_id)
+      //console.log('selecciono: '+params.cboa_id)
       this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
       this._accionMenuPress('edit');
     }
@@ -254,6 +253,7 @@ export default class pedidoScreen extends React.Component {
     }
 
     _renderSectionList() {
+      //console.log(jsonFinal)
       let renderThis = <SectionList 
                           sections={jsonFinal}
                           renderSectionHeader={({ section }) => (
@@ -320,6 +320,7 @@ export default class pedidoScreen extends React.Component {
                         comercio: didMountParamsParent.name,
                         idComercio: didMountParamsParent.cboa_id,
                         productName: didMountParams.name,
+                        IdProduct: didMountParams.cboa_id,
                         fotoComercio: didMountParamsParent.foto,
                         detalleComercio: didMountParamsParent.detalle,
                         precio: didMountParams.cboa_precio,
@@ -333,24 +334,19 @@ export default class pedidoScreen extends React.Component {
       if (JSONpedido===null) {
         let JSONpedidoArray = new Array(pedido)
         await AsyncStorage.setItem('JSONpedido',JSON.stringify(JSONpedidoArray))
-        console.log(JSONpedidoArray)
+        //console.log(JSONpedidoArray)
 
       }else{
         //await AsyncStorage.getItem('JSONpedido').then(console.log)
         let JSONpedidoArray = new Array(...JSON.parse(JSONpedido))
         JSONpedidoArray.push(pedido)
-        console.log(JSONpedidoArray)
+        //console.log(JSONpedidoArray)
         await AsyncStorage.setItem('JSONpedido',JSON.stringify(JSONpedidoArray))
       }
-      /*await AsyncStorage.setItem("pedido",JSON.stringify(pedido), 
-        () => {
-          this.props.navigation.navigate('ConfirmPedido', {})
-        }
-      )*/
       this.setState({showModal: true})
-      //this.props.navigation.goBack()
-      //this.props.navigation.navigate('Carrito')
       await AsyncStorage.setItem('estadoPedidoActual','enCreacion')
+      console.log('>>>>>> '+await AsyncStorage.getItem('estadoPedidoActual'))
+      this.setState({estadoPedidoActual : 'enCreacion'})
     }
 
     adminModal(number) {
