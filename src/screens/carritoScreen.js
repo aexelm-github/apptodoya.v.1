@@ -80,10 +80,10 @@ export default class carritoScreen extends React.Component {
           'Roboto-Medium': require('../../assets/fonts/Roboto/Roboto-Medium.ttf'),
         });
         this.setState({ fontLoaded: true });   
-        this.isFocused()
+       // this.isFocused()
     }
 
-    componentWillUnmount() {
+    async componentWillUnmount() {
       this.subs.forEach(sub => sub.remove());
     }
 
@@ -92,7 +92,7 @@ export default class carritoScreen extends React.Component {
       console.log('valor: ' +valor)
       this.setState({estadoPedidoActual : valor })
       if (valor == 'solicitado') {
-        await this.props.navigation.navigate('confirmPedido')
+        this.props.navigation.navigate('Avance Pedido')
       }else {
         JSONpedido = JSON.parse(await AsyncStorage.getItem("JSONpedido"))
         JSONpedido == null ? pedido=null : pedido = JSONpedido[0]
@@ -168,18 +168,27 @@ export default class carritoScreen extends React.Component {
   }
 
   pedirYa = async () => {
-    const keys = await AsyncStorage.getAllKeys()
-    console.log(keys)
-    const usuarioId = await AsyncStorage.getItem('keyLogin')
+    const keyLogin = await AsyncStorage.getItem('keyLogin')
+    const usuarioId = JSON.parse(keyLogin)[0].usuario_id
+    console.log(usuarioId)
     const gpsLocation = await AsyncStorage.getItem('gpsLocation')
     this.getTimeDate()
 
+    let progreso = new Array( 
+      {progreso: "Pendiente", estado: null, fechaHora: null },
+      {progreso: "Asignado", estado: null, fechaHora: null },
+      {progreso: "Preparacion", estado: null, fechaHora: null },
+      {progreso: "Recogido", estado: null, fechaHora: null },
+      {progreso: "Entregado", estado: null, fechaHora: null }
+    )
+
     let formdata = new FormData()
-    formdata.append('usuarioId',usuarioId[0].usuario_id)
+    formdata.append('usuarioId',usuarioId)
     formdata.append('fechaHoraIngreso',this.state.fechaHora)
     formdata.append('totalPedido',Total)
     formdata.append('JSONpedido',encodeURI(JSON.stringify(JSONpedido)))
     formdata.append('gps',gpsLocation)
+    formdata.append('progreso',encodeURI(JSON.stringify(progreso)))
     formdata.append('action','Nuevo')
     console.log(formdata);
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/savepedido', {   
@@ -199,6 +208,7 @@ export default class carritoScreen extends React.Component {
               //this._onGoBack();
               AsyncStorage.setItem("estadoPedidoActual",'solicitado')
               this.setState({estadoPedidoActual:'solicitado'})
+              this.props.navigation.navigate('Avance Pedido')
             }                  
           }
     }).catch((e) => { 
@@ -215,7 +225,7 @@ export default class carritoScreen extends React.Component {
         subTotal += parseInt(item.totalCalculado==0 ? item.precio : item.totalCalculado)
       })
     }
-    console.log(subTotal)
+    console.log(JSONpedido)
     let rPedido = null
     const fontSize= 20
     const valorEnvio=5000

@@ -1,8 +1,10 @@
 import React, { Component, Flatlist } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
 import { Ionicons, FontAwesome, AntDesign } from '@expo/vector-icons';
 import { Divider } from 'react-native-elements';
 import { FlatList } from 'react-native-gesture-handler';
+import * as GestureHandler from 'react-native-gesture-handler'
+const { Swipeable } = GestureHandler;
 
 const color = new Array("#FFC312","#C4E538","#12CBC4","#FDA7DF","#ED4C67","#F79F1F","#A3CB38","#1289A7","#D980FA","#B53471","#EE5A24","#009432","#0652DD","#9980FA","#833471","#EA2027","#006266","#1B1464","#5758BB","#6F1E51")
 
@@ -24,51 +26,74 @@ showDetalle = (DATA) => {
     return render
 }
 
+onSwipeFromLeft = () => {
+    alert('Eliminar')
+}
+
+const LeftActions = (progress, dragX) =>  {
+    const scale = dragX.interpolate({
+        inputRange: [0,100],
+        outputRange: [0,1],
+        extrapolate: 'clamp',
+    })
+    return (
+        <View style={styles.LeftActions}>
+            <Animated.Text style={[styles.actionText, {transform: [{ scale }]}]}>Eliminar</Animated.Text>
+        </View>
+    )
+}
+
 const MyCard = (props) => {
     const {DATA = 'Enter', style={}, textStyle={}, onPress, Icon=null , fontSize=16, } = props;
     const idxColor = props.index-(parseInt(props.index/color.length)*color.length)
     console.log(props.DATA.productName + ' productName')
     return (
-        <View style={{flex:1}}>
-            <Circle color={color[idxColor]} elevation={50}/>
-            <View 
-                    onPress={onPress} style={[styles.tittle1, style]}
-                    activeOpacity={0.7}
-            >
-                <View style={styles.sameRow}>
-                    <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>{props.DATA.productName}</Text>
-                    <TouchableOpacity 
-                        style={{fontSize:fontSize, position:'absolute', right:10}}
-                        onPress={onPress}
-                    >
-                        <Ionicons name={'md-close-circle'} size={25} />
-                    </TouchableOpacity>
-                </View>
-                { DATA.detalle.length > 0 ? 
-                    <View style={{width: '100%'}}>
-                        {this.showDetalle(DATA.detalle)}
+        <Swipeable 
+            renderLeftActions={LeftActions}
+            onSwipeableLeftOpen={onSwipeFromLeft}
+            //renderRightActions={RightActions}
+        >
+            <View style={{flex:1}}>
+                <Circle color={color[idxColor]} elevation={50}/>
+                <View 
+                        onPress={onPress} style={[styles.tittle1, style]}
+                        activeOpacity={0.7}
+                >
+                    <View style={styles.sameRow}>
+                        <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>{props.DATA.productName}</Text>
+                        <TouchableOpacity 
+                            style={{fontSize:fontSize, position:'absolute', right:10}}
+                            onPress={onPress}
+                        >
+                            <Ionicons name={'md-close-circle'} size={25} />
+                        </TouchableOpacity>
                     </View>
-                : null }
-                <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
-                <View style={styles.sameRow}>
-                    <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>Sub total: </Text>
-                    <Text style={[styles.text, textStyle,{fontSize:fontSize, position:'absolute', right:10}]}>
-                        $ {DATA.totalCalculado==0 ? DATA.precio : DATA.totalCalculado}.00
-                    </Text>
-                </View>
-                { DATA.informacionAdicional ? 
-                    <View style={{width: '100%'}}>
-                        <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
-                        <Text style={{color:color[idxColor]}}>Información adicional</Text>
-                        <Text >{DATA.informacionAdicional}</Text>
+                    { DATA.detalle.length > 0 ? 
+                        <View style={{width: '100%'}}>
+                            {this.showDetalle(DATA.detalle)}
+                        </View>
+                    : null }
+                    <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
+                    <View style={styles.sameRow}>
+                        <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>Sub total: </Text>
+                        <Text style={[styles.text, textStyle,{fontSize:fontSize, position:'absolute', right:10}]}>
+                            $ {DATA.totalCalculado==0 ? DATA.precio : DATA.totalCalculado}.00
+                        </Text>
                     </View>
-                : null }
-                { props.selected ?
-                <View style={{position:'absolute', top:0, left:0, height:'100%', width: '100%', backgroundColor: '#00000033'}}></View>
-                    :null
-                }
+                    { DATA.informacionAdicional ? 
+                        <View style={{width: '100%'}}>
+                            <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
+                            <Text style={{color:color[idxColor]}}>Información adicional</Text>
+                            <Text >{DATA.informacionAdicional}</Text>
+                        </View>
+                    : null }
+                    { props.selected ?
+                    <View style={{position:'absolute', top:0, left:0, height:'100%', width: '100%', backgroundColor: '#00000033'}}></View>
+                        :null
+                    }
+                </View>
             </View>
-        </View>
+        </Swipeable>
     );  
 };
 
@@ -116,7 +141,16 @@ const styles = StyleSheet.create({
     circlePosition: {
         position: 'absolute',
         left: 22,top: 35
-    }
+    },
+    LeftActions: {
+        backgroundColor: '#ff5252',
+        justifyContent: 'center',
+        flex: 1
+    },
+    actionText: {
+        color: '#fff',
+        padding: 20,
+    },
 });
 
 export default MyCard

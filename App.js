@@ -27,6 +27,7 @@ import CustomButton from "./src/components/customButton";
 import pedidoDescriptivoScreen from './src/screens/pedidoDescriptivoScreen';
 import mapScreen from './src/screens/mapScreen';
 import confirmPedido from './src/screens/confirmPedido';
+import progresoPedido from './src/screens/progresoPedido';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -144,6 +145,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
     {
       Home: AppStackPpal,
       Carrito:  carritoScreen,
+      'Avance Pedido': progresoPedido,
     },
     { 
       initialRouteName: 'Home',
@@ -159,6 +161,8 @@ const screenHeight = Math.round(Dimensions.get('window').height);
             //IconComponent = HomeIconWithBadge; 
           } else if (routeName === 'Carrito') {
             iconName = `ios-cart`;
+          } else if (routeName === 'Avance Pedido') {
+            iconName = 'ios-bicycle';
           }
   
           // You can return any component that you like here!
@@ -199,6 +203,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
       AppStackLogin: AppStackLogin,
       LogoScreen: logoScreen,
       //AppStackPpal: AppStackPpal
+      //ConfirmPedido: confirmPedido,
       appDrawerNavigator: appDrawerNavigator,
     },
     {

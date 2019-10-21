@@ -19,12 +19,22 @@ export default class logoScreen extends React.Component {
     async componentDidMount() {
         await this._retrieveData("keyLogin");
         console.log( JSON.parse(retrieveStorage.value));
+        console.log(await AsyncStorage.getAllKeys())
         if (retrieveStorage.value == null)  {
           this.props.navigation.navigate('AppStackLogin', {});
         }else {
-          this.props.navigation.navigate('Categorias', { 
-            data : retrieveStorage.value
-          });          
+          const estadoPedidoActual = await AsyncStorage.getItem("estadoPedidoActual")
+          console.log(estadoPedidoActual)
+          if ((estadoPedidoActual=='noHay')||(estadoPedidoActual==null)) {
+            console.log('paso por aca ' + estadoPedidoActual)
+            this.props.navigation.navigate('Categorias', { 
+              data : retrieveStorage.value
+            });          
+          }else{
+            this.props.navigation.navigate('Carrito', { 
+              data : retrieveStorage.value
+            });          
+          }
         }
           
         /*setTimeout(() => (

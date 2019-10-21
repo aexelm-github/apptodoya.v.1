@@ -41,7 +41,9 @@ export default class categoriasScreen extends React.Component {
             fontLoaded: false, 
             categoriasLoaded: false,
             itemChecked: null,
-            estosBotonesActivos: {"add": true,"delete":false, "edit": false}
+            estosBotonesActivos: {"add": true,"delete":false, "edit": false},
+            nameLoaded: false,
+            nombre: null,
         };
     }
 
@@ -71,9 +73,20 @@ export default class categoriasScreen extends React.Component {
       await  Font.loadAsync({
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
+      const keyLogin = await AsyncStorage.getItem('keyLogin')
+      this.setState({nombre: JSON.parse(keyLogin)[0].nombre1, nameLoaded: true} )
+      console.log(JSON.parse(keyLogin)[0].nombre1)
       this.setState({ fontLoaded: true });  
-      const JSONpedido = await AsyncStorage.getItem('JSONPedido')
-      JSONpedido == null ? this.goMaps() : this.props.navigation.navigate('Carrito')
+      const estadoPedidoActual = await AsyncStorage.getItem('estadoPedidoActual')
+      if (estadoPedidoActual == null || estadoPedidoActual =='noHay') {
+        this.goMaps() 
+        console.log('JSONPedido es nulo supuestamente')
+      } else {
+        if (estadoPedidoActual =='enCreacion'){
+          console.log('JSONpedido no es nulo pero')
+          this.props.navigation.navigate('Carrito')
+        }
+      }  
       // Buscar en servidor de BBDD 
       this._getBoard();
       
@@ -183,10 +196,9 @@ export default class categoriasScreen extends React.Component {
       }); 
     }
 
-  render() {
-    const dataJson = JSON.parse(this.props.navigation.getParam('data',''));
-    const nombre1 = dataJson[0].nombre1;
-    let Image_Http_URL ={ uri: 'http://todoya2.aexelm.com/images/Indra_000x000.jpg'};
+  render() { 
+    //const dataJson = JSON.parse(this.props.navigation.getParam('data',''));
+    //const nombre1 = dataJson[0].nombre1;
 
     return (
         <View style={styles.container}>
@@ -195,11 +207,11 @@ export default class categoriasScreen extends React.Component {
           <View >
               <ScrollView>  
               {
-                this.state.fontLoaded ? (
+                this.state.fontLoaded && this.state.nameLoaded ? (
                   <Text style={localStyles.simpleName} 
                         //onPress = {() => {this._removeData("keyLogin");}} 
                   >
-                        Hola, {nombre1}
+                        Hola, {this.state.nombre}
                   </Text>
                 ) : null
               }
@@ -252,11 +264,11 @@ export default class categoriasScreen extends React.Component {
             </ScrollView>  
           </View>
         ) : (
-            this.state.fontLoaded ? (
+            this.state.fontLoaded && this.state.nameLoaded ? (
               <View style={localStyles.welcome}>
                 <Text style={[localStyles.simpleName]} 
                       onPress = {() => {this._removeData("keyLogin");}} >
-                      Hola, {nombre1}
+                      Hola, {this.state.nombre}
                 </Text>
               </View>
             ) : null
