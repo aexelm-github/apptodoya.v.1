@@ -8,15 +8,15 @@ import { Button,
 		 ProgressBarAndroid,
 		 StyleSheet,
 		 FlatList,
+		 ActivityIndicator
 		} from 'react-native';
 import styles from '../styles/stylesOne';
 import * as Permissions from 'expo-permissions'
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {AsyncStorage} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import CustomButton from '../components/customButton';
-import Circle from '../components/Circle';
-
+import BackgroundTimer from 'react-native-background-timer';
 import Timeline from 'react-native-timeline-flatlist';
 
 GLOBAL = require('../globals/globals');
@@ -44,6 +44,8 @@ export default class mapScreen extends React.Component {
 			usuarioId: null,
 			pedidoLoaded: null,
 			pedido: null,
+			noHayPedido: false,
+			buscarPedido : true,
 		}
 	}
 
@@ -86,14 +88,22 @@ export default class mapScreen extends React.Component {
 			}),
 			(error) => console.log('Error:', error)
 		)
-		this.getPedido(this.state.usuarioId)
+		//this.getPedido(this.state.usuarioId)
+		console.log('>>>>> ojo >>>>')
+		this._onStart()
+		console.log('>>>>>> kk')
+	}
+
+	async componentWillUnmount() {
+		this._onPause()
 	}
 
 	getPedido =  async (usuarioId) => {
+
 		let formdata = new FormData()
 		console.log("usuarioId"+ usuarioId)
 		formdata.append('usuarioId',usuarioId);
-		this.setState({pedidoLoaded:false});
+		//this.setState({pedidoLoaded:false});
 		await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getPedidoPendiente', {   
 			method: "POST",
 			body: formdata,
@@ -101,28 +111,30 @@ export default class mapScreen extends React.Component {
 		.then( (response) => response.json() )
 		.then( (responseJson) => {
 			if (responseJson.length == 0){
-				alert("¡¡Oops!!. No se pudo traer la información.");
+				this.setState({noHayPedido: true, buscarPedido: false})
+				this._onPause()	
+				//alert("¡¡Oops!!. No se pudo traer la información.");
 			}else{
 				pedido = responseJson[0];
-				this.setState({ pedidoLoaded: true });  
+				this.setState({ pedidoLoaded: true });  	
 			}
 		});   
 	}    
 
   showAddress(latitude, longitude) {
-	var NY = {
-	  lat: latitude,
-	  lng: longitude
-	};
-	this.setState({ formatted_address: 'Calculando Dirección...' });
-	fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + NY.lat + ',' + NY.lng + '&key=' + GLOBAL.apiKey)
-		.then((response) => response.json())
-		.then((responseJson) => {
-			const address = responseJson.results[0].address_components[1].short_name+" "+responseJson.results[0].address_components[0].short_name
-			responseJson.results.map((item, index) => {
-			});
-			this.setState({ formatted_address: address });
-	})
+		var NY = {
+			lat: latitude,
+			lng: longitude
+		};
+		this.setState({ formatted_address: 'Calculando Dirección...' });
+		fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + NY.lat + ',' + NY.lng + '&key=' + GLOBAL.apiKey)
+			.then((response) => response.json())
+			.then((responseJson) => {
+				const address = responseJson.results[0].address_components[1].short_name+" "+responseJson.results[0].address_components[0].short_name
+				responseJson.results.map((item, index) => {
+				});
+				this.setState({ formatted_address: address });
+		})
   }    
 
   onRegionChange = async (region) => {
@@ -142,32 +154,57 @@ export default class mapScreen extends React.Component {
   }
 
 
-
-	mostrarProgreso =  () => {
+	timeLine = () => {
 		const progreso = JSON.parse(pedido.progreso)
-		let rPedido = 
-		<View >
-			<Text style={{padding: 10}}>Progreso del pedido</Text>
-			<FlatList
-				data={progreso}
-				renderItem={({ item, index }) => 
-					<View style={{ margin: 2, flexDirection: 'row'}}>
-							<Circle  style={{margin: 12, marginLeft: 20}} color={'#bdc3c7'} filled={false} />
-							<Text style={{padding: 10, alignItems:'flex-start', color:'#bdc3c7'	}}>{item.progreso}</Text>
-							<Text style={{padding: 10 , position:'absolute', right: 0, color:'#bdc3c7'}}>{item.progreso}</Text>
-							
-					</View>
-				}
-				keyExtractor={(item,index) => index.toString()}
-			/>        
-			
-		</View>
-		return rPedido
+		console.log(progreso)
+		var data = new Array()
+		progreso.map((item, index) => { 
+			if (item.done)
+				data.push({ time: item.fechaHora.substring(12,17), title: item.progreso, description: item.descripcion, lineColor: item.done?'#009688':'#00968822'})
+			if (item.progreso=='Entregado'&&item.done)
+				this._onPause()
+		})
+
+		return (
+				<Timeline
+          style={localStyles.list}
+          data={data}
+          circleSize={20}
+          circleColor="rgb(45,156,219)"
+          lineColor="rgb(45,156,219)"
+          timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
+          timeStyle={{
+            textAlign: 'center',
+            backgroundColor: '#ff9797',
+            color: 'white',
+            padding: 5,
+            borderRadius: 13,
+          }}
+          descriptionStyle={{ color: 'gray' }}
+          options={{
+            style: { paddingTop: 5 },
+          }}
+        />			
+		)
 	}
-  
+
+	_interval=null;
+	
+	_onStart = () => {
+		this._interval = setInterval(() => {
+			this.getPedido(this.state.usuarioId)
+		}, 5000)
+	}
+
+	_onPause =  async () => {
+		//await AsyncStorage.setItem('estadoPedidoActual','noHay')
+		//await 	AsyncStorage.removeItem('JSONpedido')		
+		clearInterval(this._interval)
+	}
+
   render() {
 	const { region } = this.state
-	if (this.state.latitude) {
+	if (this.state.latitude && this.state.pedidoLoaded) {
 		return (
 			<View style={localStyles.container}>
 			<View  style={{ width:'100%', height: '50%'}} elevation={20}>
@@ -180,19 +217,34 @@ export default class mapScreen extends React.Component {
 				</MapView>
 			</View>
 			{ this.state.pedidoLoaded ?
-				<View style={{flex: 1, width: '100%'}}>
-					{this.mostrarProgreso()}
+			<View style={{flex: 1, width: '100%', }}>
+					<Text style={{textAlign:'center',width: '100%',paddingTop: 10, justifyContent:'center' }}>Progreso de mi pedido</Text>
+					<View style={{flex: 1, width: '100%',paddingLeft: 20, paddingRight: 10}}>
+					{this.timeLine()}
+					</View>
 				</View>
 			:null
 			}
-			
-
 		</View>
 		);
 	}
 	return (
+		
 		<View style={{flex:1 , justifyContent:'center', alignItems: 'center'}}>
-			<Text>Loading map..</Text>
+				{ this.state.buscarPedido ? 
+					<View style={styles.container}>
+						<View  style={styles.logoContainer}>
+								<ActivityIndicator  size={30} color={"#e74c3c"}/>
+								<Text>Buscando progeso de pedido...</Text>               
+						</View>
+					</View>
+				:	<View style={styles.container}>
+						<View  style={styles.logoContainer}>
+								<Text>No hay nada para mostrar</Text>               
+						</View>
+					</View>
+				}
+
 		</View>
 	)    
   }
@@ -221,4 +273,8 @@ const localStyles = StyleSheet.create({
 		position: 'absolute',
 		top: 20, left: 30,
 	},  
+	list: {
+    flex: 1,
+    marginTop: 20,
+  },
 })

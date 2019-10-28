@@ -11,6 +11,7 @@ import {
         TouchableHighlight,
         SectionList,
         FlatList,
+        ToastAndroid, 
       } from 'react-native';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
@@ -81,6 +82,7 @@ export default class carritoScreen extends React.Component {
         });
         this.setState({ fontLoaded: true });   
        // this.isFocused()
+       
     }
 
     async componentWillUnmount() {
@@ -162,7 +164,7 @@ export default class carritoScreen extends React.Component {
 
     this.setState({ hora: hours + ':' + ("00" + min).slice(-2) , 
                     fecha : day +', '+date+' de '+Mes, 
-                    fechaHora: year+"-"+("00" + month).slice(-2) +"-"+("00" + date).slice(-2) + " " + ("00" + hours).slice(-2) + ':' + ("00" + min).slice(-2) 
+                    fechaHora: year+"-"+("00" + parseInt(month+1)).slice(-2) +"-"+("00" + date).slice(-2) + " " + ("00" + hours).slice(-2) + ':' + ("00" + min).slice(-2) 
                   })
     console.log(this.state.fechaHora)
   }
@@ -170,16 +172,16 @@ export default class carritoScreen extends React.Component {
   pedirYa = async () => {
     const keyLogin = await AsyncStorage.getItem('keyLogin')
     const usuarioId = JSON.parse(keyLogin)[0].usuario_id
-    console.log(usuarioId)
+    console.log('this.state.fechaHora '+this.state.fechaHora)
     const gpsLocation = await AsyncStorage.getItem('gpsLocation')
-    this.getTimeDate()
+    await this.getTimeDate()
 
     let progreso = new Array( 
-      {progreso: "Pendiente", estado: null, fechaHora: null },
-      {progreso: "Asignado", estado: null, fechaHora: null },
-      {progreso: "Preparacion", estado: null, fechaHora: null },
-      {progreso: "Recogido", estado: null, fechaHora: null },
-      {progreso: "Entregado", estado: null, fechaHora: null }
+      {progreso: "Registrado", done: true , fechaHora: this.state.fechaHora, descripcion:'En este momento su pedido se encuentra pendientes de asignación a un mensajero' },
+      {progreso: "Asignado", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido ha sido asignado a un mensajero'},
+      {progreso: "Preparacion", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido está siendo preparado' },
+      {progreso: "Recogido", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido ha sido recogido para ser entregado' },
+      {progreso: "Entregado", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido ha sido entregado' }
     )
 
     let formdata = new FormData()
@@ -201,12 +203,12 @@ export default class carritoScreen extends React.Component {
             alert("¡¡Oops!!. Problemas para guardar la información.");
           }else{
             this.setState({waittingWhileSaving: false});
-            alert(responseJson[0].message);
-            //console.log(responseJson);
+            ToastAndroid.showWithGravity(responseJson[0].message, ToastAndroid.SHORT, ToastAndroid.BOTTOM);
             if (responseJson[0].success == 'ok'){
               console.log(decodeURIComponent(responseJson[0].sql))
               //this._onGoBack();
               AsyncStorage.setItem("estadoPedidoActual",'solicitado')
+              AsyncStorage.removeItem('JSONpedido')
               this.setState({estadoPedidoActual:'solicitado'})
               this.props.navigation.navigate('Avance Pedido')
             }                  

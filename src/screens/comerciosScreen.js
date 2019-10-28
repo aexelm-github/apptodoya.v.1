@@ -7,7 +7,8 @@ import { Dimensions,
          StyleSheet,
          ScrollView,
          TouchableHighlight,
-         Button
+         Button,
+         ToastAndroid,
         } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import styles from '../styles/stylesOne';
@@ -17,6 +18,7 @@ import { FlatGrid } from 'react-native-super-grid';
 import { Divider } from 'react-native-elements';
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 
 GLOBAL = require('../globals/globals');
 
@@ -54,7 +56,10 @@ export default class comerciosScreen extends React.Component {
           });
         }
       }else{
-        alert('Hay algo en el carro')
+        ToastAndroid.show(
+          'oops!! Aún tienes algo en proceso',
+          ToastAndroid.LONG 
+        );
         this.props.navigation.navigate('Carrito')
       }
   }
