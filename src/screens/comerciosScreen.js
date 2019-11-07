@@ -49,7 +49,7 @@ export default class comerciosScreen extends React.Component {
       console.log('Desde comerciosScreen: goScreen fin');
       const estadoPedidoActual = await AsyncStorage.getItem('estadoPedidoActual')
       console.log("estadoPedidoActual"+estadoPedidoActual)
-      if (estadoPedidoActual == "noHay") {
+      if (estadoPedidoActual == "noHay" || estadoPedidoActual==null) {
         if (this.state.itemChecked == null ) {
           this.props.navigation.navigate(params.cboa_go, { 
             params : params

@@ -28,6 +28,7 @@ import pedidoDescriptivoScreen from './src/screens/pedidoDescriptivoScreen';
 import mapScreen from './src/screens/mapScreen';
 import confirmPedido from './src/screens/confirmPedido';
 import progresoPedido from './src/screens/progresoPedido';
+import closeSession from './src/screens/closeSession';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -44,34 +45,6 @@ const screenHeight = Math.round(Dimensions.get('window').height);
     }
   }
 
-
-  class closeSession extends React.Component {
-    deleteKey = async() => {
-      await AsyncStorage.removeItem("keyLogin")
-      await AsyncStorage.clear()
-      await AsyncStorage.setItem('estadoPedidoActual','noHay')
-      this.props.navigation.navigate('Login')
-    }
-    render() {
-      return (
-        <View style={[Styles.container,{}]} >
-          <Image style={{width: 150, height: 150}}
-            source={require('./src/images/TodoYa-03.png')}
-            />  
-          <Text style={{fontSize: 25, color: "#00000055", textAlign: 'center', padding: 20,}}
-            >Hola, lamentamos que tengas que irte y cerrar la aplicación. Esperamos verte pronto!
-          </Text>
-          <CustomButton 
-              title="Cerrar Sesíón" 
-              onPress={() => {this.deleteKey()}}
-              style={{marginBottom: 15, width: 200, height: 50 }}
-              fontSize={12}
-
-          />          
-        </View>
-      )
-    }
-  }
 
   const CustomDrawerContentComponent = props => (
     <ScrollView>

@@ -69,6 +69,9 @@ export default class mapScreen extends React.Component {
 	  }; 
 
 	async componentDidMount() {
+		this.subs = [
+			this.props.navigation.addListener('didFocus', () => this.isFocused()),
+		];
 		const keyLogin = await AsyncStorage.getItem('keyLogin')
 		this.setState({usuarioId: JSON.parse(keyLogin)[0].usuario_id, nameLoaded: true} )
 		const { status } = await  Permissions.getAsync(Permissions.LOCATION)
@@ -89,9 +92,16 @@ export default class mapScreen extends React.Component {
 			(error) => console.log('Error:', error)
 		)
 		//this.getPedido(this.state.usuarioId)
-		console.log('>>>>> ojo >>>>')
+		
+	}
+
+	async componentWillUnmount() {
+		this.subs.forEach(sub => sub.remove());
+	}
+
+  isFocused = async () => {
+		this.setState({buscarPedido: true, pedidoLoaded: false})
 		this._onStart()
-		console.log('>>>>>> kk')
 	}
 
 	async componentWillUnmount() {
@@ -99,7 +109,6 @@ export default class mapScreen extends React.Component {
 	}
 
 	getPedido =  async (usuarioId) => {
-
 		let formdata = new FormData()
 		console.log("usuarioId"+ usuarioId)
 		formdata.append('usuarioId',usuarioId);
@@ -111,9 +120,11 @@ export default class mapScreen extends React.Component {
 		.then( (response) => response.json() )
 		.then( (responseJson) => {
 			if (responseJson.length == 0){
-				this.setState({noHayPedido: true, buscarPedido: false})
+				this.setState({noHayPedido: true, buscarPedido: false, })
+				AsyncStorage.removeItem('estadoPedidoActual')
 				this._onPause()	
 				//alert("¡¡Oops!!. No se pudo traer la información.");
+				console.log('jeje')
 			}else{
 				pedido = responseJson[0];
 				this.setState({ pedidoLoaded: true });  	
@@ -160,7 +171,7 @@ export default class mapScreen extends React.Component {
 		var data = new Array()
 		progreso.map((item, index) => { 
 			if (item.done)
-				data.push({ time: item.fechaHora.substring(12,17), title: item.progreso, description: item.descripcion, lineColor: item.done?'#009688':'#00968822'})
+				data.push({ time: item.fechaHora.substring(11,17), title: item.progreso, description: item.descripcion, lineColor: item.done?'#009688':'#00968822'})
 			if (item.progreso=='Entregado'&&item.done)
 				this._onPause()
 		})
@@ -172,7 +183,7 @@ export default class mapScreen extends React.Component {
           circleSize={20}
           circleColor="rgb(45,156,219)"
           lineColor="rgb(45,156,219)"
-          timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
+          timeContainerStyle={{ minWidth: 82, marginTop: -5 }}
           timeStyle={{
             textAlign: 'center',
             backgroundColor: '#ff9797',
@@ -191,7 +202,9 @@ export default class mapScreen extends React.Component {
 	_interval=null;
 	
 	_onStart = () => {
+		console.log('onStart')
 		this._interval = setInterval(() => {
+			console.log('activo _onStart()')
 			this.getPedido(this.state.usuarioId)
 		}, 5000)
 	}
@@ -199,6 +212,7 @@ export default class mapScreen extends React.Component {
 	_onPause =  async () => {
 		//await AsyncStorage.setItem('estadoPedidoActual','noHay')
 		//await 	AsyncStorage.removeItem('JSONpedido')		
+		console.log('AJA APAGA ESTO')
 		clearInterval(this._interval)
 	}
 
@@ -229,7 +243,6 @@ export default class mapScreen extends React.Component {
 		);
 	}
 	return (
-		
 		<View style={{flex:1 , justifyContent:'center', alignItems: 'center'}}>
 				{ this.state.buscarPedido ? 
 					<View style={styles.container}>
@@ -240,7 +253,10 @@ export default class mapScreen extends React.Component {
 					</View>
 				:	<View style={styles.container}>
 						<View  style={styles.logoContainer}>
-								<Text>No hay nada para mostrar</Text>               
+						<Image style={styles.logoImage}
+                    source={require('../images/emptyBox.png')}
+                    />
+                  <Text style={{color: '#0984e3', fontSize: 20, margin: 15, textAlign:'center'}}>No hay nada que mostrar</Text>               								        
 						</View>
 					</View>
 				}

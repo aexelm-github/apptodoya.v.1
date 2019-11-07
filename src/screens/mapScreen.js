@@ -162,7 +162,10 @@ export default class mapScreen extends React.Component {
     }
     return (
         <View style={{flex:1 , justifyContent:'center', alignItems: 'center'}}>
-            <Text>Loading map..</Text>
+            <Image style={styles.logoImage}
+                    source={require('../images/pinMapa.png')}
+                    />
+                  <Text style={{color: '#0984e3', fontSize: 20, margin: 15, textAlign:'center'}}>Cargando mapa...</Text>               
         </View>
     )    
   }

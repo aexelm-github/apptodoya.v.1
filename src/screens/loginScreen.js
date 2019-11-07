@@ -28,8 +28,10 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 export default class loginScreen extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { email: 'aexelm@gmail.com', 
-                       pass: '123' ,
+        this.state = { 
+                       /*email: 'aexelm@gmail.com', 
+                       pass: '123' ,*/
+                       email: '', pass:'',
                        fontLoaded: false, 
                        shrinkScreen: 0,
                      };
@@ -116,6 +118,7 @@ export default class loginScreen extends React.Component {
                   }else{
                     this._storeData("keyLogin",responseJson); 
                     console.log(responseJson)
+                    this.setEstosDatos(responseJson)
                     this._retrieveData("keyLogin")        
                     this.props.navigation.navigate('Categorias', { 
                         data : JSON.stringify(responseJson)
@@ -123,6 +126,11 @@ export default class loginScreen extends React.Component {
                   }
               });                
         }
+    }
+
+    async setEstosDatos(responseJson) {
+      await AsyncStorage.setItem('esteTelefono',responseJson[0].telefono1)
+      await AsyncStorage.setItem('esteNombre',responseJson[0].nombre1+" "+responseJson[0].apellido1)
     }
 
     btnRegister = (params) => {

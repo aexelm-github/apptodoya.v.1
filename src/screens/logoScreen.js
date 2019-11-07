@@ -3,6 +3,7 @@ import { Button, Text, View, Image, TouchableOpacity, ProgressBarAndroid } from 
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
 
+GLOBAL = require('../globals/globals');
 const PRACTICE_TIME = 0.2* 1000;
 
 const retrieveStorage = {"value":null};
@@ -10,34 +11,63 @@ const retrieveStorage = {"value":null};
 export default class logoScreen extends React.Component {
     constructor(props) {
         super(props);
-
+        this.state = {
+          version : null,
+          nVersion : null,
+        }
     }
     onPress = () => {
-        alert("exel");
-      }
+       // alert("exel");
+    }
 
     async componentDidMount() {
-        //await this._retrieveData("keyLogin");
-        console.log( JSON.parse(retrieveStorage.value));
         console.log(await AsyncStorage.getAllKeys())
-        const keyLogin = await AsyncStorage.getItem('keyLogin')
-        //if (retrieveStorage.value == null)  { 
-        if (keyLogin == null)  {
-          this.props.navigation.navigate('AppStackLogin', {});
-        }else {
-          const usuarioId = JSON.parse(keyLogin)[0].usuario_id
-          this.getPedido(usuarioId)
+        const version = await this.validateVersion()
+        console.log('VERSION : '+version)
+    }
+
+    async validateVersion() {
+      const keyLogin = await AsyncStorage.getItem('keyLogin')
+      let formdata = new FormData()
+      formdata.append('param_id','VERSION');
+      await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getParam', {   
+        method: "POST",
+        body: formdata,
+      })
+      .then( (response) => response.json() )
+      .then( (responseJson) => {
+        if (responseJson.length == 0){
+          console.log('Version: none')
+          this.setState({version:false,nVersion: 'v.0.0.0'})
+          return false
+        }else{
+          console.log('Version: '+responseJson[0].valor1)
+          AsyncStorage.setItem('version',responseJson[0].valor1)
+          if (GLOBAL.version == responseJson[0].valor1) {
+            if (keyLogin == null)  {
+              this.props.navigation.navigate('AppStackLogin', {});
+            }else {
+              const usuarioId = JSON.parse(keyLogin)[0].usuario_id
+              this.setEstosDatos(keyLogin)
+              this.getPedido(usuarioId)
+            }            
+            this.setState({version:true,nVersion: responseJson[0].valor1})
+          }else{
+            this.setState({version:false,nVersion: responseJson[0].valor1})
+          }
         }
-          
-        /*setTimeout(() => (
-            this.props.navigation.navigate('AppStackLogin', {})
-            ), PRACTICE_TIME);        */
+      });   
+       
+    }
+
+    async setEstosDatos(keyLogin) {
+      await AsyncStorage.setItem('esteTelefono',keyLogin.telefono1)
+      await AsyncStorage.setItem('esteNombre',keyLogin.nombre1+" "+keyLogin.apellido1)
     }
 
     getPedido =  async (usuarioId) => {
       const estadoPedidoActual = await AsyncStorage.getItem("estadoPedidoActual")
       let formdata = new FormData()
-      console.log("2. usuarioId "+ usuarioId)
       formdata.append('usuarioId',usuarioId);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getPedidoPendiente', {   
         method: "POST",
@@ -46,10 +76,7 @@ export default class logoScreen extends React.Component {
       .then( (response) => response.json() )
       .then( (responseJson) => {
         if (responseJson.length == 0){
-          console.log('3.1 no hay supuestamente+'+false)
-          console.log('4.2 ya paso por aca '+estadoPedidoActual)
           if ((estadoPedidoActual=='noHay')||(estadoPedidoActual==null)) {
-            console.log('5.1 paso por aca ' + estadoPedidoActual)
             this.props.navigation.navigate('Categorias', { 
               data : retrieveStorage.value
             });          
@@ -64,12 +91,9 @@ export default class logoScreen extends React.Component {
                 data : retrieveStorage.value
               }); 
             }
-            console.log('5.3 entropor aca¿')
-                     
           }
           //alert("¡¡Oops!!. No se pudo traer la información.");
         }else{
-          console.log('3.2 si hay supuestamente+'+true)
           this.props.navigation.navigate('Avance Pedido')
         }
       });   
@@ -100,7 +124,17 @@ export default class logoScreen extends React.Component {
                     />
                 </TouchableOpacity >
             </View>
-            <ProgressBarAndroid styleAttr="Horizontal" color="#2196F3" />
+            { this.state.version!=null?
+              <View style={{alignItems:'center',marginBottom: 20}}> 
+                <Text style={{fontSize:15, fontWeight: '500'}}>{this.state.nVersion}</Text>
+              </View>
+            : null}
+            { this.state.version == true || this.state.version==null ? 
+              <ProgressBarAndroid styleAttr="Horizontal" color="#2196F3" />
+            : <View style={{padding:10,borderRadius: 10,backgroundColor: '#e74c3c'}}>
+                <Text style={{color:'#fff'}}>Oops!! Hay un problema con la versión de la App!</Text>
+              </View>
+            }
         </View>
       </View>
     );

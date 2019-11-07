@@ -71,6 +71,8 @@ export default class pedidoScreen extends React.Component {
         super(props);
         this.state = {
           direccion: null,
+          telefono: null,
+          preguntarPor: null,
           shrinkScreen: 0,         
           checked : false, 
           fontLoaded: false, 
@@ -117,6 +119,13 @@ export default class pedidoScreen extends React.Component {
 
     async componentDidMount() {
       this.getPermissionAsync();
+      let esteTelefono = await AsyncStorage.getItem('esteTelefono');
+      let esteNombre = await AsyncStorage.getItem('esteNombre');
+
+      this.setState({telefono: esteTelefono})
+      this.setState({preguntarPor: esteNombre})
+      
+      console.log()
       didMountParams = this.props.navigation.getParam('params');
       didMountParamsParent = this.props.navigation.getParam('paramsParent');
       //console.log(didMountParams)
@@ -325,6 +334,8 @@ export default class pedidoScreen extends React.Component {
                         detalleComercio: didMountParamsParent.detalle,
                         precio: didMountParams.cboa_precio,
                         totalCalculado: this.state.totalCalculado,
+                        telefono: this.state.telefono,
+                        preguntarPor: this.state.preguntarPor,
                      }
       
       //AsyncStorage.removeItem("JSONpedido");
@@ -345,6 +356,8 @@ export default class pedidoScreen extends React.Component {
       }
       this.setState({showModal: true})
       await AsyncStorage.setItem('estadoPedidoActual','enCreacion')
+      await AsyncStorage.setItem('esteTelefono',this.state.telefono)
+      await AsyncStorage.setItem('esteNombre',this.state.preguntarPor)
       console.log('>>>>>> '+await AsyncStorage.getItem('estadoPedidoActual'))
       this.setState({estadoPedidoActual : 'enCreacion'})
     }
@@ -412,6 +425,22 @@ export default class pedidoScreen extends React.Component {
                 <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
               </TouchableOpacity>
           </View>          
+          <View>
+            <Text style={[localStyles.label,{fontSize:14}]}>Número de Teléfono:</Text>  
+            <Text style={[localStyles.label]}>El siguiente es el teléfono que aparece registrado o el último que has di, pero puedes cambiarlo si deseas</Text>  
+            <TextInput
+              style={[localStyles.inputText,{}]}
+              onChangeText={(telefono) => this.setState({telefono})}
+              value={this.state.telefono}
+            />
+            <Text style={[localStyles.label,{fontSize:14}]}>Preguntar por:</Text>  
+            <Text style={[localStyles.label]}>EL mensajero preguntará por ti, pero puedes cambiar el nombre para que pregunte por otra persona</Text>  
+            <TextInput
+              style={[localStyles.inputText,{}]}
+              onChangeText={(preguntarPor) => this.setState({preguntarPor})}
+              value={this.state.preguntarPor}
+            />
+          </View>  
           { this.state.categoriasLoaded ? ( 
               this._renderSectionList()
           ) : null }
@@ -479,9 +508,10 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#3f3f3f",
     paddingLeft: 20,
+    paddingRight: 20,
     paddingTop: 4,
   },
   itemCheckBox : {

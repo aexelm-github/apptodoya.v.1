@@ -296,38 +296,40 @@ export default class carritoScreen extends React.Component {
     //console.log('cthis.state.estadoPedidoActual: '+this.state.estadoPedidoActual)
     return (
         <View style={{flex: 1, backgroundColor: '#dfe4ea', paddingBottom: 50}}>
-          { this.state.estadoPedidoActual == 'noHay' ? 
+          { this.state.estadoPedidoActual == 'noHay' || this.state.estadoPedidoActual == null ? 
             <View style={styles.container}>
               <View  style={styles.logoContainer}>
-                  <MaterialCommunityIcons name={'cancel'} size={50} color={"#00000044"} ></MaterialCommunityIcons>
-                  <Text>No hay nada en tu carro</Text>               
+                  <Image style={styles.logoImage}
+                    source={require('../images/emptyBox.png')}
+                    />
+                  <Text style={{color: '#0984e3', fontSize: 18, margin: 15, textAlign:'center'}}>Lo siento!! Parece que no tienes pedido alguno.</Text>               
               </View>
             </View>
           : this.state.estadoPedidoActual == 'enCreacion' ?
-          <ScrollView >
-              {this.state.pedido!=null && this.state.fontLoaded ? 
-                <View style={[styles.container, {height: this.state.x1HeightLayout}]} elevation={35}>
-                  <CacheImage
-                    style={localStyles.image}
-                    uri= {GLOBAL.BASE_URL+'/images/'+pedido.fotoComercio}
-                  />
-                  <View style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 5,}} 
-                        onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }}  
-                  >
-                    {this.state.fontLoaded ? 
-                      <Text 
-                          style={[localStyles.title1,localStyles.shadow]}
-                      >{pedido.comercio}</Text> : null }
-                    <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 20}]} >
-                      {pedido.detalleComercio}
-                    </Text>   
-                  </View>   
-                </View>
-            : null }
-            <View>
-                {this.state.pedidoLoaded ? this.renderPedido(JSONpedido) : null}
-            </View>
-          </ScrollView>	: 
+            <ScrollView >
+                {this.state.pedido!=null && this.state.fontLoaded ? 
+                  <View style={[styles.container, {height: this.state.x1HeightLayout}]} elevation={35}>
+                    <CacheImage
+                      style={localStyles.image}
+                      uri= {GLOBAL.BASE_URL+'/images/'+pedido.fotoComercio}
+                    />
+                    <View style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 5,}} 
+                          onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }}  
+                    >
+                      {this.state.fontLoaded ? 
+                        <Text 
+                            style={[localStyles.title1,localStyles.shadow]}
+                        >{pedido.comercio}</Text> : null }
+                      <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 20}]} >
+                        {pedido.detalleComercio}
+                      </Text>   
+                    </View>   
+                  </View>
+              : null }
+              <View>
+                  {this.state.pedidoLoaded ? this.renderPedido(JSONpedido) : null}
+              </View>
+            </ScrollView>	: 
             <Text>Solicitado</Text>
           }
           {this.state.estadoPedidoActual == 'enCreacion' ?
