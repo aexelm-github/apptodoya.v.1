@@ -2,7 +2,7 @@ import * as React from 'react';
 import { 
         Image, 
         View, 
-        TextInput,
+        TextInput, 
         StyleSheet,
         TouchableOpacity, 
         TouchableHighlight,
@@ -148,6 +148,7 @@ _keyboardDidHide = () => {
   };
 
   upLoadImage = async (image_uri) => {
+//    let base_url = 'http://45.56.114.181/todoyaup/uploadimg.php';
     let base_url = GLOBAL.BASE_URL+'/index.php/Upload_img';
     let uploadData = new FormData();
     uploadData.append('submit','ok');
@@ -253,7 +254,7 @@ _keyboardDidHide = () => {
       let formdata = new FormData();
       formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
       formdata.append('name',this.state.name);
-      formdata.append('detalle',this.state.detalle);
+      formdata.append('detalle',encodeURIComponent(this.state.detalle));
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('parentId',didMountParams.parentId);

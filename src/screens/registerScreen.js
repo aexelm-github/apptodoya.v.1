@@ -17,6 +17,7 @@ import * as Font from 'expo-font'
 import formulario from '../json/formulario.json'
 import { Divider } from 'react-native-elements';
 
+GLOBAL = require('../globals/globals');
 
 import styles from '../styles/stylesOne';
 import CustomButton from '../components/customButton';
@@ -103,7 +104,7 @@ export default class registerScreen extends React.Component {
           console.log(formdata);
           this.setState({waittingWhileSaving: true});
 
-          await fetch('http://todoya2.aexelm.com/index.php/maincontrol/saveUsuario', {   
+          await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveUsuario', {   
               method: "POST",
               body: formdata,
             })

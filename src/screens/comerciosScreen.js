@@ -152,7 +152,7 @@ export default class comerciosScreen extends React.Component {
             categorias = responseJson;
             this.setState({ categoriasLoaded: true, itemChecked: null });  
             this._seleccionaItem({index: null, id: null }) 
-            //console.log(categorias);
+            console.log(categorias);
           }
     });   
   }

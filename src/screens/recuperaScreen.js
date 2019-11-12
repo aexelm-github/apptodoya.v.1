@@ -24,6 +24,7 @@ import CustomButton from '../components/customButton';
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 let   keyboardParams = {}
+GLOBAL = require('../globals/globals');
 
 export default class recuperaScreen extends React.Component {
     constructor(props) {
@@ -86,7 +87,7 @@ export default class recuperaScreen extends React.Component {
             console.log(formdata);
             this.setState({waittingWhileSaving: true});
 
-            await fetch('http://todoya2.aexelm.com/index.php/maincontrol/recoveryPassword', {   
+            await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/recoveryPassword', {   
                 method: "POST",
                 body: formdata,
             })

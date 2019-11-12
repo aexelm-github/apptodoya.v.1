@@ -185,7 +185,7 @@ _keyboardDidHide = () => {
       let formdata = new FormData();
       formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
       formdata.append('name',this.state.name);
-      formdata.append('detalle',this.state.detalle);
+      formdata.append('detalle',encodeURIComponent(this.state.detalle));
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('parentId',didMountParams.parentId);

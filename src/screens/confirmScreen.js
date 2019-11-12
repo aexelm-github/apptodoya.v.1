@@ -24,6 +24,8 @@ import CustomButton from '../components/customButton';
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
+GLOBAL = require('../globals/globals');
+
 export default class confirmScreen extends React.Component {
     constructor(props) {
         super(props);
@@ -98,7 +100,7 @@ export default class confirmScreen extends React.Component {
             console.log(formdata);
             this.setState({waittingWhileSaving: true});
 
-            await fetch('http://todoya2.aexelm.com/index.php/maincontrol/confirmCode', {   
+            await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/confirmCode', {   
                 method: "POST",
                 body: formdata,
             })
