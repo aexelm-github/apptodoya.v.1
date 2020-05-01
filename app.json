@@ -3,10 +3,6 @@
     "name": "TodoYa!",
     "slug": "apptodoya",
     "privacy": "public",
-    "sdkVersion": "33.0.0",
-    "packagerOpts": {
-      "nonPersistent": "--nonPersistent"
-    },
     "android": {
       "package": "com.aexelm.todoya",
       "config": {
