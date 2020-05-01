@@ -14,7 +14,8 @@ import {
         Text,
         SectionList,
       } from 'react-native';
-import { Permissions, Constants} from 'expo';
+import * as Permissions from 'expo-permissions';
+import Constants from 'expo-constants';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';

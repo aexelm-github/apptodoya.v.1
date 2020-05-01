@@ -14,7 +14,7 @@ import {
         Text
       } from 'react-native';
 //import { Constants} from 'expo';
-import Permissions from 'expo-permissions'
+import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants'
 
 import * as ImagePicker from 'expo-image-picker';

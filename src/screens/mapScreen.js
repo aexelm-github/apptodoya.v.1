@@ -9,7 +9,7 @@ import { Button,
          StyleSheet,
         } from 'react-native';
 import styles from '../styles/stylesOne';
-import { Permissions } from 'expo';
+import * as Permissions from 'expo-permissions';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import {AsyncStorage} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';

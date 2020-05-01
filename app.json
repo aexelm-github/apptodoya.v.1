@@ -1,5 +1,9 @@
 {
   "expo": {
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#00000000"
+    },
     "name": "TodoYa!",
     "slug": "apptodoya",
     "privacy": "public",
