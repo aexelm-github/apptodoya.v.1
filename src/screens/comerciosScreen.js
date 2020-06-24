@@ -19,6 +19,8 @@ import { Divider } from 'react-native-elements';
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
+//import { forNoAnimation } from 'react-navigation-stack/lib/typescript/src/vendor/TransitionConfigs/CardStyleInterpolators';
+import * as Fx from '../globals/Fx'
 
 GLOBAL = require('../globals/globals');
 
@@ -36,6 +38,7 @@ export default class comerciosScreen extends React.Component {
           categoriasLoaded: false,
           itemChecked: null,
           estosBotonesActivos: {"add": true,"delete":false, "edit": false},
+          perfil:null,
       };        
   }
     
@@ -51,6 +54,7 @@ export default class comerciosScreen extends React.Component {
       console.log("estadoPedidoActual"+estadoPedidoActual)
       if (estadoPedidoActual == "noHay" || estadoPedidoActual==null) {
         if (this.state.itemChecked == null ) {
+          await Fx._storeData("ubicacion_comercio", params.cboa_ubicacion)
           this.props.navigation.navigate(params.cboa_go, { 
             params : params
           });
@@ -65,6 +69,7 @@ export default class comerciosScreen extends React.Component {
   }
 
   _seleccionaItem = (params) => {
+    if (this.state.perfil !== "admin") return
     this.state.itemChecked == params.index ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.index}) ;
     if (this.state.itemChecked == null ){
       this.setState((previousState) => ({
@@ -90,10 +95,9 @@ export default class comerciosScreen extends React.Component {
                               </Text>},
         headerStyle: {
           backgroundColor: '#fff',
-          textAlign: 'center',
           elevation: 0,
         },
-        headerRight: (
+        headerRight: ()=>(
           <View style={{marginRight: 12, flexDirection:'row'}}>
             <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
               onPress={() => {  navigation.openDrawer() }}
@@ -133,7 +137,8 @@ export default class comerciosScreen extends React.Component {
               this.setState({ categoriasLoaded: true });  
               }
       });*/               
-
+      const keyLogin = await AsyncStorage.getItem('keyLogin')
+      this.setState({perfil:  JSON.parse(keyLogin)[0].tipo} )
   }
 
   _getBoard = async () => {
@@ -251,10 +256,10 @@ export default class comerciosScreen extends React.Component {
               </View>
             ) : null
         )}
-        <ActionMenu2
-          callbackFromParent={this._accionMenuPress}
-          estosBotonesActivos={this.state.estosBotonesActivos}
-        />
+        {this.state.perfil==="admin" &&  <ActionMenu2 
+              callbackFromParent={this._accionMenuPress}
+              estosBotonesActivos={this.state.estosBotonesActivos}
+            />}
         </View>
     );
   }

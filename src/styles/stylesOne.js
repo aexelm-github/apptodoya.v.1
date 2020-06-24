@@ -23,7 +23,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    paddingTop: ( Platform.OS === 'ios' ) ? 20 : 0    
+    //paddingTop: ( Platform.OS === 'ios' ) ? 20 : 0    
   },  
   welcome: {
     fontSize: 15,

@@ -22,6 +22,7 @@ import CacheImage from '../components/CacheImage';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MyCard from '../components/MyCard';
 import CustomButton from '../components/customButton';
+import * as Fx from '../globals/Fx'
 
 
 GLOBAL = require('../globals/globals');
@@ -51,8 +52,8 @@ export default class carritoScreen extends React.Component {
 
     static navigationOptions = ({navigation}) => {
       return {
-        headerTitle: (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
-        headerRight: (
+        headerTitle: ()=>(<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
+        headerRight: () => (
           <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
                 onPress={() => {  navigation.openDrawer() }}
@@ -183,7 +184,9 @@ export default class carritoScreen extends React.Component {
       {progreso: "Recogido", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido ha sido recogido para ser entregado' },
       {progreso: "Entregado", done: false, fechaHora: '0000-00-00 00:00', descripcion: 'Su pedido ha sido entregado' }
     )
-
+    console.log("JSONpedido: OJO : ",JSONpedido)
+    const ubicacion = await Fx._retrieveData('ubicacion')
+    const ubicacion_comercio = await Fx._retrieveData('ubicacion_comercio')
     let formdata = new FormData()
     formdata.append('usuarioId',usuarioId)
     formdata.append('fechaHoraIngreso',this.state.fechaHora)
@@ -192,6 +195,8 @@ export default class carritoScreen extends React.Component {
     formdata.append('gps',gpsLocation)
     formdata.append('progreso',encodeURI(JSON.stringify(progreso)))
     formdata.append('action','Nuevo')
+    formdata.append('ubicacion',ubicacion)
+    formdata.append('ubicacion_comercio',ubicacion_comercio)
     console.log(formdata);
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/savepedido', {   
         method: "POST",

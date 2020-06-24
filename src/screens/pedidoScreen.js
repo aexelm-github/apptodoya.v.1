@@ -24,6 +24,8 @@ import { CheckBox } from 'react-native-elements'
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
 import { Divider } from 'react-native-elements';
+import MapaScreen from './mapScreen';
+
 
 
 GLOBAL = require('../globals/globals');
@@ -86,6 +88,10 @@ export default class pedidoScreen extends React.Component {
           longitud: null,
           showModal : false,
           totalCalculado: 0,
+          direccion: null,
+          showMapa: false,
+          ubicacion: null,
+          perfil: null,
         }
     }
 
@@ -98,8 +104,8 @@ export default class pedidoScreen extends React.Component {
 
     static navigationOptions = ({navigation}) => {
       return {
-        headerTitle: (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
-        headerRight: (
+        headerTitle: ()=>(<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
+        headerRight: () =>  (
           <View style={{marginRight: 12, flexDirection:'row'}}>
             <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
               onPress={() => {  navigation.openDrawer() }}
@@ -137,24 +143,18 @@ export default class pedidoScreen extends React.Component {
           }
         ))      
       }
-      this.keyboardDidShowListener = Keyboard.addListener(
-        'keyboardDidShow',
-        this._keyboardDidShow,
-      );
-      this.keyboardDidHideListener = Keyboard.addListener(
-        'keyboardDidHide',
-        this._keyboardDidHide,
-      );
-      this._getBoard();
+      await this._getBoard();
       //this.goMaps()
-      const direccion =  await AsyncStorage.getItem('direccion')
+      const ubicacion =  await AsyncStorage.getItem('ubicacion')
+      console.log(ubicacion, ubicacion)
+      const direccion = JSON.parse(ubicacion).direccion
       this.setState({direccion : direccion})
+      const keyLogin = await AsyncStorage.getItem('keyLogin')
+      this.setState({perfil:  JSON.parse(keyLogin)[0].tipo} )
       
     }
   
   componentWillUnmount() {
-      this.keyboardDidShowListener.remove();
-      this.keyboardDidHideListener.remove();
   }
   
   find_dimensions(layout){
@@ -191,7 +191,7 @@ export default class pedidoScreen extends React.Component {
     }
   
     _getBoard = async () => {
-      //console.log('_getBoard(): ');
+      console.log('_getBoard(): ');
       //console.log(this.props.navigation.getParam('params').cboa_id);
       let formdata = new FormData();
       formdata.append('parent',this.props.navigation.getParam('params').cboa_id);
@@ -240,9 +240,10 @@ export default class pedidoScreen extends React.Component {
     }
 
     _seleccionaItem = (params) => {
-      //console.log('selecciono: '+params.cboa_id)
-      this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
-      this._accionMenuPress('edit');
+      if (this.state.perfil !== "admin") return
+      console.log('selecciono: ',params)
+      //this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
+      this._accionMenuPress('edit', params);
     }
 
     _pressCheckBox(item, value) {
@@ -277,7 +278,7 @@ export default class pedidoScreen extends React.Component {
                             checked= { this.state['cbox'+item.cboa_id] }
                             onPress={() => this._pressCheckBox(item, item.cboa_id)}
                             delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
-                            onLongPress={() => { this._seleccionaItem({cboa_id: item.cboa_id}) }}
+                            onLongPress={() => { this._seleccionaItem(item) }}
                             value={item.cboa_id}
                           />                            
                           )}
@@ -286,25 +287,35 @@ export default class pedidoScreen extends React.Component {
       return renderThis;
     }
 
-    _accionMenuPress = (data) => { 
+    _accionMenuPress = async (data, item) => { 
+      console.log("XXXXXXXXXXXXXXXXXXX")
       const params = this.props.navigation.getParam('params','');
       //console.log(params);
-      console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
-      const item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
+      //var item = null
+      console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked, categorias);
+      // if (categorias!== null && categorias!==undefined){
+      //   item = await  categorias.filter(item => item.cboa_id == this.state.itemChecked);
+      //   console.log(">>>>>>>>>>>>>>>>>>>>>>>>  FILTE ", "item", item, this.state.itemChecked)
+      //   console.log(item[0])
+      // }else{
+      //   // this.setState({itemChecked:null});
+      // }
       //console.log(item[0]); 
       switch(data){
         case 'add': data='Nuevo';break;
         case 'edit': data='Editar';break;
         case 'delete': data='borrar';break;
       }
+      console.log(" >>>>>>>>>>>>>>>> this.state.itemChecked",this.state.itemChecked)
+      
       this.props.navigation.navigate('HandleBoardPedido', {
         onGoBack : this._getBoard,
         params : {
           commingFrom: 'pedidoScreen',
           parentId: params.cboa_id,
-          action: data,
+          action: data,  
           id: this.state.itemChecked,
-          data: this.state.itemChecked == null ? null : item[0],
+          data: item,
           go: 'detalle',
           jsonGrupo: jsonGrupo,
         }
@@ -312,9 +323,18 @@ export default class pedidoScreen extends React.Component {
     }
   
     goMaps() {
-      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Pedido'})
+      //this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Pedido'})
+      this.setState({showMapa: true})
     }
 
+    actionOverTheMap = async (action, ubicacion) => {
+        switch(action) {
+            case "useAddress": 
+                  //await this.props.action()
+                  this.setState({showMapa : false, direccion: ubicacion.direccion, ubicacion  })
+        }
+    }
+      
     async _confirmPedido() {
       if (this.state.direccion==null) {
         alert('Oops!!. Falta definir una dirección.')
@@ -326,7 +346,7 @@ export default class pedidoScreen extends React.Component {
       }
       const pedido = { 
                         direccion : this.state.direccion, detalle : checkboxSelected,
-                        informacionAdicional: this.state.informacionAdicional,
+                        informacionAdicional: encodeURIComponent(this.state.informacionAdicional),
                         comercio: didMountParamsParent.name,
                         idComercio: didMountParamsParent.cboa_id,
                         productName: didMountParams.name,
@@ -378,104 +398,112 @@ export default class pedidoScreen extends React.Component {
   render() {
     const params = this.props.navigation.getParam('params');
     const paramsParent = this.props.navigation.getParam('paramsParent');
-    //console.log(this.state);
-    return (
-      <View
-        style={{flex: 1,}}
-        behavior='padding'
-      >
-        <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
-        <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
-        <View style={styles.container} elevation={15}>
-          <CacheImage
-            style={localStyles.image}
-            uri= {GLOBAL.BASE_URL+'/images/'+params.foto}
-          />
-          <View 
-              style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}}
-              onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }} 
-           >
-            <Text 
-                  style={[localStyles.title1,localStyles.shadow]}
-              >{paramsParent.name}</Text>
-            <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 18}]} >
-              {paramsParent.detalle}
-            </Text>   
-          </View>    
-        </View>
-        <View style={{padding: 20, paddingTop:30}}>
-          <Text style={localStyles.title2} >{params.name}</Text>
-          <Text style={localStyles.paragraph} >
-            {params.detalle}
-          </Text>
-        </View>        
-          <Text style={localStyles.label} >Dirección de envío</Text>
-          
-          <View style={{flexDirection: 'row'}}>
-              <TextInput 
-                style={[localStyles.inputText,{width: screenWidth-50}]}
-                placeholder='Escriba la dirección de envío'
-                onChangeText={(direccion) => this.setState({direccion})}
-                value={this.state.direccion}
-                maxLength={80}
-              />            
-              <TouchableOpacity
-                style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
-                onPress={() => {this.goMaps()}}
-              >
-                <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
-              </TouchableOpacity>
-          </View>          
-          <View>
-            <Text style={[localStyles.label,{fontSize:14}]}>Número de Teléfono:</Text>  
-            <Text style={[localStyles.label]}>El siguiente es el teléfono que aparece registrado o el último que has di, pero puedes cambiarlo si deseas</Text>  
-            <TextInput
-              style={[localStyles.inputText,{}]}
-              onChangeText={(telefono) => this.setState({telefono})}
-              value={this.state.telefono}
-            />
-            <Text style={[localStyles.label,{fontSize:14}]}>Preguntar por:</Text>  
-            <Text style={[localStyles.label]}>EL mensajero preguntará por ti, pero puedes cambiar el nombre para que pregunte por otra persona</Text>  
-            <TextInput
-              style={[localStyles.inputText,{}]}
-              onChangeText={(preguntarPor) => this.setState({preguntarPor})}
-              value={this.state.preguntarPor}
-            />
-          </View>  
-          { this.state.categoriasLoaded ? ( 
-              this._renderSectionList()
-          ) : null }
-          <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >Detalla un poco tu pedido</Text>
-          <TextInput 
-            style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
-            multiline={true}
-            numberOfLines={4}
-            placeholder='¿Deseas agregar información adicional a tu pedido?'
-            onChangeText={(informacionAdicional) => this.setState({informacionAdicional})}
-            value={this.state.informacionAdicional}
-            maxLength={180}
-          />          
-        </ScrollView>
-   
-        <CustomButton 
-            title={`[ ${this.state.Total} ] Agregar`}
-            style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
-            onPress={() =>{this._confirmPedido()}}
-        />  
-        </View>
-        <ActionMenu2
-          callbackFromParent={this._accionMenuPress}
-          estosBotonesActivos={this.state.estosBotonesActivos}
-        /> 
-        { this.state.showModal ? 
-        <ModalShow
-          onPress={(number) => {this.adminModal(number)}}
-        ></ModalShow>
-        : null }
-      </View>
-     
+    console.log("render this.state", this.state);
+    const { showMapa } = this.state
 
-    );
+    if (!showMapa) { 
+      return (
+          <KeyboardAvoidingView
+            style={{flex: 1,}}
+            behavior='height'
+          >
+            <View style={[localStyles.container]}>
+            <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
+            <View style={styles.container} elevation={15}>
+              <CacheImage
+                style={localStyles.image}
+                uri= {GLOBAL.BASE_URL+'/images/'+params.foto}
+              />
+              <View 
+                  style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}}
+                  onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }} 
+              >
+                <Text 
+                      style={[localStyles.title1,localStyles.shadow]}
+                  >{paramsParent.name}</Text>
+                <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 18}]} >
+                  {paramsParent.detalle}
+                </Text>   
+              </View>    
+            </View>
+            <View style={{padding: 20, paddingTop:30}}>
+              <Text style={localStyles.title2} >{params.name}</Text>
+              <Text style={localStyles.paragraph} >
+                {params.detalle}
+              </Text>
+            </View>        
+              <Text style={localStyles.label} >Dirección de envío</Text>
+              
+              <View style={{flexDirection: 'row'}}>
+                  <TextInput 
+                    style={[localStyles.inputText,{width: screenWidth-50}]}
+                    placeholder='Escriba la dirección de envío'
+                    onChangeText={(direccion) => this.setState({direccion})}
+                    value={this.state.direccion}
+                    maxLength={80}
+                  />            
+                  <TouchableOpacity
+                    style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
+                    onPress={() => {this.goMaps()}}
+                  >
+                    <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
+                  </TouchableOpacity>
+              </View>          
+              <View>
+                <Text style={[localStyles.label,{fontSize:14}]}>Número de Teléfono:</Text>  
+                <Text style={[localStyles.label]}>El siguiente es el teléfono que aparece registrado o el último que has di, pero puedes cambiarlo si deseas</Text>  
+                <TextInput
+                  style={[localStyles.inputText,{}]}
+                  onChangeText={(telefono) => this.setState({telefono})}
+                  value={this.state.telefono}
+                />
+                <Text style={[localStyles.label,{fontSize:14}]}>Preguntar por:</Text>  
+                <Text style={[localStyles.label]}>EL mensajero preguntará por ti, pero puedes cambiar el nombre para que pregunte por otra persona</Text>  
+                <TextInput
+                  style={[localStyles.inputText,{}]}
+                  onChangeText={(preguntarPor) => this.setState({preguntarPor})}
+                  value={this.state.preguntarPor}
+                />
+              </View>  
+              { this.state.categoriasLoaded ? ( 
+                  this._renderSectionList()
+              ) : null }
+              <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >Detalla un poco tu pedido</Text>
+              <TextInput 
+                style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
+                multiline={true}
+                numberOfLines={4}
+                placeholder='¿Deseas agregar información adicional a tu pedido?'
+                onChangeText={(informacionAdicional) => this.setState({informacionAdicional})}
+                value={this.state.informacionAdicional}
+                maxLength={180}
+              />          
+            </ScrollView>
+      
+            <CustomButton 
+                title={`[ ${this.state.Total} ] Agregar`}
+                style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
+                onPress={() =>{this._confirmPedido()}}
+            />  
+            </View>
+            {this.state.perfil==="admin" &&  <ActionMenu2 
+              callbackFromParent={this._accionMenuPress}
+              estosBotonesActivos={this.state.estosBotonesActivos}
+            />}
+            { this.state.showModal ? 
+            <ModalShow
+              onPress={(number) => {this.adminModal(number)}}
+            ></ModalShow>
+            : null }
+          </KeyboardAvoidingView>
+        )
+      }else{
+        return (
+          <MapaScreen
+              actionOverTheMap={this.actionOverTheMap}
+          />
+        )
+      }
   }
 }
 

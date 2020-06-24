@@ -8,7 +8,6 @@ import { Dimensions,
          Image,
          ProgressBarAndroid,
          TouchableHighlight,
-         StatusBar,
          Button,
         } from 'react-native';
 import styles from '../styles/stylesOne';
@@ -19,6 +18,13 @@ import CacheImage from '../components/CacheImage';
 import { FlatGrid } from 'react-native-super-grid';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import ActionMenu2 from '../components/ActionMenu2';
+import { StatusBar } from 'react-native';
+import MapaScreen from './mapScreen';
+import * as Fx from '../globals/Fx'
+
+StatusBar.setBarStyle("dark-content")
+StatusBar.setTranslucent(true)
+StatusBar.setBackgroundColor("transparent")
 
 GLOBAL = require('../globals/globals');
 
@@ -44,19 +50,23 @@ export default class categoriasScreen extends React.Component {
             estosBotonesActivos: {"add": true,"delete":false, "edit": false},
             nameLoaded: false,
             nombre: null,
+            showMapa: false,
+            ubicacion: null,
+            direccion : null,
+            perfil : null,
         };
     }
 
     static navigationOptions = ({navigation}) => {
       return {
         headerTitle: "TodoYa!",
-        headerLeft: (
+        headerLeft: () => (
           <Image 
             source={require('../images/TodoYa-03.png')} 
             style={{marginLeft: 8,marginTop: 5, width:50,height: 50, resizeMode:'stretch'}}
           />
         ),
-        headerRight: (
+        headerRight: () => (
           <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
                 onPress={() => {  navigation.openDrawer() }}
@@ -74,8 +84,7 @@ export default class categoriasScreen extends React.Component {
         'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
       });
       const keyLogin = await AsyncStorage.getItem('keyLogin')
-      this.setState({nombre: JSON.parse(keyLogin)[0].nombre1, nameLoaded: true} )
-      console.log(JSON.parse(keyLogin)[0].nombre1)
+      this.setState({nombre: JSON.parse(keyLogin)[0].nombre1, nameLoaded: true, perfil:  JSON.parse(keyLogin)[0].tipo} )
       this.setState({ fontLoaded: true });  
       const estadoPedidoActual = await AsyncStorage.getItem('estadoPedidoActual')
       if (estadoPedidoActual == null || estadoPedidoActual =='noHay') {
@@ -93,7 +102,8 @@ export default class categoriasScreen extends React.Component {
     }
 
     goMaps() {
-      this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Categorias'})
+      //this.props.navigation.navigate('Mapa', {handleChange: this.handleChange.bind(this), commingFrom: 'Categorias'})
+      this.setState({showMapa: true})
     }
 
     handleChange = async (data) => {
@@ -101,6 +111,20 @@ export default class categoriasScreen extends React.Component {
       console.log(data.direccion);
       await AsyncStorage.setItem('direccion',data.direccion)
       
+    }
+
+
+    actionOverTheMap = async (action, ubicacion) => {
+       console.log("USEAdress", action)
+        switch(action) {
+            case "useAddress": 
+                  //await this.props.action()
+                  // console.log( await AsyncStorage.getAllKeys())
+                  // console.log(ubicacion)
+                  // await Fx._storeData( ubicacion, JSON.stringify(ubicacion) )
+                  this.setState({showMapa : false, direccion: ubicacion.direccion, ubicacion  })
+
+        }
     }
 
     _getBoard = async () => {
@@ -158,6 +182,7 @@ export default class categoriasScreen extends React.Component {
     }
 
     _seleccionaItem = (params) => {
+      if (this.state.perfil !== "admin") return
       this.state.itemChecked == params.index ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.index}) ;
       if (this.state.itemChecked == null ){
         this.setState((previousState) => ({
@@ -199,86 +224,95 @@ export default class categoriasScreen extends React.Component {
   render() { 
     //const dataJson = JSON.parse(this.props.navigation.getParam('data',''));
     //const nombre1 = dataJson[0].nombre1;
-
-    return (
-        <View style={styles.container}>
-          <StatusBar backgroundColor="blue" barStyle="dark-content" />
-          { this.state.categoriasLoaded ? (
-          <View >
-              <ScrollView>  
-              {
-                this.state.fontLoaded && this.state.nameLoaded ? (
-                  <Text style={localStyles.simpleName} 
-                        //onPress = {() => {this._removeData("keyLogin");}} 
-                  >
-                        Hola, {this.state.nombre}
-                  </Text>
-                ) : null
-              }
-              <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
-              <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
-              
-              {
-                this.state.fontLoaded ? (
-                  <Text style={localStyles.simpleTitle} >
-                        Categorías
-                  </Text>
-                ) : null
-              }            
-              <FlatGrid
-                itemDimension={150}
-                items={categorias}
-                style={localStyles.gridView}
-                // staticDimension={300}
-                // fixed
-                spacing={5}
-                renderItem={({ item, index }) => (
-                  <TouchableOpacity
-                      activeOpacity={0.7}
-                      /*onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id, cboa_go: item.cboa_go })}}*/
-                      onPress={() => {this._goScreen(item)}}
-                      delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
-                      onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
-                  >
-                    <View style={localStyles.categoria}>
-                      <CacheImage
-                        style={localStyles.image}
-                        uri= {'http://todoya2.aexelm.com/images/'+item.foto}
-                      />                    
-                      <Text style={localStyles.name}>{item.name}</Text>
-                      <Text style={localStyles.simpleDetalle}>{item.detalle}({item.cboa_id })[{item.foto}]</Text>
-                    </View>
-                    {
-                      this.state.itemChecked == index ? (
-                          <View style={localStyles.checked}>
-                              <Ionicons name='ios-checkmark-circle-outline' color='#fff' size={36} />
-                          </View>
-                      ) : null
-                    }                    
-                  </TouchableOpacity>
-                )}
-              />
-              <Button title='Refrescar'
-                    onPress={() => {this._getBoard() }  }
-              />
-            </ScrollView>  
-          </View>
-        ) : (
-            this.state.fontLoaded && this.state.nameLoaded ? (
-              <View style={localStyles.welcome}>
-                <Text style={[localStyles.simpleName]} 
-                      onPress = {() => {this._removeData("keyLogin");}} >
-                      Hola, {this.state.nombre}
-                </Text>
+    const { showMapa } = this.state
+    console.log("showMapa", showMapa)
+    if (!showMapa){        
+      return (
+            <View style={styles.container}>
+              <StatusBar backgroundColor="blue" barStyle="dark-content" />
+              { this.state.categoriasLoaded ? (
+              <View >
+                  <ScrollView>  
+                  {
+                    this.state.fontLoaded && this.state.nameLoaded ? (
+                      <Text style={localStyles.simpleName} 
+                            //onPress = {() => {this._removeData("keyLogin");}} 
+                      >
+                            Hola, {this.state.nombre}
+                      </Text>
+                    ) : null
+                  }
+                  <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
+                  <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
+                  
+                  {
+                    this.state.fontLoaded ? (
+                      <Text style={localStyles.simpleTitle} >
+                            Categorías
+                      </Text>
+                    ) : null
+                  }            
+                  <FlatGrid
+                    itemDimension={150}
+                    items={categorias}
+                    style={localStyles.gridView}
+                    // staticDimension={300}
+                    // fixed
+                    spacing={5}
+                    renderItem={({ item, index }) => (
+                      <TouchableOpacity
+                          activeOpacity={0.7}
+                          /*onPress={() => {this._goScreen({categoria: item.name, id : item.cboa_id, cboa_go: item.cboa_go })}}*/
+                          onPress={() => {this._goScreen(item)}}
+                          delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
+                          onLongPress={() => { this._seleccionaItem({index: index, id: item.cboa_id }) }}
+                      >
+                        <View style={localStyles.categoria}>
+                          <CacheImage
+                            style={localStyles.image}
+                            uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
+                          />                    
+                          <Text style={localStyles.name}>{item.name}</Text>
+                          <Text style={localStyles.simpleDetalle}>{item.detalle}({item.cboa_id })[{item.foto}]</Text>
+                        </View>
+                        {
+                          this.state.itemChecked == index ? (
+                              <View style={localStyles.checked}>
+                                  <Ionicons name='ios-checkmark-circle-outline' color='#fff' size={36} />
+                              </View>
+                          ) : null
+                        }                    
+                      </TouchableOpacity>
+                    )}
+                  />
+                  <Button title='Refrescar'
+                        onPress={() => {this._getBoard() }  }
+                  />
+                </ScrollView>  
               </View>
-            ) : null
-        )}
-        <ActionMenu2 
-          callbackFromParent={this._accionMenuPress}
-          estosBotonesActivos={this.state.estosBotonesActivos}
+            ) : (
+                this.state.fontLoaded && this.state.nameLoaded ? (
+                  <View style={localStyles.welcome}>
+                    <Text style={[localStyles.simpleName]} 
+                          onPress = {() => {this._removeData("keyLogin");}} >
+                          Hola, {this.state.nombre}
+                    </Text>
+                  </View>
+                ) : null
+            )}
+           {this.state.perfil==="admin" &&  <ActionMenu2 
+              callbackFromParent={this._accionMenuPress}
+              estosBotonesActivos={this.state.estosBotonesActivos}
+            />}
+            </View>
+        );
+    }else{
+      return (
+        <MapaScreen
+            actionOverTheMap={this.actionOverTheMap}
         />
-        </View>
-    );
+      )
+    }
   }
 }
 

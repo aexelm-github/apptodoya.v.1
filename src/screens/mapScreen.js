@@ -14,6 +14,13 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import {AsyncStorage} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import CustomButton from '../components/customButton';
+import * as Fx from '../globals/Fx'
+
+import { StatusBar } from 'react-native';
+
+StatusBar.setBarStyle("dark-content")
+StatusBar.setTranslucent(false)
+StatusBar.setBackgroundColor("#aaddff")
 
 GLOBAL = require('../globals/globals');
 
@@ -43,7 +50,7 @@ export default class mapScreen extends React.Component {
           headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
                                             TodoYa
                                 </Text>},
-          headerRight: (
+          headerRight: ()=>(
             <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
                 onPress={() => {  navigation.openDrawer() }}
@@ -115,25 +122,13 @@ export default class mapScreen extends React.Component {
     console.log(gpsLocation)
   }
 
-  _usarDireccion = () => {
-    const { commingFrom } = this.props.navigation.state.params
-    this.props.navigation.state.params.handleChange({ direccion:  this.state.formatted_address, })
-    this.props.navigation.navigate(commingFrom)
+  _usarDireccion = async () => {
+    // const { commingFrom } = this.props.navigation.state.params
+    // this.props.navigation.state.params.handleChange({ direccion:  this.state.formatted_address, })
+    // this.props.navigation.navigate(commingFrom)
+    await Fx._storeData('ubicacion', JSON.stringify({ direccion:  this.state.formatted_address, gps: this.state.region }))
+    this.props.actionOverTheMap("useAddress",{ direccion:  this.state.formatted_address, gps: this.state.region })
   }
-
-  _retrieveData = async (key) => {
-    try {
-      const value = await AsyncStorage.getItem(key);
-      if (value !== null) {
-        retrieveStorage.value =  value;
-        //await this.props.navigation.navigate('AppStackPpal', {})
-      }else{
-        console.log('_retrieveData: error: logoScreen: '+value)
-      }
-    } catch (error) {
-      // Error retrieving data
-    }
-  };    
 
   render() {
     const { region } = this.state

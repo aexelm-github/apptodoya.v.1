@@ -11,7 +11,8 @@ import {
         ActivityIndicator,
         Keyboard,
         Dimensions,
-        Text
+        Text,
+        KeyboardAvoidingView
       } from 'react-native';
 
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -26,8 +27,8 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 let didMountParams = null;
 
-export default class ImagePickerX extends React.Component {
-  constructor(props) {
+export default class HandleBoardPedido extends React.Component {
+   constructor(props) {
     super(props);
     this.state = {
       image: null,
@@ -46,8 +47,8 @@ export default class ImagePickerX extends React.Component {
 
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: navigation.getParam('params').action,
-      headerRight: (
+      headerTitle: ()=>(<Text>{navigation.getParam('params').action}</Text>),
+      headerRight:() =>  (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
             onPress={() => {  navigation.openDrawer() }}
@@ -60,56 +61,23 @@ export default class ImagePickerX extends React.Component {
     };
   };
 
-  async componentWillMount(){
-    console.log('exe')
-  }
 
-  async componentDidMount() {
-    //this.getPermissionAsync();
-    didMountParams = this.props.navigation.getParam('params');
-    console.log(didMountParams);
-    
-    if (didMountParams.action != 'Nuevo') {
-      this.setState((previousState) => (
-         {...previousState,  
-          'name':didMountParams.data.name, 
-          'detalle':didMountParams.data.detalle, 
-          'grupo':didMountParams.data.cboa_grupo,
-          'precio':didMountParams.data.cboa_precio ,
-        }
-      ))      
+    async componentDidMount() {
+      //this.getPermissionAsync();
+      didMountParams = await this.props.navigation.getParam('params');
+      console.log(didMountParams);
+      
+      if (didMountParams.action != 'Nuevo') {
+        this.setState((previousState) => (
+          {...previousState,  
+            'name':didMountParams.data.name, 
+            'detalle':didMountParams.data.detalle, 
+            'grupo':didMountParams.data.cboa_grupo,
+            'precio':didMountParams.data.cboa_precio ,
+          }
+        ))      
+      }
     }
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this._keyboardDidShow,
-    );
-    this.keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      this._keyboardDidHide,
-    );  
-  }
-
-  componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-}
-
-_keyboardDidShow = (e) => {
-    keyboardParams = {
-        keyboardHeight: e.endCoordinates.height,
-        normalHeight: Dimensions.get('window').height, 
-        shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
-    };         
-    console.log(keyboardParams);
-    this.setState({shrinkScreen : keyboardParams.keyboardHeight - 68   });
-}
-
-_keyboardDidHide = () => {
-    console.log('Keyboard Hidden');
-    this.setState({shrinkScreen : 0 })
-
-}
-
 
   _accionButtons = () => {
     switch(didMountParams.action){
@@ -133,7 +101,6 @@ _keyboardDidHide = () => {
     }
     console.log(this.state.image+' '+didMountParams.data.foto+" "+this.state.fileName);
   }
-
 
   _onGoBack = () => {
     this.props.navigation.goBack();
@@ -179,6 +146,7 @@ _keyboardDidHide = () => {
 
   }
 
+  
   _sendDataToServer = async () => {
       //console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
       // Buscar en servidor de BBDD 
@@ -214,9 +182,6 @@ _keyboardDidHide = () => {
           this.setState({waittingWhileSaving: false});
           alert(e)
       });                
-
-
-
   }
 
   render() {
@@ -225,81 +190,83 @@ _keyboardDidHide = () => {
     const grupoPickerOPtions = params.jsonGrupo;
     console.log(params);
     return (
-      <View
+      <KeyboardAvoidingView
         style={{flex: 1,}}
         behavior='padding'
       >
-      {this.state.waittingWhileSaving ? (
-        <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-          <ActivityIndicator  size={80} color={ColorBoton1}/>
-        </View>        
-        ) : null
-      }
-      <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
-      <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
-          <View>
-            <Text style={localStyles.label} >Grupo</Text>
-              <View style={{flexDirection: 'row'}}>
-              <TextInput 
-                style={[localStyles.inputText,{width: screenWidth-50}]}
-                placeholder='¿Cómo prefieres agrupar este producto?'
-                onChangeText={(grupo) => this.setState({grupo})}
-                value={this.state.grupo}
-                maxLength={50}
-              />
-              <Picker
-                style={{width: 50}}
-                onValueChange={(value) => this.setState({grupo: value})}
-                selectedValue={''}
-              >
-                {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
-              </Picker>
-            </View>
-        </View>
-        <View>
-        <Text style={localStyles.label} >Nombre</Text>
-        <TextInput 
-          style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
-          placeholder='¿Qué nombre tiene el producto o servicio?'
-          onChangeText={(name) => this.setState({name})}
-          value={this.state.name}
-          maxLength={20}
-        />          
-        <Text style={localStyles.label} >Precio</Text>
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='¿Qué valor deseas darle a este producto?'
-          onChangeText={(precio) => this.setState({precio})}
-          value={this.state.precio}
-          maxLength={50}
-          keyboardType='number-pad'
-        /></View>
-      </ScrollView>
-      
-      { params.action == 'Editar' ? 
-          <View style={{flexDirection: 'row'}}>
-            <CustomButton 
-                title={""} 
-                onPress={() => this._editarDatos()}
-                style={{marginBottom: 50, backgroundColor: "#27ae60"}}
-                Icon={'check'}
-            />    
-            <CustomButton 
-                title={""} 
-                onPress={() => this._deleteDatos()}
-                style={{marginBottom: 50, backgroundColor: "#e74c3c"}}
-                Icon={'delete'}
-            />              
-          </View>                        
-        : 
-        <CustomButton 
-                    title={params.action}
-                    style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
-                    onPress={() => this._saveDatos()}
+        {this.state.waittingWhileSaving ? (
+          <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
+            <ActivityIndicator  size={80} color={ColorBoton1}/>
+          </View>        
+          ) : null
+        }
+        <View style={[localStyles.container]}>
+        <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
+            <View>
+                <Text style={localStyles.label} >Grupo</Text>
+                <View style={{flexDirection: 'row'}}>
+                <TextInput 
+                    style={[localStyles.inputText,{width: screenWidth-50}]}
+                    placeholder='¿Cómo prefieres agrupar este producto?'
+                    onChangeText={(grupo) => this.setState({grupo})}
+                    value={this.state.grupo}
+                    maxLength={50}
                 />
-      }
-      </View>
-      </View>
+                <Picker
+                    style={{width: 50}}
+                    onValueChange={(value) => this.setState({grupo: value})}
+                    selectedValue={''}
+                >
+                    {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+                </Picker>
+                </View>
+            </View>
+            <View>
+            <Text style={localStyles.label} >Nombre</Text>
+            <TextInput 
+            style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
+            placeholder='¿Qué nombre tiene el producto o servicio?'
+            onChangeText={(name) => this.setState({name})}
+            value={this.state.name}
+            maxLength={20}
+            />          
+            <Text style={localStyles.label} >Precio</Text>
+            <TextInput 
+            style={localStyles.inputText}
+            placeholder='¿Qué valor deseas darle a este producto?'
+            onChangeText={(precio) => this.setState({precio})}
+            value={this.state.precio}
+            maxLength={50}
+            keyboardType='number-pad'
+            /></View>
+        </ScrollView>
+
+        { params.action == 'Editar' ? 
+            <View style={{flexDirection: 'row'}}>
+              <CustomButton 
+                  title={""} 
+                  onPress={() => this._editarDatos()}
+                  style={{marginBottom: 50, backgroundColor: "#27ae60"}}
+                  Icon={'check'}
+              />    
+              <CustomButton 
+                  title={""} 
+                  onPress={() => this._deleteDatos()}
+                  style={{marginBottom: 50, backgroundColor: "#e74c3c"}}
+                  Icon={'delete'}
+              />              
+            </View>                        
+          : 
+          <CustomButton 
+                      title={params.action}
+                      style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
+                      onPress={() => this._saveDatos()}
+                  />
+        }
+
+
+        </View>
+      </KeyboardAvoidingView>
     );
   }
 

@@ -54,7 +54,7 @@ export default class mapScreen extends React.Component {
 		  headerTitle: props => {return <Text style={{color:'#3498db',fontWeight: "500", fontSize: 18}}>
 											TodoYa
 								</Text>},
-		  headerRight: (
+		  headerRight: () => (
 			<View style={{marginRight: 12, flexDirection:'row'}}>
 			  <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
 				onPress={() => {  navigation.openDrawer() }}

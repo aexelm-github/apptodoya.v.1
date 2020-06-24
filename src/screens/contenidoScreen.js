@@ -46,14 +46,15 @@ export default class cartaScreen extends React.Component {
           x1Height:  screenHeight *.80,
           x1HeightAnimated:  new Animated.Value(screenHeight *.80),
           x1Full : true,
+          perfil:null,
         }
 
     }
 
     static navigationOptions = ({navigation}) => {
       return {
-        headerTitle: (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
-        headerRight: (
+        headerTitle:()=> (<Text style={[localStyles.shadow,{paddingLeft: 2  , color: "#fff"}]} >TodoYA!</Text>),
+        headerRight:() =>  (
           <View style={{marginRight: 12, flexDirection:'row'}}>
               <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
                 onPress={() => {  navigation.openDrawer() }}
@@ -83,6 +84,8 @@ export default class cartaScreen extends React.Component {
       this.getTimeDate();
       const item = this.props.navigation.getParam('params');
       await AsyncStorage.setItem("fotoComercio",item.foto)
+      const keyLogin = await AsyncStorage.getItem('keyLogin')
+      this.setState({perfil:  JSON.parse(keyLogin)[0].tipo} )
             
     }
 
@@ -172,6 +175,7 @@ export default class cartaScreen extends React.Component {
                               <CacheImage
                                   style={localStyles.imageProduct}
                                   uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
+                                  crop={true}
                               />   
                               <View style={{width:0, flexGrow: 1, marginTop: 15, marginRight: 15}}>
                                 <Text style={{fontSize: 16, color:"orange"}}>{item.name}</Text>
@@ -213,6 +217,7 @@ export default class cartaScreen extends React.Component {
 
   _seleccionaItem = (params) => {
     //console.log('selecciono: '+params.cboa_id)
+    if (this.state.perfil !== "admin") return
     this.state.itemChecked == params.cboa_id ? this.setState({'itemChecked':null}) :this.setState({'itemChecked':params.cboa_id}) ;
     if (this.state.itemChecked == null ){
       this.setState((previousState) => ({
@@ -233,7 +238,7 @@ export default class cartaScreen extends React.Component {
 
   _accionMenuPress = (data) => {
     const params = this.props.navigation.getParam('params','');
-    //console.log('ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
+    console.log('EXEL ESTE ES PARENT QUE ESTOY ENVIANDO parentId:' + params.cboa_id + " "+ this.state.itemChecked);
     let item = null
     if (categorias !== null ) {
       item = categorias.filter(item => item.cboa_id == this.state.itemChecked);
@@ -353,10 +358,10 @@ export default class cartaScreen extends React.Component {
           )
         }
       </ScrollView>
-      <ActionMenu2
-        callbackFromParent={this._accionMenuPress}
-        estosBotonesActivos={this.state.estosBotonesActivos}
-      />       
+      {this.state.perfil==="admin" &&  <ActionMenu2 
+              callbackFromParent={this._accionMenuPress}
+              estosBotonesActivos={this.state.estosBotonesActivos}
+            />}      
       </View>
     );
   } 

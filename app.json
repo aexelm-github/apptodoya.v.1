@@ -1,20 +1,12 @@
 {
   "expo": {
     "androidStatusBar": {
-      "barStyle": "light-content",
-      "backgroundColor": "#00000000"
+      "barStyle": "dark-content",
+      "backgroundColor": "#fff"
     },
     "name": "TodoYa!",
     "slug": "apptodoya",
     "privacy": "public",
-    "android": {
-      "package": "com.aexelm.todoya",
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyDpj1hn8uHHoCEsUefUSIvATJr1mDhZRfI"
-        }
-      }
-    },
     "platforms": [
       "ios",
       "android",
@@ -37,6 +29,15 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": "Version 1.103"
+    "description": "Version 1.0.1",
+    "android": {
+      "package": "com.aexelm.todoya",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDpj1hn8uHHoCEsUefUSIvATJr1mDhZRfI"
+        }
+      }
+    },
+    "sdkVersion": "37.0.0"
   }
 }

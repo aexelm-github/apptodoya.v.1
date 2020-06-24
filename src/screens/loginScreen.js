@@ -8,6 +8,7 @@ import { StyleSheet,
          Keyboard,
          Dimensions,
          ScrollView,
+         KeyboardAvoidingView,
        } from 'react-native';
 import { Icon ,Input} from 'react-native-elements'
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import CustomButton from '../components/customButton';
 import CustomInput from '../components/customInput';
 import {AsyncStorage} from 'react-native';
+import * as Fx from '../globals/Fx'
 
 GLOBAL = require('../globals/globals');
 const retrieveStorage = {"value":''};
@@ -29,9 +31,9 @@ export default class loginScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
-                       /*email: 'aexelm@gmail.com', 
-                       pass: '123' ,*/
-                       email: '', pass:'',
+                       email: 'aexelm@gmail.com', 
+                       pass: '123' ,
+                      //  email: '', pass:'',
                        fontLoaded: false, 
                        shrinkScreen: 0,
                      };
@@ -41,37 +43,21 @@ export default class loginScreen extends React.Component {
         await  Font.loadAsync({
           'Changa-Regular': require('../../assets/fonts/Changa-Regular.ttf'),
         });
-        
-        this.setState({ fontLoaded: true });
-        this.keyboardDidShowListener = Keyboard.addListener(
-          'keyboardDidShow',
-          this._keyboardDidShow,
-        );
-        this.keyboardDidHideListener = Keyboard.addListener(
-          'keyboardDidHide',
-          this._keyboardDidHide,
-        ); 
+        this.setState({fontLoaded: true})
+        // this.setState({ fontLoaded: true });
+        // this.keyboardDidShowListener = Keyboard.addListener(
+        //   'keyboardDidShow',
+        //   this._keyboardDidShow,
+        // );
+        // this.keyboardDidHideListener = Keyboard.addListener(
+        //   'keyboardDidHide',
+        //   this._keyboardDidHide,
+        // ); 
       }
 
       componentWillUnmount() {
-        this.keyboardDidShowListener.remove();
-        this.keyboardDidHideListener.remove();
-    }
-
-    _keyboardDidShow = (e) => {
-        keyboardParams = {
-            keyboardHeight: e.endCoordinates.height,
-            normalHeight: Dimensions.get('window').height, 
-            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
-        };         
-        console.log(keyboardParams);
-        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
-    }
-
-    _keyboardDidHide = () => {
-        console.log('Keyboard Hidden');
-        this.setState({shrinkScreen : 0 })
-
+        // this.keyboardDidShowListener.remove();
+        // this.keyboardDidHideListener.remove();
     }
 
       _storeData = async (key, value) => {
@@ -98,7 +84,7 @@ export default class loginScreen extends React.Component {
       };
       
     btnLogin = async (params) => {
-        if ((this.state.email.trim().length =0) || (this.state.pass.trim().length == 0) ){
+        if ((this.state.email.trim().length == 0) || (this.state.pass.trim().length == 0) ){
             alert("Error. Los campos Email y Password no pueden estar vacíos!");
         }else{
             let formdata = new FormData();
@@ -110,14 +96,13 @@ export default class loginScreen extends React.Component {
                 body: formdata,
               })
               .then( (response) => response.json() )
-              .then( (responseJson) => {
+              .then( async (responseJson) => {
                   console.log(responseJson);
                   //console.log(responseJson.length);
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
                   }else{
                     this._storeData("keyLogin",responseJson); 
-                    console.log(responseJson)
                     this.setEstosDatos(responseJson)
                     this._retrieveData("keyLogin")        
                     this.props.navigation.navigate('Categorias', { 
@@ -143,16 +128,17 @@ export default class loginScreen extends React.Component {
 
   render() {
     return (
+      <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+          style={{flex:1}}
+      >
       <ImageBackground
         source={require('../images/bkg-pizza-01.jpg')}
         style={{width: '100%', height: '100%'}}
         imageStyle={{resizeMode: 'stretch'}}
         /*style={Style.someAdditionalViewStyles}*/
       >
-      <View style={[styles.containerLogin,{paddingBottom: this.state.shrinkScreen}]}>
-        
-        <View>
-            <View  style={styles.logoContainer}>
+      <ScrollView contentContainerStyle={{flex:1, justifyContent:'center', alignItems:'center'}}>
                 <Image style={[styles.logoImage,{resizeMode: "stretch",marginBottom:25}]}
                     width={120}
                     height={120}
@@ -198,11 +184,10 @@ export default class loginScreen extends React.Component {
                     }
                 </TouchableOpacity>
               
-            </View>
-        </View>
+        </ScrollView>
         <Text style={styles.copyright}>Derechos Reservados 2019. (aexelm@gmail.com) Powered by TodoYa!</Text>
-      </View>
       </ImageBackground>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -216,6 +201,11 @@ const localStyles = StyleSheet.create({
         textShadowOffset: {width: -11, height: 10},
         textShadowRadius: 10,
         fontFamily: "Changa-Regular"
+    },
+    containerLogin: {
+      justifyContent: 'center',
+      alignItems: 'center',
+  
     },
 
 })

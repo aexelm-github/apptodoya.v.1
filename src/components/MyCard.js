@@ -84,7 +84,7 @@ const MyCard = (props) => {
                         <View style={{width: '100%'}}>
                             <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
                             <Text style={{color:color[idxColor]}}>Información adicional</Text>
-                            <Text >{DATA.informacionAdicional}</Text>
+                            <Text >{decodeURIComponent(DATA.informacionAdicional)}</Text>
                         </View>
                     : null }
                     { props.selected ?

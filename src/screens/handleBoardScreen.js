@@ -11,7 +11,8 @@ import {
         ActivityIndicator,
         Keyboard,
         Dimensions,
-        Text
+        Text,
+        KeyboardAvoidingView,
       } from 'react-native';
 //import { Constants} from 'expo';
 import * as Permissions from 'expo-permissions';
@@ -19,10 +20,13 @@ import Constants from 'expo-constants'
 
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
+import {AsyncStorage} from 'react-native';
+import MapaScreen from './mapScreen';
+
 
 GLOBAL = require('../globals/globals');
 
@@ -47,13 +51,17 @@ export default class ImagePickerX extends React.Component {
       waittingWhileSaving : false,
       shrinkScreen: 0,
       tipoGo: 'Contenido',
+      direccion: null,
+      showMapa: false,
+      ubicacion: null,
+      needsAddress :false,
     };
   }
 
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: navigation.getParam('params').action,
-      headerRight: (
+      headerTitle: ()=>(<Text>{navigation.getParam('params').action}</Text>),
+      headerRight: () =>  (
         <View style={{marginRight: 8, flexDirection:'row'}}>
           <TouchableHighlight activeOpacity={0.7} underlayColor='#ccc'
             onPress={() => {  navigation.openDrawer() }}
@@ -73,34 +81,29 @@ export default class ImagePickerX extends React.Component {
   async componentDidMount() {
     this.getPermissionAsync();
     didMountParams = this.props.navigation.getParam('params');
-    console.log(didMountParams);
+    console.log("didMountParams",didMountParams.data);
+    const { name, detalle, cboa_grupo, cboa_precio, cboa_go, cboa_ubicacion } = didMountParams.data
     if (didMountParams.action != 'Nuevo') {
-      this.setState((previousState) => (
+      await this.setState( (previousState) => (
          {...previousState,  
-          'name':didMountParams.data.name, 
-          'detalle':didMountParams.data.detalle, 
-          'grupo':didMountParams.data.cboa_grupo,
-          'precio':didMountParams.data.cboa_precio ,
-          'tipoGo': didMountParams.data.cboa_go,
+          'name':name, 
+          'detalle':detalle, 
+          'grupo':cboa_grupo,
+          'precio':cboa_precio ,
+          'tipoGo': cboa_go, 
+          'ubicacion': cboa_ubicacion===null || cboa_ubicacion==="null" || cboa_ubicacion===undefined || cboa_ubicacion==="" ? null : JSON.parse(cboa_ubicacion),
+          'direccion': cboa_ubicacion===null || cboa_ubicacion==="null" || cboa_ubicacion===undefined || cboa_ubicacion==="" ? null : JSON.parse(cboa_ubicacion).direccion
         }
-      ))      
+      ))    
     }else{
       didMountParams.go == 'Pedido' ? this.setState({tipoGo : 'Pedido'}) : null;
     }
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this._keyboardDidShow,
-    );
-    this.keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      this._keyboardDidHide,
-    );  
+    if (didMountParams.parentId == 1) {
+      this.setState({needsAddress: true})
+    }
+
   }
 
-  componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-}
 
 _keyboardDidShow = (e) => {
     keyboardParams = {
@@ -251,19 +254,21 @@ _keyboardDidHide = () => {
     if (this.state.fileName != null) {
       //console.log('ESTE EL PARENT que ESTOY RECIBIENDO '+didMountParams.parentId);
       // Buscar en servidor de BBDD 
+      console.log("didMountParams", didMountParams)
       let formdata = new FormData();
       formdata.append('id',didMountParams.action == "Editar" ? didMountParams.data.cboa_id : null);
-      formdata.append('name',this.state.name);
+      formdata.append('name',encodeURI(this.state.name));
       formdata.append('detalle',encodeURIComponent(this.state.detalle));
       formdata.append('filename',this.state.fileName);
       formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('parentId',didMountParams.parentId);
       formdata.append('action',didMountParams.action);
-      //formdata.append('GO',didMountParams.go);
-      formdata.append('GO',this.state.tipoGo);
+      formdata.append('GO',didMountParams.go);
+      //formdata.append('GO',this.state.tipoGo);
       formdata.append('grupo',this.state.grupo);
       formdata.append('precio',this.state.precio);
-      console.log(formdata);
+      formdata.append('ubicacion',JSON.stringify(this.state.ubicacion));
+      console.log("formdata >> ",formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
@@ -275,7 +280,7 @@ _keyboardDidHide = () => {
             }else{
               this.setState({waittingWhileSaving: false});
               alert(responseJson[0].message);
-              //console.log(responseJson);
+              console.log(decodeURIComponent(responseJson[0].sql));
               if (responseJson[0].success == 'ok'){
                 this._onGoBack();
               }                  
@@ -289,123 +294,165 @@ _keyboardDidHide = () => {
 
   }
 
+  goMaps() {
+    //this.props.navigation.navigate('Mapa', {handleChange: (data) => console.log("XXXXXXXXXX"), commingFrom: 'HandleBoard'})
+    this.setState({showMapa: true})
+  }
+
+  async handleChange(data) {
+    await AsyncStorage.setItem('direccion',this.state.direccion)
+    this.setState(data);
+    console.log("data", data)
+  }
+
+  actionOverTheMap = async (action, ubicacion) => {
+      switch(action) {
+          case "useAddress": 
+                //await this.props.action()
+                this.setState({showMapa : false, direccion: ubicacion.direccion, ubicacion  })
+      }
+  }
+
   render() {
-    let { image } = this.state;
+    let { image, showMapa, needsAddress } = this.state;
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     const grupoPickerOPtions = params.jsonGrupo;
     const tipoOpcionPicker = params.commingFrom=='comerciosScreen' ?  ['Contenido','Pedido'] : ['Comercios','Contenido']
     
-    console.log(params)
-    return (
-      <View
-        style={{flex: 1,}}
-        behavior='padding'
-      >
-      {this.state.waittingWhileSaving ? (
-        <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-          <ActivityIndicator  size={80} color={ColorBoton1}/>
-        </View>        
-        ) : null
-      }
-      <View style={[localStyles.container,{paddingBottom: this.state.shrinkScreen}]}>
-      <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
-        <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
-        >
-            { 
-              params.action!='Nuevo' ? (
-              <CacheImage
-                style={localStyles.image}
-                uri= {GLOBAL.BASE_URL+'/images/'+params.data.foto}
-              />
-              ) : null
-            }           
-            {image &&
-              <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
-            <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
-        </TouchableOpacity>
-        <Text style={localStyles.label} >Nombre</Text>
-        <TextInput 
-          style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
-          placeholder='¿Qué nombre tiene el producto o servicio?'
-          onChangeText={(name) => this.setState({name})}
-          value={this.state.name}
-          maxLength={20}
-        />
-        <Text style={localStyles.label} >Descripción</Text>
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='Describe el producto o el servicio'
-          multiline={true}
-          numberOfLines={2}
-          onChangeText={(detalle) => this.setState({detalle})}
-          value={this.state.detalle}
-          maxLength={120}
-        />
-        { params.go == 'Pedido' ? (
-          <View>
-            <Text style={localStyles.label} >Grupo</Text>
-              <View style={{flexDirection: 'row'}}>
-              <TextInput 
-                style={[localStyles.inputText,{width: screenWidth-50}]}
-                placeholder='¿Cómo prefieres agrupar este producto?'
-                onChangeText={(grupo) => this.setState({grupo})}
-                value={this.state.grupo}
-                maxLength={50}
-              />
-              <Picker
-                style={{width: 50}}
-                onValueChange={(value) => this.setState({grupo: value})}
-                selectedValue={''}
-              >
-                {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
-              </Picker>
+    if (!showMapa) {
+        return (
+          <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
+            style={{flex:1, padding:0}}
+          >
+          {this.state.waittingWhileSaving ? (
+            <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width:'100%',  height: '100%',  zIndex: 1000}} >
+              <ActivityIndicator  size={80} color={ColorBoton1}/>
+            </View>        
+            ) : null
+          }
+          <ScrollView contentContainerStyle={{  marginBottom: 55}}> 
+            <TouchableOpacity style={localStyles.imageView} activeOpacity={0.5}  onPress={this._pickImage}
+            >
+                { 
+                  params.action!='Nuevo' ? (
+                  <CacheImage
+                    style={localStyles.image}
+                    uri= {GLOBAL.BASE_URL+'/images/'+params.data.foto}
+                  />
+                  ) : null
+                }           
+                {image &&
+                  <Image source={{ uri: image }} style={{ position: 'absolute', top:0, left:0, width: '100%', height: '100%' }} />}
+                <Ionicons elevation={5} styles={localStyles.iconCamera} name='ios-camera' size={80} color='#fff' />
+            </TouchableOpacity>
+            <Text style={localStyles.label} >Nombre</Text>
+            <TextInput 
+              style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
+              placeholder='¿Qué nombre tiene el producto o servicio?'
+              onChangeText={(name) => this.setState({name})}
+              value={this.state.name}
+              maxLength={20}
+            />
+            <Text style={localStyles.label} >Descripción</Text>
+            <TextInput 
+              style={localStyles.inputText}
+              placeholder='Describe el producto o el servicio'
+              multiline={true}
+              numberOfLines={2}
+              onChangeText={(detalle) => this.setState({detalle})}
+              value={this.state.detalle}
+              maxLength={120}
+            />
+            {needsAddress && (<View>
+                <Text style={localStyles.label} >Dirección</Text>
+                <View style={{flexDirection: 'row'}}>
+                      <TextInput 
+                        style={[localStyles.inputText,{width: screenWidth-50}]}
+                        placeholder='Dirección'
+                        onChangeText={(direccion) => this.setState({direccion})}
+                        value={this.state.direccion}
+                        maxLength={80}
+                      />            
+                      <TouchableOpacity
+                        style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
+                        onPress={() => {this.goMaps()}}
+                      >
+                        <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
+                      </TouchableOpacity>
+                  </View>
+              </View>)} 
+            { params.go == 'Pedido' ? (
+              <View>
+                <Text style={localStyles.label} >Grupo</Text>
+                  <View style={{flexDirection: 'row'}}>
+                  <TextInput 
+                    style={[localStyles.inputText,{width: screenWidth-50}]}
+                    placeholder='¿Cómo prefieres agrupar este producto?'
+                    onChangeText={(grupo) => this.setState({grupo})}
+                    value={this.state.grupo}
+                    maxLength={50}
+                  />
+                  <Picker
+                    style={{width: 50}}
+                    onValueChange={(value) => this.setState({grupo: value})}
+                    selectedValue={''}
+                  >
+                    {grupoPickerOPtions.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+                  </Picker>
+                </View>
             </View>
-        </View>
-        ) : null }
-        { params.go == 'Pedido' ? (
-        <View>
-        <Text style={localStyles.label} >Precio</Text>
-        <TextInput 
-          style={localStyles.inputText}
-          placeholder='¿Qué valor deseas darle a este producto?'
-          onChangeText={(precio) => this.setState({precio})}
-          value={this.state.precio}
-          maxLength={50}
-          keyboardType='number-pad'
-        /></View>
-        ) : null }
-        { params.go != 'Pedido' ? (
-          <View style={{}}>
-            <Text style={localStyles.label} >Tipo de Opción</Text>
+            ) : null }
+            { params.go == 'Pedido' ? (
+            <View>
+            <Text style={localStyles.label} >Precio</Text>
+            <TextInput 
+              style={localStyles.inputText}
+              placeholder='¿Qué valor deseas darle a este producto?'
+              onChangeText={(precio) => this.setState({precio})}
+              value={this.state.precio}
+              maxLength={50}
+              keyboardType='number-pad'
+            /></View>
+            ) : null }
+            { params.go != 'Pedido' ? (
+              <View style={{}}>
+                <Text style={localStyles.label} >Tipo de Opción</Text>
+                <Text style={[localStyles.label,{fontSize:10}]}>
+                  El tipo de opción significa que cuando el usuario haga click en esta, será dirigido hacia que tipo de pantalla.{"\n"}
+                  Comercios: Quiere decir que esta opción es una categoría y al pulsar en ella será llevado a los diferentes establecimientos comerciales que contendría.{"\n"}
+                  Contenido: Que va directamente a revisar el contenido de una opción. Por lo general de un establecimiento comercial.{"\n"}
+                  Pedido: Quiere decir que se abre directamente la ventana donde se especfica el pedido.
+                </Text>
+                  <Picker
+                    style={{padding: 20,margin: 10,backgroundColor:'#00000055', borderRadius: 10}}
+                    onValueChange={(value) => this.setState({tipoGo: value})}
+                    selectedValue={this.state.tipoGo}
+                  >
+                    {tipoOpcionPicker.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
+                  </Picker>
+            </View>
+            ) : null }
+            <Text style={localStyles.label} >¿Es ésto un local comercial?</Text>
             <Text style={[localStyles.label,{fontSize:10}]}>
-              El tipo de opción significa que cuando el usuario haga click en esta, será dirigido hacia que tipo de pantalla.{"\n"}
-              Comercios: Quiere decir que esta opción es una categoría y al pulsar en ella será llevado a los diferentes establecimientos comerciales que contendría.{"\n"}
-              Contenido: Que va directamente a revisar el contenido de una opción. Por lo general de un establecimiento comercial.{"\n"}
-              Pedido: Quiere decir que se abre directamente la ventana donde se especfica el pedido.
-            </Text>
-              <Picker
-                style={{padding: 20,margin: 10,backgroundColor:'#00000055', borderRadius: 10}}
-                onValueChange={(value) => this.setState({tipoGo: value})}
-                selectedValue={this.state.tipoGo}
-              >
-                {tipoOpcionPicker.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
-              </Picker>
-        </View>
-        ) : null }
-        <Text style={localStyles.label} >¿Es ésto un local comercial?</Text>
-        <Text style={[localStyles.label,{fontSize:10}]}>
-          Seleccione la siguiente casilla si el item actual es un negocio.  
-        </Text>        
-      </ScrollView>
-      <CustomButton 
-                    title={params.action}
-                    style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
-                    onPress={this._accionButtons}
-                />
-      </View>
-      </View>
-    );
+              Seleccione la siguiente casilla si el item actual es un negocio.  
+            </Text>        
+          </ScrollView>
+          <CustomButton 
+                        title={params.action}
+                        style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: ColorBoton1}]}
+                        onPress={this._accionButtons}
+                    />
+          </KeyboardAvoidingView>
+        )
+      }else{
+        return (
+          <MapaScreen
+              actionOverTheMap={this.actionOverTheMap}
+          />
+        )
+      }
   }
 
   

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Image, Text, View, ScrollView , Dimensions, Button} from 'react-native';
 import {AsyncStorage} from 'react-native';
-import { 
-        createStackNavigator, 
-        createSwitchNavigator, 
-        createAppContainer,
-        createBottomTabNavigator,
-        createDrawerNavigator,DrawerItems, SafeAreaView ,
-      }  from 'react-navigation';
+
+import { createAppContainer, createSwitchNavigator,  } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+import { createDrawerNavigator } from 'react-navigation-drawer';  
+import { createBottomTabNavigator } from 'react-navigation-tabs';
+import SafeAreaView from 'react-native-safe-area-view';
+import { DrawerItems } from 'react-navigation-drawer';
+
 import logoScreen from './src/screens/logoScreen'
 import loginScreen from './src/screens/loginScreen'
 import registerScreen from './src/screens/registerScreen'  
@@ -29,7 +30,16 @@ import mapScreen from './src/screens/mapScreen';
 import confirmPedido from './src/screens/confirmPedido';
 import progresoPedido from './src/screens/progresoPedido';
 import closeSession from './src/screens/closeSession';
+import { StatusBar } from 'react-native';
 
+StatusBar.setBarStyle("dark-content")
+StatusBar.setTranslucent(true)
+StatusBar.setBackgroundColor("#aaddff")
+
+import { enableScreens } from 'react-native-screens';
+
+
+enableScreens();
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
@@ -47,7 +57,7 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 
   const CustomDrawerContentComponent = props => (
-    <ScrollView>
+    <ScrollView style={{flex: 1, width: '100%'}}>
       <SafeAreaView style={{flex:1}} forceInset={{ top: 'always', horizontal: 'never' }}>
         <Image 
           style={[{resizeMode: "stretch",marginTop:45,marginLeft: 75, marginBottom: 25}]}
@@ -96,14 +106,14 @@ const screenHeight = Math.round(Dimensions.get('window').height);
       ConfirmPedido: confirmPedido,
       HandleBoard: handleBoardScreen,
       HandleBoardPedido: handleBoardPedido,
-      Mapa: mapScreen,
+     Mapa: mapScreen,
     },
     {
       initialRoutName:'Categorias',
       defaultNavigationOptions: {
         title: '', 
         headerStyle: {
-          backgroundColor: 'transparent',
+          backgroundColor: '#fff',
           elevation: 0,
           shadowOpacity: 0,
         },
