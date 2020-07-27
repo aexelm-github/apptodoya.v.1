@@ -254,9 +254,9 @@ export default class mapScreen extends React.Component {
 				:	<View style={styles.container}>
 						<View  style={styles.logoContainer}>
 						<Image style={styles.logoImage}
-                    source={require('../images/emptyBox.png')}
+                    	source={require('../images/emptyBox.png')}
                     />
-                  <Text style={{color: '#0984e3', fontSize: 20, margin: 15, textAlign:'center'}}>No hay nada que mostrar</Text>               								        
+                  <Text style={{color: '#0984e3', fontSize: 15, margin: 15, textAlign:'center'}}>No hay nada que mostrar</Text>               								        
 						</View>
 					</View>
 				}

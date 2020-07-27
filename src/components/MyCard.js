@@ -15,9 +15,9 @@ showDetalle = (DATA) => {
         <FlatList
           data={DATA}
           renderItem={({ item,index }) => 
-            <View style={styles.sameRow}>
-                <Text >{item.name}</Text>
-                <Text  style={{position:'absolute', right:10}}>$ {item.precio}.00</Text>
+            <View style={[styles.sameRow, {width: '100%', }]}>
+                <Text style={{width: "50%"}} >{item.name}</Text>
+                <Text  style={{}}> $ {item.precio}.00 {` x ${item.cantidad}`}</Text>
             </View>
           }
           keyExtractor={(item,index) => index.toString()}
@@ -26,8 +26,9 @@ showDetalle = (DATA) => {
     return render
 }
 
-onSwipeFromLeft = () => {
-    alert('Eliminar')
+onSwipeFromLeft = (props) => {
+    console.log(props.index)
+    props.onSwipeDelete(props.index)
 }
 
 const LeftActions = (progress, dragX) =>  {
@@ -50,7 +51,7 @@ const MyCard = (props) => {
     return (
         <Swipeable 
             renderLeftActions={LeftActions}
-            onSwipeableLeftOpen={onSwipeFromLeft}
+            onSwipeableLeftOpen={() => onSwipeFromLeft(props)}
             //renderRightActions={RightActions}
         >
             <View style={{flex:1}}>
@@ -62,7 +63,7 @@ const MyCard = (props) => {
                     <View style={styles.sameRow}>
                         <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>{props.DATA.productName}</Text>
                         <TouchableOpacity 
-                            style={{fontSize:fontSize, position:'absolute', right:10}}
+                            style={{fontSize:fontSize, position:'absolute', right:5}}
                             onPress={onPress}
                         >
                             <Ionicons name={'md-close-circle'} size={25} />
@@ -76,11 +77,11 @@ const MyCard = (props) => {
                     <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
                     <View style={styles.sameRow}>
                         <Text style={[styles.text, textStyle,{fontSize:fontSize}]}>Sub total: </Text>
-                        <Text style={[styles.text, textStyle,{fontSize:fontSize, position:'absolute', right:10}]}>
+                        <Text style={[styles.text, textStyle,{fontSize:fontSize }]}>
                             $ {DATA.totalCalculado==0 ? DATA.precio : DATA.totalCalculado}.00
                         </Text>
                     </View>
-                    { DATA.informacionAdicional ? 
+                    { DATA.informacionAdicional && DATA.informacionAdicional != "null" ? 
                         <View style={{width: '100%'}}>
                             <Divider style={{ backgroundColor: color[idxColor], marginTop: 4, marginBottom: 4 }} />
                             <Text style={{color:color[idxColor]}}>Información adicional</Text>
@@ -123,8 +124,10 @@ const styles = StyleSheet.create({
     },
     sameRow : {
         flexDirection: 'row',
-        alignItems: 'center',
+        //alignItems: 'center',
+        justifyContent: 'space-between',
         width: '100%',
+        paddingRight: 10,
     },
     text: {
         fontSize: 16,

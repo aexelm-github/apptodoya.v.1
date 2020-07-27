@@ -130,6 +130,10 @@ export default class mapScreen extends React.Component {
     this.props.actionOverTheMap("useAddress",{ direccion:  this.state.formatted_address, gps: this.state.region })
   }
 
+  justClose = async () => {
+     this.props.actionOverTheMap('justClose', {}) 
+  }
+
   render() {
     const { region } = this.state
     
@@ -157,16 +161,27 @@ export default class mapScreen extends React.Component {
     }
     return (
         <View style={{flex:1 , justifyContent:'center', alignItems: 'center'}}>
-            <Image style={styles.logoImage}
-                    source={require('../images/pinMapa.png')}
-                    />
-                  <Text style={{color: '#0984e3', fontSize: 20, margin: 15, textAlign:'center'}}>Cargando mapa...</Text>               
+            <Image style={localStyles.logoImage}
+              source={require('../images/pinMapa.png')}
+              />
+            <Text style={{color: '#0984e3', fontSize: 15, margin: 15, textAlign:'center'}}>Cargando mapa...</Text>  
+            <TouchableOpacity 
+               style={{position: 'absolute', bottom: 0, right: 0, padding: 4}}
+               onPress={() => this.justClose()}
+            >     
+               <Text style={{color: '#0984e3', fontSize: 12, margin: 15, textAlign:'right'}}>Aviso!. Si no carga el mapa dale Aquí para continuar</Text>       
+            </TouchableOpacity>
+
         </View>
     )    
   }
 }
 
 const localStyles = StyleSheet.create({
+  logoImage: {
+    width:  100,
+    height : 100
+  },
   address : {
     position: 'absolute',
     color: '#fff',

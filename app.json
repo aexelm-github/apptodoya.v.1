@@ -12,9 +12,9 @@
       "android",
       "web"
     ],
-    "version": "1.0.0",
+    "version": "1.0.9.beta",
     "orientation": "portrait",
-    "icon": "./assets/TodoYa-ico.png",
+    "icon": "./assets/TodoYa-ico-blue.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -29,9 +29,10 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": "Version 1.0.1",
+    "description": "Version 1.0.9.beta",
     "android": {
-      "package": "com.aexelm.todoya",
+      "useNextNotificationsApi": true,
+      "package": "com.domiciliostodoya.beta",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDpj1hn8uHHoCEsUefUSIvATJr1mDhZRfI"

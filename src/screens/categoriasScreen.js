@@ -123,6 +123,9 @@ export default class categoriasScreen extends React.Component {
                   // console.log(ubicacion)
                   // await Fx._storeData( ubicacion, JSON.stringify(ubicacion) )
                   this.setState({showMapa : false, direccion: ubicacion.direccion, ubicacion  })
+            break;
+            case 'justClose' :
+                  this.setState({showMapa  :false})
 
         }
     }
@@ -229,7 +232,8 @@ export default class categoriasScreen extends React.Component {
     if (!showMapa){        
       return (
             <View style={styles.container}>
-              <StatusBar backgroundColor="blue" barStyle="dark-content" />
+              {/* <StatusBar backgroundColor="rgb(238,29,36)" barStyle="dark-content" /> */}
+              <StatusBar backgroundColor="white" barStyle="dark-content" />
               { this.state.categoriasLoaded ? (
               <View >
                   <ScrollView>  
@@ -243,7 +247,8 @@ export default class categoriasScreen extends React.Component {
                     ) : null
                   }
                   <Text style={localStyles.quePuedo}>¿Qué podemos hacer por ti?</Text>
-                  <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
+                  {/* <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} /> */}
+                  <View style={{marginLeft: 0,height: 6, marginTop:0, color: "#ff7043", backgroundColor: "#2980b944", width: "100%", fontSize :18}}></View>
                   
                   {
                     this.state.fontLoaded ? (
@@ -273,7 +278,7 @@ export default class categoriasScreen extends React.Component {
                             uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
                           />                    
                           <Text style={localStyles.name}>{item.name}</Text>
-                          <Text style={localStyles.simpleDetalle}>{item.detalle}({item.cboa_id })[{item.foto}]</Text>
+                          <Text style={localStyles.simpleDetalle}>{item.detalle}</Text>
                         </View>
                         {
                           this.state.itemChecked == index ? (
@@ -360,7 +365,7 @@ const localStyles = StyleSheet.create({
   },
   name : {
     fontSize: 16,
-    color: '#3498db',
+    color: '#ff7043',
     fontWeight: "400",
     paddingTop: 5,
     textAlign: "left",

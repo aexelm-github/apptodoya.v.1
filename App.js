@@ -31,10 +31,12 @@ import confirmPedido from './src/screens/confirmPedido';
 import progresoPedido from './src/screens/progresoPedido';
 import closeSession from './src/screens/closeSession';
 import { StatusBar } from 'react-native';
+import GLOBAL from './src/globals/globals'
+
 
 StatusBar.setBarStyle("dark-content")
 StatusBar.setTranslucent(true)
-StatusBar.setBackgroundColor("#aaddff")
+// StatusBar.setBackgroundColor("#aaddff")
 
 import { enableScreens } from 'react-native-screens';
 
@@ -57,17 +59,20 @@ const screenHeight = Math.round(Dimensions.get('window').height);
 
 
   const CustomDrawerContentComponent = props => (
-    <ScrollView style={{flex: 1, width: '100%'}}>
-      <SafeAreaView style={{flex:1}} forceInset={{ top: 'always', horizontal: 'never' }}>
-        <Image 
-          style={[{resizeMode: "stretch",marginTop:45,marginLeft: 75, marginBottom: 25}]}
-          width={150}
-          height={150}
-          source={require('./src/images/TodoYa-03.png')}
-        />
-        <DrawerItems {...props} />
-      </SafeAreaView>
-    </ScrollView>
+      <View style={{flex: 1, flexDirection: 'column', alignContent: 'space-between', alignItems:'center', width: '100%'}}>
+          <ScrollView style={{flex: 1, width: '100%'}}>
+            <SafeAreaView style={{flex:1}} forceInset={{ top: 'always', horizontal: 'never' }}>
+              <Image 
+                style={[{resizeMode: "stretch",marginTop:45,marginLeft: 75, marginBottom: 25}]}
+                width={150}
+                height={150}
+                source={require('./src/images/TodoYa-03.png')}
+              />
+              <DrawerItems {...props} />
+            </SafeAreaView>
+          </ScrollView>
+          <Text style={{}}>Version {GLOBAL.version}</Text>
+      </View>
   );
 
   

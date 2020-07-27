@@ -20,6 +20,9 @@ import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
 import styles from '../styles/stylesOne';
 
+
+
+
 GLOBAL = require('../globals/globals');
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -36,6 +39,8 @@ export default class HandleBoardPedido extends React.Component {
       detalle: null,
       grupo: null,
       precio: null,
+      ocultarnombre: false,
+      promocion: false,
       fileName: null,
       fileNameBrand: null,
       URImanipulatedFile: null,
@@ -113,7 +118,8 @@ export default class HandleBoardPedido extends React.Component {
     formdata.append('name',this.state.name);
     formdata.append('detalle',this.state.detalle);
     formdata.append('filename',this.state.fileName);
-    formdata.append('action',didMountParams.action);
+    formdata.append('action',"borrar");
+    console.log(formdata)
     this.setState({waittingWhileSaving: true});
     await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
         method: "POST",
@@ -160,8 +166,12 @@ export default class HandleBoardPedido extends React.Component {
       formdata.append('action',didMountParams.action);
       formdata.append('GO',didMountParams.go);
       formdata.append('grupo',this.state.grupo);
+      formdata.append('DATA_SORTED',JSON.stringify([]));
       formdata.append('precio',this.state.precio);
-      //console.log(formdata);
+      formdata.append('ubicacion',null);
+      formdata.append('ocultarnombre',this.state.ocultarnombre);
+      formdata.append('promocion',this.state.promocion);
+      console.log(formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
           method: "POST",
           body: formdata,
@@ -173,7 +183,7 @@ export default class HandleBoardPedido extends React.Component {
             }else{
               this.setState({waittingWhileSaving: false});
               alert(responseJson[0].message);
-              //console.log(responseJson);
+              console.log(decodeURI (responseJson[0].sql));
               if (responseJson[0].success == 'ok'){
                 this._onGoBack();
               }                  
@@ -192,7 +202,7 @@ export default class HandleBoardPedido extends React.Component {
     return (
       <KeyboardAvoidingView
         style={{flex: 1,}}
-        behavior='padding'
+        // behavior='padding'
       >
         {this.state.waittingWhileSaving ? (
           <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
@@ -222,23 +232,24 @@ export default class HandleBoardPedido extends React.Component {
                 </View>
             </View>
             <View>
-            <Text style={localStyles.label} >Nombre</Text>
-            <TextInput 
-            style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
-            placeholder='¿Qué nombre tiene el producto o servicio?'
-            onChangeText={(name) => this.setState({name})}
-            value={this.state.name}
-            maxLength={20}
-            />          
-            <Text style={localStyles.label} >Precio</Text>
-            <TextInput 
-            style={localStyles.inputText}
-            placeholder='¿Qué valor deseas darle a este producto?'
-            onChangeText={(precio) => this.setState({precio})}
-            value={this.state.precio}
-            maxLength={50}
-            keyboardType='number-pad'
-            /></View>
+              <Text style={localStyles.label} >Nombre</Text>
+              <TextInput 
+                  style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
+                  placeholder='¿Qué nombre tiene el producto o servicio?'
+                  onChangeText={(name) => this.setState({name})}
+                  value={this.state.name}
+                  maxLength={128}
+              />          
+              <Text style={localStyles.label} >Precio</Text>
+              <TextInput 
+                  style={localStyles.inputText}
+                  placeholder='¿Qué valor deseas darle a este producto?'
+                  onChangeText={(precio) => this.setState({precio})}
+                  value={this.state.precio}
+                  maxLength={20}
+                  keyboardType='number-pad'
+              />
+            </View>
         </ScrollView>
 
         { params.action == 'Editar' ? 
@@ -275,7 +286,7 @@ export default class HandleBoardPedido extends React.Component {
 }
 
 const localStyles = StyleSheet.create({
-  container : { flex: 1, alignItems: 'center' },
+  container : { flex: 1, alignItems: 'center',  },
   imageView : {
     alignItems: 'center',
     justifyContent: 'center',
@@ -297,7 +308,7 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#3f3f3f",
     paddingLeft: 20,
     paddingTop: 4,

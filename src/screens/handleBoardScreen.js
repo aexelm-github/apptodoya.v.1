@@ -23,10 +23,11 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
+import DraggList from '../components/DraggList';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
 import MapaScreen from './mapScreen';
-
+import { CheckBox } from 'react-native-elements'
 
 GLOBAL = require('../globals/globals');
 
@@ -34,6 +35,11 @@ const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
 let didMountParams = null;
+
+let arrayGrupos = []
+let COLORS = GLOBAL.color;
+let DATA_SORTED=[]
+
 
 export default class ImagePickerX extends React.Component {
   constructor(props) {
@@ -54,7 +60,10 @@ export default class ImagePickerX extends React.Component {
       direccion: null,
       showMapa: false,
       ubicacion: null,
+      ocultarnombre: false,
+      promocion: false,
       needsAddress :false,
+      listaOrdenGrupos : null,
     };
   }
 
@@ -81,27 +90,66 @@ export default class ImagePickerX extends React.Component {
   async componentDidMount() {
     this.getPermissionAsync();
     didMountParams = this.props.navigation.getParam('params');
-    console.log("didMountParams",didMountParams.data);
-    const { name, detalle, cboa_grupo, cboa_precio, cboa_go, cboa_ubicacion } = didMountParams.data
+    console.log("didMountParams",didMountParams);
     if (didMountParams.action != 'Nuevo') {
+      const { name, detalle, cboa_grupo, cboa_precio, cboa_go, cboa_ubicacion, cboa_ocultarnombre , cboa_promocion} = didMountParams.data
       await this.setState( (previousState) => (
          {...previousState,  
           'name':name, 
           'detalle':detalle, 
-          'grupo':cboa_grupo,
+         // 'grupo':cboa_grupo,
+          'grupo': didMountParams.commingFrom=="comerciosScreen" ? name :  cboa_grupo, 
           'precio':cboa_precio ,
-          'tipoGo': cboa_go, 
+          'ocultarnombre':cboa_ocultarnombre == 'true' ? true : false,
+          'promocion':cboa_promocion == 'true' ? true : false,
+          'tipoGo': didMountParams.commingFrom=="contenidoScreen" ? 'Pedido' :  cboa_go, 
           'ubicacion': cboa_ubicacion===null || cboa_ubicacion==="null" || cboa_ubicacion===undefined || cboa_ubicacion==="" ? null : JSON.parse(cboa_ubicacion),
           'direccion': cboa_ubicacion===null || cboa_ubicacion==="null" || cboa_ubicacion===undefined || cboa_ubicacion==="" ? null : JSON.parse(cboa_ubicacion).direccion
         }
       ))    
+      console.log(" XXXXXXXXXXXXXXXXXX VIENE ASI ", cboa_go, this.state.tipGo)
+      this._getListaGrupos()
     }else{
       didMountParams.go == 'Pedido' ? this.setState({tipoGo : 'Pedido'}) : null;
     }
     if (didMountParams.parentId == 1) {
       this.setState({needsAddress: true})
     }
+  }
 
+
+  _getListaGrupos = async () => {
+    let formdata = new FormData();
+    formdata.append('parent',didMountParams.data.cboa_id);
+    this.setState({waittingWhileSaving: true});
+    await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getListaGrupos', {   
+        method: "POST",
+        body: formdata,
+      })
+      .then( (response) => response.json() )
+      .then( (responseJson) => {
+          if (responseJson.length == 0){
+            //alert("¡¡Oops!!. Problemas para tratar la información.");
+            this.setState({waittingWhileSaving: false});
+          }else{
+            console.log("responseJson order list",responseJson);
+            var sort = responseJson.sort(function(a, b){
+                return parseInt(a.cboa_orden) - parseInt(b.cboa_orden);
+            });
+            console.log("sortJson", sort)
+            var dataDragList = new Array()
+            sort.map((item, index) => {
+              const key =  `item-${index}`
+              const label =  item.cboa_grupo
+              const backgroundColor =  COLORS[index-GLOBAL.color.length*parseInt(index/GLOBAL.color.length)] 
+              const cboa_parent = item.cboa_parent
+              dataDragList.push({key, label, backgroundColor, cboa_parent})
+            })
+            console.log(dataDragList)
+            this.setState({waittingWhileSaving: false, listaOrdenGrupos: dataDragList})
+            DATA_SORTED = dataDragList
+          }
+    });         
   }
 
 
@@ -263,10 +311,13 @@ _keyboardDidHide = () => {
       formdata.append('filenameBrand',this.state.fileNameBrand);
       formdata.append('parentId',didMountParams.parentId);
       formdata.append('action',didMountParams.action);
-      formdata.append('GO',didMountParams.go);
-      //formdata.append('GO',this.state.tipoGo);
-      formdata.append('grupo',this.state.grupo);
+      //formdata.append('GO',didMountParams.go);
+      formdata.append('GO',this.state.tipoGo);
+      formdata.append('grupo',(this.state.grupo));
+      formdata.append('DATA_SORTED',JSON.stringify(DATA_SORTED));
       formdata.append('precio',this.state.precio);
+      formdata.append('ocultarnombre',this.state.ocultarnombre);
+      formdata.append('promocion',this.state.promocion);
       formdata.append('ubicacion',JSON.stringify(this.state.ubicacion));
       console.log("formdata >> ",formdata);
       await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/saveboard', {   
@@ -280,7 +331,7 @@ _keyboardDidHide = () => {
             }else{
               this.setState({waittingWhileSaving: false});
               alert(responseJson[0].message);
-              console.log(decodeURIComponent(responseJson[0].sql));
+              console.log("SALIDA SQL: >>>>>> : ",decodeURIComponent(responseJson[0].sql));
               if (responseJson[0].success == 'ok'){
                 this._onGoBack();
               }                  
@@ -306,6 +357,7 @@ _keyboardDidHide = () => {
   }
 
   actionOverTheMap = async (action, ubicacion) => {
+    console.log(ubicacion)
       switch(action) {
           case "useAddress": 
                 //await this.props.action()
@@ -313,18 +365,40 @@ _keyboardDidHide = () => {
       }
   }
 
+  setDireccion = async (direccion)  => {
+    this.setState( (previousState) => (
+      {...previousState,  
+        direccion,
+       'ubicacion': {...previousState.ubicacion, direccion : direccion}
+     }
+   ))    
+  }
+
+  dragEnd = async (data) => {
+    console.log(JSON.stringify(data.data))
+    DATA_SORTED = data.data
+    
+  }
+
+  setName = async (name) => {
+    const params = this.props.navigation.getParam('params');
+    const grupo = params.commingFrom == "comerciosScreen" ?  name : null
+    console.log(params.commingFrom , grupo, name)
+    this.setState({name, grupo})
+  }
+
   render() {
-    let { image, showMapa, needsAddress } = this.state;
+    let { image, showMapa, needsAddress, listaOrdenGrupos } = this.state;
     const params = this.props.navigation.getParam('params');
     let ColorBoton1 = params.action == 'Nuevo' ? '#f39c12' : (params.action == 'Editar' ? '#27ae60': '#e74c3c');
     const grupoPickerOPtions = params.jsonGrupo;
     const tipoOpcionPicker = params.commingFrom=='comerciosScreen' ?  ['Contenido','Pedido'] : ['Comercios','Contenido']
-    
+    //console.log("$$$$$",this.state)
     if (!showMapa) {
         return (
           <KeyboardAvoidingView
             behavior={Platform.OS == "ios" ? "padding" : "height"}
-            style={{flex:1, padding:0}}
+            style={{flex:1, padding:0, paddingBottom: 50, }}
           >
           {this.state.waittingWhileSaving ? (
             <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width:'100%',  height: '100%',  zIndex: 1000}} >
@@ -351,9 +425,9 @@ _keyboardDidHide = () => {
             <TextInput 
               style={[localStyles.inputText,{fontWeight: '600', fontSize: 19}]}
               placeholder='¿Qué nombre tiene el producto o servicio?'
-              onChangeText={(name) => this.setState({name})}
+              onChangeText={(name) => this.setName(name)}
               value={this.state.name}
-              maxLength={20}
+              maxLength={128}
             />
             <Text style={localStyles.label} >Descripción</Text>
             <TextInput 
@@ -363,7 +437,7 @@ _keyboardDidHide = () => {
               numberOfLines={2}
               onChangeText={(detalle) => this.setState({detalle})}
               value={this.state.detalle}
-              maxLength={120}
+              maxLength={256}
             />
             {needsAddress && (<View>
                 <Text style={localStyles.label} >Dirección</Text>
@@ -371,7 +445,7 @@ _keyboardDidHide = () => {
                       <TextInput 
                         style={[localStyles.inputText,{width: screenWidth-50}]}
                         placeholder='Dirección'
-                        onChangeText={(direccion) => this.setState({direccion})}
+                        onChangeText={(direccion) => this.setDireccion(direccion)}
                         value={this.state.direccion}
                         maxLength={80}
                       />            
@@ -432,12 +506,49 @@ _keyboardDidHide = () => {
                   >
                     {tipoOpcionPicker.map((value, index) => <Picker.Item  key={index} label={value} value={value} />)}
                   </Picker>
-            </View>
-            ) : null }
-            <Text style={localStyles.label} >¿Es ésto un local comercial?</Text>
-            <Text style={[localStyles.label,{fontSize:10}]}>
-              Seleccione la siguiente casilla si el item actual es un negocio.  
-            </Text>        
+              </View> 
+            ) : (
+              <View>
+                  <Text style={localStyles.label} >¿Desea ocultar el nombre del local comercial?</Text>
+                  <Text style={[localStyles.label,{fontSize:10}]}>
+                    Seleccione la siguiente casilla cuando desee que sobre la imagen del producto no debe aparecer el nombre del local comercial. Eso sirve para cuando la imagen ya trae su propia leyenda. Sobre todo en imagenes de promociones.  
+                  </Text>        
+                  <CheckBox
+                        title={"Ocultar nombre del Comercio"}
+                        checked= { this.state.ocultarnombre }
+                        value={this.state.ocultarnombre}
+                        onPress={() => this.setState({ocultarnombre : !this.state.ocultarnombre})}
+                        containerStyle={{backgroundColor:"transparent", borderWidth: 0,  margin: 0, marginBottom: 30}}
+                        textStyle={{color:'#3498db'}}
+                    />  
+                  <Text style={localStyles.label} >¿Desea mostrar este producto en el banner de promociones?</Text>
+                  <Text style={[localStyles.label,{fontSize:10}]}>
+                    Seleccione la siguiente casilla en caso de que este producto quiera ser mostrado dentro de la lista de promociones
+                  </Text>        
+                  <CheckBox
+                        title={"Promoción"}
+                        checked= { this.state.promocion }
+                        value={this.state.promocion}
+                        onPress={() => this.setState({promocion : !this.state.promocion})}
+                        containerStyle={{backgroundColor:"transparent", borderWidth: 0,  margin: 0, marginBottom: 30}}
+                        textStyle={{color:'#3498db'}}
+                    />  
+              </View>    
+            ) }
+            { listaOrdenGrupos !== null && <View>
+                    <Text style={localStyles.label} >Establecer Orden de los grupos</Text>
+                  <Text style={[localStyles.label,{fontSize:10}]}>
+                    En la siguiente seccion puedes organizar el orden en que deseas que aparezcan los grupos dentro del contenido de cada comercio. Deja presionado unos segundos el item que deseas mover y arrastralo a l lugar deseado. Luego guarda la información editada.
+                  </Text> 
+
+                     <DraggList 
+                       data = {listaOrdenGrupos}
+                       onDragEnd={(data) => this.dragEnd(data)}
+                     />
+                     </View>
+                  }
+                     
+
           </ScrollView>
           <CustomButton 
                         title={params.action}
@@ -460,7 +571,7 @@ _keyboardDidHide = () => {
 }
 
 const localStyles = StyleSheet.create({
-  container : { flex: 1, alignItems: 'center' },
+  container : { flex: 1, alignItems: 'center' , paddingTop: Constants.statusBarHeight,},
   imageView : {
     alignItems: 'center',
     justifyContent: 'center',

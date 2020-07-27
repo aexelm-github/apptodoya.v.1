@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import { Button, Text, View, Image, TouchableOpacity, ProgressBarAndroid } from 'react-native';
 import styles from '../styles/stylesOne';
 import {AsyncStorage} from 'react-native';
+import * as Fx from '../globals/Fx'
 
 GLOBAL = require('../globals/globals');
 const PRACTICE_TIME = 0.2* 1000;
 
 const retrieveStorage = {"value":null};
+
 
 export default class logoScreen extends React.Component {
     constructor(props) {
@@ -35,7 +37,7 @@ export default class logoScreen extends React.Component {
         body: formdata,
       })
       .then( (response) => response.json() )
-      .then( (responseJson) => {
+      .then( async (responseJson) => {
         if (responseJson.length == 0){
           console.log('Version: none')
           this.setState({version:false,nVersion: 'v.0.0.0'})
@@ -47,9 +49,12 @@ export default class logoScreen extends React.Component {
             if (keyLogin == null)  {
               this.props.navigation.navigate('AppStackLogin', {});
             }else {
+              console.log("BEFORE")
               const usuarioId = JSON.parse(keyLogin)[0].usuario_id
+              await Fx.sendToken(usuarioId)
               this.setEstosDatos(keyLogin)
               this.getPedido(usuarioId)
+              console.log(JSON.parse(keyLogin))
             }            
             this.setState({version:true,nVersion: responseJson[0].valor1})
           }else{
@@ -99,19 +104,28 @@ export default class logoScreen extends React.Component {
       });   
     }    
 
-    _retrieveData = async (key) => {
-      try {
-        const value = await AsyncStorage.getItem(key);
-        if (value !== null) {
-          retrieveStorage.value =  value;
-          //await this.props.navigation.navigate('AppStackPpal', {})
-        }else{
-          console.log('_retrieveData: error: logoScreen: '+value)
-        }
-      } catch (error) {
-        // Error retrieving data
-      }
-    };    
+    sendToken = async (usuario_id) => {
+      const token = await getToken()
+      if (token !== null && token !== undefined ){
+          let formdata = new FormData()
+          formdata.append("usuario_id",usuario_id);
+          formdata.append('token',token);
+          console.log(token, usuario_id)
+          await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/setPushToken', {   
+              method: "POST", 
+              body: formdata,
+          })
+          .then( (response) => response.json() )
+          .then( async (responseJson) => {
+              if (responseJson.length === 0 ){
+                console.log("responseJson",responseJson)
+              }else{
+                console.log("responseJson",responseJson)
+              }
+          });
+      }    
+
+    }
 
   render() {
     return (

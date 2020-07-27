@@ -140,6 +140,7 @@ export default class carritoScreen extends React.Component {
        console.log(JSONpedido.length + " xsdssjfnsdklgsnk ")
        await AsyncStorage.setItem("estadoPedidoActual", 'noHay')
        this.setState({estadoPedidoActual : await AsyncStorage.getItem('estadoPedidoActual') })
+       await Fx._storeData("idComercioActual", "")
     }
     this.setState({pedidoLoaded: true})
   }
@@ -252,6 +253,7 @@ export default class carritoScreen extends React.Component {
             >
               <MyCard DATA={item} index={index} 
                      onPress={() => {this.markDelete(index)}}
+                     onSwipeDelete={(index) => this.markDelete(index)}
                      selected={this.state.selected == item.IdProduct ? true : false}>
               </MyCard>
               {
@@ -300,18 +302,20 @@ export default class carritoScreen extends React.Component {
     //console.log(this.state.pedido)
     //console.log('cthis.state.estadoPedidoActual: '+this.state.estadoPedidoActual)
     return (
-        <View style={{flex: 1, backgroundColor: '#dfe4ea', paddingBottom: 50}}>
+        <View style={{flex: 1, backgroundColor: '#e5ddd5', paddingBottom: 0, width: '100%'}}>
           { this.state.estadoPedidoActual == 'noHay' || this.state.estadoPedidoActual == null ? 
             <View style={styles.container}>
               <View  style={styles.logoContainer}>
                   <Image style={styles.logoImage}
                     source={require('../images/emptyBox.png')}
                     />
-                  <Text style={{color: '#0984e3', fontSize: 18, margin: 15, textAlign:'center'}}>Lo siento!! Parece que no tienes pedido alguno.</Text>               
+                  <Text style={{color: '#0984e3', fontSize: 15, margin: 15, textAlign:'center'}}>Lo siento!! Parece que no tienes pedido alguno.</Text>               
               </View>
             </View>
           : this.state.estadoPedidoActual == 'enCreacion' ?
-            <ScrollView >
+            <ScrollView 
+              contentContainerStyle={{paddingBottom: 50}}
+            >
                 {this.state.pedido!=null && this.state.fontLoaded ? 
                   <View style={[styles.container, {height: this.state.x1HeightLayout}]} elevation={35}>
                     <CacheImage
@@ -340,7 +344,7 @@ export default class carritoScreen extends React.Component {
           {this.state.estadoPedidoActual == 'enCreacion' ?
           <CustomButton 
             title={'Pedir YA!'}
-            style={[{position:'absolute',left:-10, borderRadius:0, height: 50, bottom:0, marginBottom: 0, backgroundColor: '#ff793f',width: '100%'}]}
+            style={[{position:'absolute',left:0, borderRadius:0, height: 50, bottom:0, marginBottom: 0, backgroundColor: '#ff793f',width: '100%'}]}
             onPress={() =>{this.pedirYa()}}
           />
           : null} 

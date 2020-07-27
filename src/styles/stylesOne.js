@@ -51,8 +51,8 @@ export default StyleSheet.create({
     alignItems: 'center', 
   },
   logoImage: {
-      width:  150,
-      height : 150
+      width:  100,
+      height : 100
   },
   textInputLogin : { 
     color: "#fff",

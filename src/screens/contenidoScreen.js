@@ -20,7 +20,9 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Font from 'expo-font'
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
+import * as Fx from '../globals/Fx'
 GLOBAL = require('../globals/globals');
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -47,6 +49,10 @@ export default class cartaScreen extends React.Component {
           x1HeightAnimated:  new Animated.Value(screenHeight *.80),
           x1Full : true,
           perfil:null,
+          hayPromo : null,
+          search: '',
+          isSearching: false,
+          resultado: null,
         }
 
     }
@@ -86,9 +92,78 @@ export default class cartaScreen extends React.Component {
       await AsyncStorage.setItem("fotoComercio",item.foto)
       const keyLogin = await AsyncStorage.getItem('keyLogin')
       this.setState({perfil:  JSON.parse(keyLogin)[0].tipo} )
-            
+      this._buscarPromos()      
     }
 
+    _buscarPromos = async () => {
+        const categoria = this.props.navigation.getParam('categoria','')
+        const comercio = this.props.navigation.getParam('params','').cboa_id
+        let formdata = new FormData();
+        formdata.append("categoria", categoria)
+        formdata.append("comercio", comercio)
+        console.log(formdata)
+        await fetch(GLOBAL.BASE_URL+'/index.php/maincontrol/getPromo', {
+          method: "POST",
+          body: formdata,
+        })
+        .then( (response) => response.json() )
+        .then( (responseJson) => {
+              if (responseJson.length == 0){
+                //alert("¡¡Oops!!. Parece que está vacío!!.");
+              }else{
+                this.setState({ hayPromo: responseJson });
+                console.log(responseJson);
+              }
+        });
+    }
+
+    goPromo = async (item) => {
+      console.log( item )
+      const params = {
+        cboa_go	 : item.cboa_go,
+        cboa_grupo	 : item.cboa_grupo,
+        cboa_id	 : item.cboa_id,
+        cboa_ocultarnombre	 : item.cboa_ocultarnombre,
+        cboa_precio	 : item.cboa_precio,
+        cboa_promocion	 : item.cboa_promocion,
+        cboa_ubicacion	 : item.cboa_ubicacion,
+        detalle	 : item.detalle,
+        foto	 : item.foto,
+        name	 : item.name
+      }
+      const paramsParent = {
+        cboa_go	 : item.cboa_go_parent,
+        cboa_grupo	 : item.cboa_grupo_parent,
+        cboa_id	 : item.cboa_id_parent,
+        cboa_ocultarnombre	 : item.cboa_ocultarnombre_parent,
+        cboa_precio	 : item.cboa_precio_parent,
+        cboa_promocion	 : item.cboa_promocion_parent,
+        cboa_ubicacion	 : item.cboa_ubicacion_parent,
+        detalle	 : item.detalle_parent,
+        foto	 : item.foto_parent,
+        name	 : item.name_parent
+      }
+      const estadoPedidoActual = await Fx._retrieveData('estadoPedidoActual')
+      const idComercioActual = await Fx._retrieveData("idComercioActual")
+      if (estadoPedidoActual == "noHay" || estadoPedidoActual==null || idComercioActual == item.cboa_id_parent) {
+        if (this.state.itemChecked == null ) {
+          await Fx._storeData("ubicacion_comercio", params.cboa_ubicacion)
+          this.props.navigation.navigate(params.cboa_go, {
+            params : params,
+            paramsParent : paramsParent
+          });
+        }
+      }else{
+        ToastAndroid.show(
+          'oops!! Aún tienes algo en proceso',
+          ToastAndroid.LONG
+        );
+        this.props.navigation.navigate('Carrito')
+      }
+  
+  
+    }
+    
     find_dimesions(layout){
       const {x, y, width, height} = layout;
       this.setState({x1HeightLayout: height})
@@ -160,7 +235,7 @@ export default class cartaScreen extends React.Component {
     let renderThis = <SectionList 
                         sections={jsonFinal}
                         renderSectionHeader={({ section }) => (
-                          <View  style={styles.SectionHeaderStyle}>
+                          <View  style={localStyles.SectionHeaderStyle}>
                             <Text style={localStyles.title3}> {section.title} </Text>
                           </View>
                         )}                                 
@@ -170,16 +245,17 @@ export default class cartaScreen extends React.Component {
                             delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
                             onLongPress={() => { this._seleccionaItem({cboa_id: item.cboa_id}) }}
                             activeOpacity={0.7}
+                            style={{ backgroundColor: '#fff', margin:2, marginLeft:5, marginRight: 5, padding: 10,borderRadius: 8,  elevation: 3, borderWidth: 1, borderColor: "#efefef"}}
                           >                          
+                            <Text style={{marginLeft: 4,fontSize: 18, color:"orange"}}>{item.name}</Text>
                             <View style={{flexDirection: 'row', width: screenWidth}}>
                               <CacheImage
-                                  style={localStyles.imageProduct}
+                                  style={localStyles.imageProductSquared}
                                   uri= {GLOBAL.BASE_URL+'/images/'+item.foto}
                                   crop={true}
                               />   
-                              <View style={{width:0, flexGrow: 1, marginTop: 15, marginRight: 15}}>
-                                <Text style={{fontSize: 16, color:"orange"}}>{item.name}</Text>
-                                <Text style={{fontSize: 14, color:"#343434",flexWrap: 'wrap'}}>{item.detalle}</Text>
+                              <View style={{width:0, flexGrow: 1, marginTop: 0, marginRight: 15}}>
+                                <Text style={{fontSize: 13, padding: 4, paddingRight: 15,paddingTop:0,color:"#343434",flexWrap: 'wrap'}}>{item.detalle}</Text>
                                 { item.cboa_precio>0 ? 
                                   <Text style={localStyles.precio}>$ {item.cboa_precio}</Text>
                                 : null }
@@ -203,10 +279,10 @@ export default class cartaScreen extends React.Component {
   _goScreen = (params) => {
     //console.log('Desde contenidoScreen: goScreen');
     //console.log(params.cboa_precio);
-    console.log(params)
     console.log('con lo del parent >>>>')
     const paramsParent = this.props.navigation.getParam('params','')
-    console.log(paramsParent)
+    console.log("XXXXXX _________> paramsParent", paramsParent)
+    console.log("XXXXXX _________> ", params)
     console.log('con lo del parent >>>>')
     if (this.state.itemChecked == null )
         this.props.navigation.navigate(params.cboa_go, { 
@@ -286,10 +362,11 @@ export default class cartaScreen extends React.Component {
 
   render() {
     const item = this.props.navigation.getParam('params');
-
-    //console.log(item);
+    const { hayPromo , search, resultado, isSearching } = this.state
+    
+    console.log("hayPromo",hayPromo);
     return (
-      <View>
+      <View style={{ backgroundColor: '#efefef'}}>
       <ScrollView>
         <Animated.View style={[styles.container, {height: this.state.x1HeightAnimated}]} elevation={20}>
           <CacheImage
@@ -298,6 +375,10 @@ export default class cartaScreen extends React.Component {
               crop={true}
               blurRadius={1}
           />   
+          <LinearGradient
+              style={{width: "100%", height: "100%", position:'absolute'}}
+              colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.2)','rgba(0,0,0,0.7)']}
+          />
           
           {this.state.fontLoaded && this.state.x1Full ? 
           <View style={{position: 'absolute', top: 100, left: 20}} >  
@@ -349,6 +430,34 @@ export default class cartaScreen extends React.Component {
             {item.detalle}
           </Text>
         </View>
+
+        {
+          hayPromo !== null && (
+            <View style={{ marginTop: 0, backgroundColor: "#fff"}} >
+              <Text style={{marginLeft: 15, marginTop:10, color: "#e74c3c", fontSize :18, fontFamily:"RussoOne-Regular"}}>Tenemos estas promociones!!!</Text>
+              <FlatList
+                style={{width: "100%", paddingBottom: 0, paddingTop: 5, backgroundColor: "#fff",}}
+                data={hayPromo}
+                horizontal={true}
+                renderItem={({item}) => (
+                  <TouchableOpacity
+                      style={{marginLeft: 13, marginTop: 4, marginBottom: 5, borderRadius: 10}}
+                      onPress={() => this.goPromo(item)}
+                  >
+                        <Image style={{width: 200, height: 150, margin: 0}}
+                              source={{uri : GLOBAL.BASE_URL+'/images/'+item.foto}}
+                              resizeMode="stretch"
+                        />
+                      <Text>{item.name}</Text>
+
+                  </TouchableOpacity>
+                )}
+              ></FlatList>
+              <View style={{marginLeft: 0,height: 1, marginTop:0, color: "#ff7043", backgroundColor: "#00000033", width: "100%", fontSize :18}}></View>
+          </View>
+          )
+        }        
+
         { this.state.categoriasLoaded ? ( 
               this._renderSectionList()
           ) : (
@@ -387,7 +496,12 @@ const localStyles = StyleSheet.create (
         height: screenWidth*0.15,
         borderRadius: (screenWidth*0.15)/2, 
         margin: 15,
-      },      
+      },
+      imageProductSquared : {
+        width: screenWidth*0.30, 
+        height: screenWidth*0.20,
+        margin: 4,
+      },       
     title1 : {
       //fontFamily: 'RussoOne-Regular',
       fontFamily: 'Roboto-Medium',
@@ -413,12 +527,14 @@ const localStyles = StyleSheet.create (
       color: "#3498db", fontSize: 22,
     }  ,
     title3: {
-      //fontFamily: 'RussoOne-Regular',
-      color: "#e74c3c", fontSize: 18,
-      margin: 10,
+      fontFamily: 'RussoOne-Regular',
+      backgroundColor: "#e74c3c", fontSize: 18,
+      color: "#fff",
+      marginTop: 20,
+      marginRight: 8,
       borderBottomWidth: 1,
       borderBottomColor: '#eee',
-      paddingBottom: 5,
+      paddingRight: 5,
     }  ,    
     paragraph: {
       fontSize: 16,
@@ -427,10 +543,8 @@ const localStyles = StyleSheet.create (
       color: "#00000077",
     },
     SectionHeaderStyle: {
-      backgroundColor: '#CDDC89',
-      fontSize: 20,
-      padding: 5,
-      color: '#3498db',
+      flex: 1,
+      alignItems: 'flex-end'
     },
     checked: {
       position: 'absolute',
@@ -443,8 +557,8 @@ const localStyles = StyleSheet.create (
       justifyContent: 'center'
     },
     precio: {
-      fontSize: 18, color:"#e74c3c", textAlign: 'right',
-      marginRight: 5,
+      fontSize: 18, color:"#e74c3c", textAlign: 'left',
+      marginLeft: 4,
     },
     iconDown: {
       position: 'absolute',

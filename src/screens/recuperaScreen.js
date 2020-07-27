@@ -12,6 +12,7 @@ import {
         TextInput,
         ActivityIndicator,
         Dimensions,
+        KeyboardAvoidingView,
        } from 'react-native';
 import * as Font from 'expo-font'
 import formulario from '../json/formulario.json'
@@ -43,37 +44,9 @@ export default class recuperaScreen extends React.Component {
             'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
           });
           await this.setState({ fontLoaded: true });   
-          this.keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            this._keyboardDidShow,
-          );
-          this.keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            this._keyboardDidHide,
-          );          
+         
     }
     
-    componentWillUnmount() {
-        this.keyboardDidShowListener.remove();
-        this.keyboardDidHideListener.remove();
-    }
-
-    _keyboardDidShow = (e) => {
-        keyboardParams = {
-            keyboardHeight: e.endCoordinates.height,
-            normalHeight: Dimensions.get('window').height, 
-            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
-        };         
-        console.log(keyboardParams);
-        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
-    }
-
-    _keyboardDidHide = () => {
-        console.log('Keyboard Hidden');
-        this.setState({shrinkScreen : 0 })
-
-    }
-
     _recoveryPassword = async () => {
         let error = false;
         if (this.state.email == "" ) {
@@ -174,21 +147,26 @@ export default class recuperaScreen extends React.Component {
 
   render() {
     return (
-        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50},{paddingBottom: this.state.shrinkScreen}]}>
-            {this.state.waittingWhileSaving ? (
-                <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-                <ActivityIndicator  size={80} color='#3498db'/>
-                </View>        
-                ) : null
-            }            
-            <Image style={localStyles.logoImage}
-            source={require('../images/TodoYa-03.png')}
-            />  
-            <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
-            <ScrollView >
-                {this.state.registerSuccessfull ? this.renderSuccessful() :  this.renderFormulario()}
-            </ScrollView>     
-        </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
+            style={{flex:1, padding:0}}
+        >
+            <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+                {this.state.waittingWhileSaving ? (
+                    <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
+                    <ActivityIndicator  size={80} color='#3498db'/>
+                    </View>        
+                    ) : null
+                }            
+                <Image style={localStyles.logoImage}
+                source={require('../images/TodoYa-03.png')}
+                />  
+                <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
+                <ScrollView >
+                    {this.state.registerSuccessfull ? this.renderSuccessful() :  this.renderFormulario()}
+                </ScrollView>     
+            </View>
+        </KeyboardAvoidingView>
     );
   }
 }

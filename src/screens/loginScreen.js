@@ -31,9 +31,9 @@ export default class loginScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
-                       email: 'aexelm@gmail.com', 
-                       pass: '123' ,
-                      //  email: '', pass:'',
+                      //  email: 'aexelm@gmail.com', 
+                      //  pass: '123' ,
+                       email: '', pass:'',
                        fontLoaded: false, 
                        shrinkScreen: 0,
                      };
@@ -44,20 +44,11 @@ export default class loginScreen extends React.Component {
           'Changa-Regular': require('../../assets/fonts/Changa-Regular.ttf'),
         });
         this.setState({fontLoaded: true})
-        // this.setState({ fontLoaded: true });
-        // this.keyboardDidShowListener = Keyboard.addListener(
-        //   'keyboardDidShow',
-        //   this._keyboardDidShow,
-        // );
-        // this.keyboardDidHideListener = Keyboard.addListener(
-        //   'keyboardDidHide',
-        //   this._keyboardDidHide,
-        // ); 
+        this.setState({ fontLoaded: true });
+       
       }
 
       componentWillUnmount() {
-        // this.keyboardDidShowListener.remove();
-        // this.keyboardDidHideListener.remove();
     }
 
       _storeData = async (key, value) => {
@@ -102,9 +93,11 @@ export default class loginScreen extends React.Component {
                   if (responseJson.length == 0){
                     alert("¡¡Oops!!. El email o el password son incorrectos.");
                   }else{
-                    this._storeData("keyLogin",responseJson); 
+                    const usuario_id = responseJson[0].usuario_id
+                    await Fx.sendToken(usuario_id)  
+                    await Fx._storeData("keyLogin",JSON.stringify(responseJson)); 
                     this.setEstosDatos(responseJson)
-                    this._retrieveData("keyLogin")        
+                    //this._retrieveData("keyLogin")        
                     this.props.navigation.navigate('Categorias', { 
                         data : JSON.stringify(responseJson)
                     });

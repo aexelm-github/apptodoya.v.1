@@ -11,11 +11,14 @@ import {
         StyleSheet,
         TextInput,
         ActivityIndicator,
+        KeyboardAvoidingView
        } from 'react-native';
 import { Dimensions } from "react-native";
 import * as Font from 'expo-font'
 import formulario from '../json/formulario.json'
 import { Divider } from 'react-native-elements';
+import * as Permissions from 'expo-permissions';
+
 
 GLOBAL = require('../globals/globals');
 
@@ -24,6 +27,9 @@ import CustomButton from '../components/customButton';
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
+
+const latitudeDelta = 0.005
+const longitudeDelta = 0.003
 
 export default class registerScreen extends React.Component {
     constructor(props) {
@@ -44,6 +50,12 @@ export default class registerScreen extends React.Component {
             mostrarTodosLosDatos: null,
             waittingWhileSaving : false,
             shrinkScreen: 0,
+            region: {
+                latitude: 25.1948475,
+                longitude: 55.2682899,
+                latitudeDelta,
+                longitudeDelta,
+              },
         };
     }
 
@@ -52,37 +64,28 @@ export default class registerScreen extends React.Component {
             'RussoOne-Regular': require('../../assets/fonts/Russo_One/RussoOne-Regular.ttf'),
           });
           await this.setState({ fontLoaded: true , slideNumber: 0});  
-          this.keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            this._keyboardDidShow,
-          );
-          this.keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            this._keyboardDidHide,
-          );    
+          const { status } = await  Permissions.getAsync(Permissions.LOCATION)
+    
+          if (status !== 'granted'){
+              const response = await Permissions.askAsync(Permissions.LOCATION)
+          }
+          navigator.geolocation.getCurrentPosition(
+              ({ coords: { latitude, longitude } }) => this.setState({ latitude, longitude }, () => {
+                this.setState((previousState) => ({
+                  region: {
+                    ...previousState.region,
+                    latitude: latitude,
+                    longitude: longitude,
+                  }
+                }))   
+                console.log('State:',this.state)
+                //await AsyncStorage.setItem("gpsLocation",region)
+              }),
+              (error) => console.log('Error:', error)
+          )             
     }
     
-    componentWillUnmount() {
-        this.keyboardDidShowListener.remove();
-        this.keyboardDidHideListener.remove();
-    }
-
-    _keyboardDidShow = (e) => {
-        keyboardParams = {
-            keyboardHeight: e.endCoordinates.height,
-            normalHeight: Dimensions.get('window').height, 
-            shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
-        };         
-        console.log(keyboardParams);
-        this.setState({shrinkScreen : keyboardParams.keyboardHeight + 20 });
-    }
-
-    _keyboardDidHide = () => {
-        console.log('Keyboard Hidden');
-        this.setState({shrinkScreen : 0 })
-
-    }
-
+  
     validateEmail = (text) => {
         console.log(text);
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/ ;
@@ -101,6 +104,7 @@ export default class registerScreen extends React.Component {
           formdata.append('apellido',formulario[3].value);
           formdata.append('telefono',formulario[4].value);
           formdata.append('direccion',formulario[5].value);
+          formdata.append('gps',this.state.latitude+","+this.state.longitude);
           console.log(formdata);
           this.setState({waittingWhileSaving: true});
 
@@ -264,21 +268,26 @@ export default class registerScreen extends React.Component {
 
   render() {
     return (
-        <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50},{paddingBottom: this.state.shrinkScreen}]}>
-            {this.state.waittingWhileSaving ? (
-                <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
-                <ActivityIndicator  size={80} color='#e74c3c'/>
-                </View>        
-                ) : null
-            }            
-            <Image style={localStyles.logoImage}
-            source={require('../images/TodoYa-03.png')}
-            />  
-              <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
-            <ScrollView>
-                {this.state.mostrarTodosLosDatos ? this.renderTest() : this.renderFormulario()}
-            </ScrollView>     
-        </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
+            style={{flex:1, padding:0}}
+        >       
+            <View style={[styles.container, {justifyContent: 'flex-start', paddingTop: 50}]}>
+                {this.state.waittingWhileSaving ? (
+                    <View style={{flex:1, alignItems:'center', justifyContent: 'center', position: 'absolute', top: 0, left:0, width: '100%', height: '100%',  zIndex: 1000}} >
+                    <ActivityIndicator  size={80} color='#e74c3c'/>
+                    </View>        
+                    ) : null
+                }            
+                <Image style={localStyles.logoImage}
+                source={require('../images/TodoYa-03.png')}
+                />  
+                <Divider style={{ borderRadius: 2, marginLeft: 20,marginRight: 20, backgroundColor: '#3498db', height: 4 }} />
+                <ScrollView>
+                    {this.state.mostrarTodosLosDatos ? this.renderTest() : this.renderFormulario()}
+                </ScrollView>     
+            </View>
+        </KeyboardAvoidingView> 
     );
   }
 }

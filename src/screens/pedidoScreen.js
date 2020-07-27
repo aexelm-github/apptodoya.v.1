@@ -19,12 +19,15 @@ import Constants from 'expo-constants';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CacheImage from '../components/CacheImage';
 import CustomButton from '../components/customButton';
+import Cantidad from '../components/Cantidad';
 import styles from '../styles/stylesOne';
 import { CheckBox } from 'react-native-elements'
 import ActionMenu2 from '../components/ActionMenu2';
 import {AsyncStorage} from 'react-native';
 import { Divider } from 'react-native-elements';
 import MapaScreen from './mapScreen';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 
 
@@ -165,22 +168,7 @@ export default class pedidoScreen extends React.Component {
     console.log(height);
   }
 
-  _keyboardDidShow = (e) => {
-      keyboardParams = {
-          keyboardHeight: e.endCoordinates.height,
-          normalHeight: Dimensions.get('window').height, 
-          shortHeight: Dimensions.get('window').height - e.endCoordinates.height, 
-      };         
-      //console.log(keyboardParams);
-      this.setState({shrinkScreen : keyboardParams.keyboardHeight - 68   });
-  }
-  
-  _keyboardDidHide = () => {
-      console.log('Keyboard Hidden');
-      this.setState({shrinkScreen : 0 })
-  
-  }
-  
+ 
     getPermissionAsync = async () => {
       if (Constants.platform.ios) {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -247,13 +235,18 @@ export default class pedidoScreen extends React.Component {
     }
 
     _pressCheckBox(item, value) {
-      this.setState({['cbox'+item.cboa_id]: !this.state['cbox'+item.cboa_id]});
+      return
+      //this.setState({['cbox'+item.cboa_id]: !this.state['cbox'+item.cboa_id]});
       if (this.state['cbox'+item.cboa_id]){
         checkboxSelected = checkboxSelected.filter(thisItem => thisItem.cboa_id !== item.cboa_id);
+        this.setState({['cantidad'+item.cboa_id] : "0", ['cbox'+item.cboa_id]: !this.state['cbox'+item.cboa_id]})
       }else{
         checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio, name: item.name })
+        this.setState({['cantidad'+item.cboa_id]:1, ['cbox'+item.cboa_id]: !this.state['cbox'+item.cboa_id]})
+        console.log(this.state)
       }
-      //console.log(checkboxSelected)
+      //console.log("checkboxSelected",checkboxSelected)
+      console.log("*parseInt(this.state['cantidad'+item.cboa_id])", parseInt(this.state['cantidad'+item.cboa_id]))
       let total = 0;
       checkboxSelected.map((item) => {
         total+= parseInt(item.precio);
@@ -263,24 +256,58 @@ export default class pedidoScreen extends React.Component {
       this.setState({totalCalculado: total})
     }
 
+    setValue = async (value, item) => {
+      console.log(value, item, this.state)
+      checkboxSelected = await checkboxSelected.filter(thisItem => thisItem.cboa_id !== item.cboa_id);
+      if (value === 0) {
+        this.setState({['cantidad'+item.cboa_id] : value, ['cbox'+item.cboa_id] : false})
+      }else{
+        await checkboxSelected.push({cboa_id:item.cboa_id, precio: item.cboa_precio, name: item.name, cantidad : value, grupo: item.cboa_grupo })
+        this.setState({['cantidad'+item.cboa_id] : value, ['cbox'+item.cboa_id] : true})
+      }
+      console.log("*parseInt(this.state['cantidad'+item.cboa_id])", value, parseInt(this.state['cantidad'+item.cboa_id]))
+      let total = 0;
+      checkboxSelected.map((item) => {
+        total+= parseInt(item.precio) * parseInt(this.state['cantidad'+item.cboa_id]);
+      })
+      this.setState({Total: '$ '+ (total)+'.00'})
+      this.setState({totalCalculado: total})
+
+    }
+
     _renderSectionList() {
-      //console.log(jsonFinal)
+      //console.log("jsonFinal", jsonFinal)
       let renderThis = <SectionList 
                           sections={jsonFinal}
+                          style={{width:"100%"}}
                           renderSectionHeader={({ section }) => (
                             <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >{section.title}</Text>
                           )}                                 
                           renderItem={({ item, index }) => (
-                            <CheckBox
-                            style={localStyles.itemCheckBox}
-                            //title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
-                            title={item.name+ ' [ $ '+ item.cboa_precio +' ]' }
-                            checked= { this.state['cbox'+item.cboa_id] }
-                            onPress={() => this._pressCheckBox(item, item.cboa_id)}
-                            delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
-                            onLongPress={() => { this._seleccionaItem(item) }}
-                            value={item.cboa_id}
-                          />                            
+                            <View
+                                style = {{flexDirection: "row", backgroundColor: "#ffffff", margin: 4, maxWidth: '100%',}}
+                            >
+                              <CheckBox
+                                  wrapperStyle={{width: screenWidth - 150}}
+                                  activeOpacity={0.5}
+                                  style={localStyles.itemCheckBox}
+                                  //title={item.name+ ' [ $ '+ new Intl.NumberFormat("en-US").format(item.cboa_precio)+' ]' }
+                                  title={item.name+ ' [ $ '+ item.cboa_precio +' ]' }
+                                  checked= { this.state['cbox'+item.cboa_id] }
+                                  onPress={() => this._pressCheckBox(item, item.cboa_id)}
+                                  delayLongPress={GLOBAL.LONG_PRESS_SECONDS}
+                                  onLongPress={() => { this._seleccionaItem(item) }}
+                                  value={item.cboa_id}
+                                  containerStyle={{backgroundColor:"transparent", borderWidth: 0,  margin: 0}}
+                              />    
+                              <View style={{ backgroundColor: "#fff", justifyContent: 'center'}}>
+                                <Cantidad 
+                                    minValue={0} maxValue={10} 
+                                    value={this.state['cantidad'+item.cboa_id]===null || this.state['cantidad'+item.cboa_id] === undefined ? 0 : this.state['cantidad'+item.cboa_id] } 
+                                    onChange={(value) => this.setValue(value, item)} 
+                                />
+                              </View>
+                            </View>                        
                           )}
                           keyExtractor={(item,index) => index.toString()}
                         ></SectionList>
@@ -376,6 +403,7 @@ export default class pedidoScreen extends React.Component {
         await AsyncStorage.setItem('JSONpedido',JSON.stringify(JSONpedidoArray))
       }
       this.setState({showModal: true})
+      await AsyncStorage.setItem('idComercioActual',didMountParamsParent.cboa_id,)
       await AsyncStorage.setItem('estadoPedidoActual','enCreacion')
       await AsyncStorage.setItem('esteTelefono',this.state.telefono)
       await AsyncStorage.setItem('esteNombre',this.state.preguntarPor)
@@ -398,93 +426,106 @@ export default class pedidoScreen extends React.Component {
   render() {
     const params = this.props.navigation.getParam('params');
     const paramsParent = this.props.navigation.getParam('paramsParent');
-    console.log("render this.state", this.state);
+    const { cboa_ocultarnombre } = params
+    console.log("render this.state", this.state, GLOBAL.BASE_URL+'/images/'+params.cboa_ocultarnombre, paramsParent);
     const { showMapa } = this.state
-
+    
     if (!showMapa) { 
       return (
           <KeyboardAvoidingView
-            style={{flex: 1,}}
+            style={{flex: 1, maxWidth: '100%'}}
             behavior='height'
           >
             <View style={[localStyles.container]}>
-            <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
-            <View style={styles.container} elevation={15}>
-              <CacheImage
-                style={localStyles.image}
-                uri= {GLOBAL.BASE_URL+'/images/'+params.foto}
-              />
-              <View 
-                  style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}}
-                  onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }} 
-              >
-                <Text 
-                      style={[localStyles.title1,localStyles.shadow]}
-                  >{paramsParent.name}</Text>
-                <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 18}]} >
-                  {paramsParent.detalle}
-                </Text>   
-              </View>    
-            </View>
-            <View style={{padding: 20, paddingTop:30}}>
-              <Text style={localStyles.title2} >{params.name}</Text>
-              <Text style={localStyles.paragraph} >
-                {params.detalle}
-              </Text>
-            </View>        
-              <Text style={localStyles.label} >Dirección de envío</Text>
-              
-              <View style={{flexDirection: 'row'}}>
-                  <TextInput 
-                    style={[localStyles.inputText,{width: screenWidth-50}]}
-                    placeholder='Escriba la dirección de envío'
-                    onChangeText={(direccion) => this.setState({direccion})}
-                    value={this.state.direccion}
-                    maxLength={80}
-                  />            
-                  <TouchableOpacity
-                    style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
-                    onPress={() => {this.goMaps()}}
-                  >
-                    <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
-                  </TouchableOpacity>
-              </View>          
-              <View>
-                <Text style={[localStyles.label,{fontSize:14}]}>Número de Teléfono:</Text>  
-                <Text style={[localStyles.label]}>El siguiente es el teléfono que aparece registrado o el último que has di, pero puedes cambiarlo si deseas</Text>  
-                <TextInput
-                  style={[localStyles.inputText,{}]}
-                  onChangeText={(telefono) => this.setState({telefono})}
-                  value={this.state.telefono}
-                />
-                <Text style={[localStyles.label,{fontSize:14}]}>Preguntar por:</Text>  
-                <Text style={[localStyles.label]}>EL mensajero preguntará por ti, pero puedes cambiar el nombre para que pregunte por otra persona</Text>  
-                <TextInput
-                  style={[localStyles.inputText,{}]}
-                  onChangeText={(preguntarPor) => this.setState({preguntarPor})}
-                  value={this.state.preguntarPor}
-                />
-              </View>  
-              { this.state.categoriasLoaded ? ( 
-                  this._renderSectionList()
-              ) : null }
-              <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10}]} >Detalla un poco tu pedido</Text>
-              <TextInput 
-                style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
-                multiline={true}
-                numberOfLines={4}
-                placeholder='¿Deseas agregar información adicional a tu pedido?'
-                onChangeText={(informacionAdicional) => this.setState({informacionAdicional})}
-                value={this.state.informacionAdicional}
-                maxLength={180}
-              />          
-            </ScrollView>
-      
-            <CustomButton 
-                title={`[ ${this.state.Total} ] Agregar`}
-                style={[styles.buttonViewLogin, {position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
-                onPress={() =>{this._confirmPedido()}}
-            />  
+                  <ScrollView style={{flex:1, width:'100%', marginBottom: 55}}> 
+                  <View style={styles.container} elevation={15}>
+                    <View
+                        style={[localStyles.image, {}]}
+                    >
+                      <Image style={{width: "100%", height: "100%"}} 
+                            source={{uri : GLOBAL.BASE_URL+'/images/'+params.foto}} 
+                            resizeMode="stretch"
+                      />
+                      {cboa_ocultarnombre == "false" && <LinearGradient
+                        style={{width: "100%", height: "100%", position:'absolute'}}
+                        colors={['transparent', 'transparent', 'rgba(0,0,0,0.2)','rgba(0,0,0,0.7)']}
+                      />}  
+                      {/* <CacheImage
+                        style={{width:360, height: "100%", }}
+                        uri= {GLOBAL.BASE_URL+'/images/'+params.foto}
+                      /> */}
+                    </View>
+                    {cboa_ocultarnombre == "false" && <View 
+                        style={{position: 'absolute', left: 0, bottom: 0, margin: 20,marginBottom: 30,}}
+                        onLayout={(event) => { this.find_dimensions(event.nativeEvent.layout) }} 
+                    >
+                      <Text 
+                            style={[localStyles.title1,localStyles.shadow]}
+                        >{paramsParent.name}</Text>
+                      <Text style={[localStyles.shadow,{ color: '#fff', fontSize: 18}]} >
+                        {paramsParent.detalle}
+                      </Text>   
+                    </View>    }
+                  </View>
+                  <View style={{padding: 20, paddingTop:30}}>
+                    <Text style={localStyles.title2} >{params.name}</Text>
+                    <Text style={localStyles.paragraph} >
+                      {params.detalle}
+                    </Text>
+                  </View>        
+                    <Text style={[localStyles.labelSmall, {fontSize:14}]} >Dirección de envío</Text>
+                    
+                    <View style={{flexDirection: 'row'}}>
+                        <TextInput 
+                          style={[localStyles.inputText,{width: screenWidth-50}]}
+                          placeholder='Escriba la dirección de envío'
+                          onChangeText={(direccion) => this.setState({direccion})}
+                          value={this.state.direccion}
+                          maxLength={80}
+                        />            
+                        <TouchableOpacity
+                          style={{width: 50, alignContent:"center", alignItems: "center", flex:1}}
+                          onPress={() => {this.goMaps()}}
+                        >
+                          <MaterialCommunityIcons name='map-marker' color='#3498db' size={45} />
+                        </TouchableOpacity>
+                    </View>          
+                    <View>
+                      <Text style={[localStyles.labelSmall,{fontSize:14}]}>Número de Teléfono:</Text>  
+                      <Text style={[localStyles.labelSmall]}>El siguiente es el teléfono que aparece registrado o el último que has dicho, pero puedes cambiarlo si deseas</Text>  
+                      <TextInput
+                        style={[localStyles.inputText,{}]}
+                        onChangeText={(telefono) => this.setState({telefono})}
+                        value={this.state.telefono}
+                      />
+                      <Text style={[localStyles.labelSmall,{fontSize:14}]}>Preguntar por:</Text>  
+                      <Text style={[localStyles.labelSmall]}>EL mensajero preguntará por ti, pero puedes cambiar el nombre para que pregunte por otra persona</Text>  
+                      <TextInput
+                        style={[localStyles.inputText,{}]}
+                        onChangeText={(preguntarPor) => this.setState({preguntarPor})}
+                        value={this.state.preguntarPor}
+                      />
+                    </View>  
+                    { this.state.categoriasLoaded ? ( 
+                        this._renderSectionList()
+                    ) : null }
+                    <Text style={[localStyles.label,{marginTop: 10, marginBottom: 10, fontSize: 16}]} >Detalla un poco tu pedido</Text>
+                    <TextInput 
+                      style={[localStyles.inputText,{fontSize: 15, margin: 15, marginTop: 0, width: screenWidth - 30, borderRadius: 10}]}
+                      multiline={true}
+                      numberOfLines={4}
+                      placeholder='¿Deseas agregar información adicional a tu pedido?'
+                      onChangeText={(informacionAdicional) => this.setState({informacionAdicional})}
+                      value={this.state.informacionAdicional}
+                      maxLength={180}
+                    />          
+                  </ScrollView>
+            
+                  <CustomButton 
+                      title={`[ ${this.state.Total} ] PA'L CARRITO`}
+                      style={[styles.buttonViewLogin, {fontSize: 16, position:'absolute',bottom:0, marginBottom: 0, backgroundColor: 'blue'}]}
+                      onPress={() =>{this._confirmPedido()}}
+                  />  
             </View>
             {this.state.perfil==="admin" &&  <ActionMenu2 
               callbackFromParent={this._accionMenuPress}
@@ -508,11 +549,10 @@ export default class pedidoScreen extends React.Component {
 }
 
 const localStyles = StyleSheet.create({
-  container : { flex: 1, alignItems: 'center' },
-  imageView : {
+  container : { flex: 1, alignItems: 'center', paddingTop: Constants.statusBarHeight,
     alignItems: 'center',
     justifyContent: 'center',
-    width:screenWidth,
+    maxWidth:"100%",
     height: screenWidth*0.25,
     backgroundColor: 'transparent',
   },
@@ -537,13 +577,21 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   label: {
+    fontSize: 22,
+    color: "#e67e22",
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 4,
+    fontWeight: "400",
+  },
+  labelSmall: {
     fontSize: 12,
     color: "#3f3f3f",
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 4,
   },
-  itemCheckBox : {
+    itemCheckBox : {
     fontSize: 10,
     width: screenWidth - 50,
     color: 'red',
